@@ -29,11 +29,38 @@ public class User {
     @Column(name = "full_name", nullable = false, length = 150)
     private String fullName;
 
-    @Column(length = 50)
+    @Column(length = 50, unique = true)
     private String phone; // Hỗ trợ lưu trữ số điện thoại phục vụ đăng nhập
 
     @Column(length = 255)
-    private String avatar = "profile_avatar.png";
+    private String avatar = "default_avatar.png"; // Mặc định avatar trắng sạch
+
+    @Column(name = "cover_image", length = 255)
+    private String coverImage = "default_cover.png"; // Mặc định cover trắng sạch
+
+    @Column(length = 255)
+    private String address; // Địa chỉ (mặc định để trống khi đăng ký)
+
+    @Column(name = "tiktok_link", length = 255)
+    private String tiktokLink; // Link kênh TikTok
+
+    @Column(name = "shopee_link", length = 255)
+    private String shopeeLink; // Link cửa hàng Shopee
+
+    @Column(name = "facebook_link", length = 255)
+    private String facebookLink; // Link trang cá nhân Facebook
+
+    @Column(name = "instagram_link", length = 255)
+    private String instagramLink; // Link trang cá nhân Instagram
+
+    @Column(name = "bank_name", length = 100)
+    private String bankName; // Tên ngân hàng
+
+    @Column(name = "bank_account_name", length = 150)
+    private String bankAccountName; // Tên chủ tài khoản ngân hàng
+
+    @Column(name = "bank_account_number", length = 100)
+    private String bankAccountNumber; // Số tài khoản ngân hàng
 
     @Column(nullable = false, length = 50)
     private String role; // "ADMIN", "STAFF", "KOL/KOC"

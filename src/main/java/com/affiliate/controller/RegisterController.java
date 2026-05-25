@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import java.math.BigDecimal;
+import java.util.Optional;
 
 @Controller
 public class RegisterController {
@@ -97,10 +98,15 @@ public class RegisterController {
             return "register";
         }
 
-        // --- 4. RÀNG BUỘC SỐ ĐIỆN THOẠI: ĐÚNG 10 SỐ, BẮT ĐẦU BẰNG SỐ 0 ---
+        // --- 4. RÀNG BUỘC SỐ ĐIỆN THOẠI: ĐÚNG 10 SỐ, BẮT ĐẦU BẰNG SỐ 0 & CHƯA ĐƯỢC ĐĂNG KÝ ---
         String phone = registerRequest.getPhone();
         if (phone == null || !phone.matches("^0\\d{9}$")) {
             model.addAttribute("errorMessage", "Số điện thoại phải chứa chính xác 10 chữ số và bắt đầu bằng chữ số 0!");
+            return "register";
+        }
+
+        if (userRepository.existsByPhone(phone)) {
+            model.addAttribute("errorMessage", "Số điện thoại này đã được sử dụng trong hệ thống. Vui lòng chọn Số điện thoại khác!");
             return "register";
         }
 
@@ -129,6 +135,18 @@ public class RegisterController {
             return "register";
         }
 
+        // --- 6.5. XỬ LÝ MÃ GIỚI THIỆU (KHÔNG BẮT BUỘC) ---
+        String inputReferralCode = registerRequest.getReferralCode();
+        User referrer = null;
+        if (inputReferralCode != null && !inputReferralCode.trim().isEmpty()) {
+            Optional<User> referrerOpt = userRepository.findByReferralCode(inputReferralCode.trim());
+            if (!referrerOpt.isPresent()) {
+                model.addAttribute("errorMessage", "Mã giới thiệu không tồn tại trong hệ thống! Vui lòng kiểm tra lại hoặc để trống.");
+                return "register";
+            }
+            referrer = referrerOpt.get();
+        }
+
         // --- 7. LƯU THÔNG TIN ĐĂNG KÝ VÀO CƠ SỞ DỮ LIỆU & MÃ HÓA BẬT BẬT BCRYPT ---
         try {
             // Sinh mã Username duy nhất dựa trên tiền tố Email
@@ -151,6 +169,23 @@ public class RegisterController {
             newUser.setTier("basic");
             newUser.setStatus("pending");
             newUser.setReferralCode(referralCode);
+            if (referrer != null) {
+                newUser.setReferredById(referrer.getId());
+            }
+
+            // Phân biệt và lưu đường dẫn mạng xã hội phù hợp
+            String socialLinkLower = socialLink.toLowerCase();
+            if (socialLinkLower.contains("tiktok.com")) {
+                newUser.setTiktokLink(socialLink);
+            } else if (socialLinkLower.contains("shopee.vn") || socialLinkLower.contains("shopee.co")) {
+                newUser.setShopeeLink(socialLink);
+            } else if (socialLinkLower.contains("facebook.com")) {
+                newUser.setFacebookLink(socialLink);
+            } else if (socialLinkLower.contains("instagram.com")) {
+                newUser.setInstagramLink(socialLink);
+            } else {
+                newUser.setTiktokLink(socialLink); // Mặc định là TikTok
+            }
 
             // Lưu người dùng
             User savedUser = userRepository.save(newUser);

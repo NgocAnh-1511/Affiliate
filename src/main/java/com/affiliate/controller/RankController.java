@@ -1,35 +1,36 @@
 package com.affiliate.controller;
 
-import com.affiliate.model.UserProfile;
+import com.affiliate.model.User;
+import com.affiliate.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import java.util.Optional;
 
 @Controller
 public class RankController {
 
+    @Autowired
+    private UserRepository userRepository;
+
     /**
      * Hiển thị trang Hạng thành viên (Membership Tier / Rank).
-     * Cung cấp thông tin hạng của Mai Phương nhằm hiển thị chính xác tiến trình thăng hạng.
+     * Cung cấp thông tin hạng của người dùng thực tế nhằm hiển thị chính xác tiến trình thăng hạng.
      */
     @GetMapping("/rank")
     public String showRankPage(Model model) {
-        // Khởi tạo thông tin hồ sơ của Mai Phương để đồng bộ Sidebar & Header
-        UserProfile profile = new UserProfile(
-            "Mai Phương",
-            "maiphuong@gmail.com",
-            "0987 654 321",
-            "Gò Vấp, TP. Hồ Chí Minh",
-            "KOC123456",
-            "KOC Hạng Vàng",
-            "Vietcombank",
-            "Mai Phương",
-            "**** **** 1234",
-            "150K Followers",
-            "@koc_khampha"
-        );
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        Optional<User> userOpt = userRepository.findByUsername(username);
+        
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            model.addAttribute("profile", user);
+        } else {
+            return "redirect:/login";
+        }
 
-        model.addAttribute("profile", profile);
         return "rank";
     }
 }

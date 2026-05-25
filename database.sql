@@ -35,8 +35,17 @@ CREATE TABLE users (
     email VARCHAR(100) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
     full_name VARCHAR(150) NOT NULL,
-    phone VARCHAR(50) DEFAULT NULL COMMENT 'Số điện thoại phục vụ đăng nhập',
-    avatar VARCHAR(255) DEFAULT 'profile_avatar.png',
+    phone VARCHAR(50) DEFAULT NULL UNIQUE COMMENT 'Số điện thoại phục vụ đăng nhập',
+    avatar VARCHAR(255) DEFAULT 'default_avatar.png',
+    cover_image VARCHAR(255) DEFAULT 'default_cover.png',
+    address VARCHAR(255) DEFAULT NULL,
+    tiktok_link VARCHAR(255) DEFAULT NULL,
+    shopee_link VARCHAR(255) DEFAULT NULL,
+    facebook_link VARCHAR(255) DEFAULT NULL,
+    instagram_link VARCHAR(255) DEFAULT NULL,
+    bank_name VARCHAR(100) DEFAULT NULL,
+    bank_account_name VARCHAR(150) DEFAULT NULL,
+    bank_account_number VARCHAR(100) DEFAULT NULL,
     role VARCHAR(50) NOT NULL COMMENT 'ADMIN, STAFF, KOL/KOC',
     tier VARCHAR(50) DEFAULT 'basic' COMMENT 'diamond, gold, silver, basic',
     status VARCHAR(50) DEFAULT 'active' COMMENT 'active, suspended, pending',
@@ -200,26 +209,26 @@ CREATE TABLE audit_logs (
 -- --- A. NẠP BẢNG USERS ---
 -- Mai Phương (id: 1) đã được mời bởi Admin (id: 1001), có mã giới thiệu là REF-KOC2026.
 -- KOC con: Nguyễn Minh Đức (id: 6), Trần Quốc Bảo (id: 7), vv... đều có referred_by_id = 1 (do Mai Phương mời)
-INSERT INTO users (id, username, email, password, full_name, phone, avatar, role, tier, status, referred_by_id, referral_code) VALUES
+INSERT INTO users (id, username, email, password, full_name, phone, avatar, cover_image, address, tiktok_link, shopee_link, facebook_link, instagram_link, bank_name, bank_account_name, bank_account_number, role, tier, status, referred_by_id, referral_code) VALUES
 -- Admin & Staff (1001 -> 1004)
-(1001, 'nguyenvana', 'nguyenvana@koc.vn', '$2a$10$8.2qPhOlNC9W2Fm.l1BKy.23yM2G53.O7.TjG9i3l7oR/m583yvG2', 'Nguyễn Văn A', '0901234567', 'profile_avatar.png', 'ADMIN', 'diamond', 'active', NULL, 'REF-ADMIN1001'),
-(1002, 'tranthibich', 'tranthibich@koc.vn', '$2a$10$8.2qPhOlNC9W2Fm.l1BKy.23yM2G53.O7.TjG9i3l7oR/m583yvG2', 'Trần Thị Bịch', '0901234568', 'profile_avatar.png', 'STAFF', 'gold', 'active', NULL, NULL),
-(1003, 'lehoangnam', 'lehoangnam@koc.vn', '$2a$10$8.2qPhOlNC9W2Fm.l1BKy.23yM2G53.O7.TjG9i3l7oR/m583yvG2', 'Lê Hoàng Nam', '0901234569', 'profile_avatar.png', 'STAFF', 'gold', 'active', NULL, NULL),
-(1004, 'phamqtung', 'phamqtung@koc.vn', '$2a$10$8.2qPhOlNC9W2Fm.l1BKy.23yM2G53.O7.TjG9i3l7oR/m583yvG2', 'Phạm Quốc Tùng', '0901234570', 'profile_avatar.png', 'STAFF', 'silver', 'active', NULL, NULL),
--- KOC Gốc (Mai Phương - có mã REF-KOC2026)
-(1, 'maiphuong.official', 'maiphuong@koc.vn', '$2a$10$8.2qPhOlNC9W2Fm.l1BKy.23yM2G53.O7.TjG9i3l7oR/m583yvG2', 'Mai Phương', '0987654321', 'profile_avatar.png', 'KOL/KOC', 'diamond', 'active', 1001, 'REF-KOC2026'),
--- KOC con (Được mời bởi Mai Phương - id: 1)
-(6, 'duc.review', 'duc.review@koc.vn', '$2a$10$8.2qPhOlNC9W2Fm.l1BKy.23yM2G53.O7.TjG9i3l7oR/m583yvG2', 'Nguyễn Minh Đức', '0912345678', 'profile_avatar.png', 'KOL/KOC', 'silver', 'active', 1, 'REF-KOC006'),
-(7, 'bao.store', 'bao.store@koc.vn', '$2a$10$8.2qPhOlNC9W2Fm.l1BKy.23yM2G53.O7.TjG9i3l7oR/m583yvG2', 'Trần Quốc Bảo', '0912345679', 'profile_avatar.png', 'KOL/KOC', 'silver', 'active', 1, 'REF-KOC007'),
-(8, 'huong.unbox', 'huong.unbox@koc.vn', '$2a$10$8.2qPhOlNC9W2Fm.l1BKy.23yM2G53.O7.TjG9i3l7oR/m583yvG2', 'Phạm Thu Hương', '0912345680', 'profile_avatar.png', 'KOL/KOC', 'silver', 'active', 1, 'REF-KOC008'),
-(9, 'nam.tech', 'nam.tech@koc.vn', '$2a$10$8.2qPhOlNC9W2Fm.l1BKy.23yM2G53.O7.TjG9i3l7oR/m583yvG2', 'Lê Hoàng Nam KOC', '0912345681', 'profile_avatar.png', 'KOL/KOC', 'silver', 'active', 1, 'REF-KOC009'),
-(10, 'vy.beauty', 'vy.beauty@koc.vn', '$2a$10$8.2qPhOlNC9W2Fm.l1BKy.23yM2G53.O7.TjG9i3l7oR/m583yvG2', 'Vũ Thảo Vy', '0912345682', 'profile_avatar.png', 'KOL/KOC', 'silver', 'active', 1, 'REF-KOC010'),
-(11, 'khoa.gaming', 'khoa.gaming@koc.vn', '$2a$10$8.2qPhOlNC9W2Fm.l1BKy.23yM2G53.O7.TjG9i3l7oR/m583yvG2', 'Đỗ Anh Khoa', '0912345683', 'profile_avatar.png', 'KOL/KOC', 'silver', 'active', 1, 'REF-KOC011'),
+(1001, 'nguyenvana', 'nguyenvana@koc.vn', '$2a$10$8.2qPhOlNC9W2Fm.l1BKy.23yM2G53.O7.TjG9i3l7oR/m583yvG2', 'Nguyễn Văn A', '0901234567', 'default_avatar.png', 'default_cover.png', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ADMIN', 'diamond', 'active', NULL, 'REF-ADMIN1001'),
+(1002, 'tranthibich', 'tranthibich@koc.vn', '$2a$10$8.2qPhOlNC9W2Fm.l1BKy.23yM2G53.O7.TjG9i3l7oR/m583yvG2', 'Trần Thị Bịch', '0901234568', 'default_avatar.png', 'default_cover.png', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'STAFF', 'gold', 'active', NULL, NULL),
+(1003, 'lehoangnam', 'lehoangnam@koc.vn', '$2a$10$8.2qPhOlNC9W2Fm.l1BKy.23yM2G53.O7.TjG9i3l7oR/m583yvG2', 'Lê Hoàng Nam', '0901234569', 'default_avatar.png', 'default_cover.png', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'STAFF', 'gold', 'active', NULL, NULL),
+(1004, 'phamqtung', 'phamqtung@koc.vn', '$2a$10$8.2qPhOlNC9W2Fm.l1BKy.23yM2G53.O7.TjG9i3l7oR/m583yvG2', 'Phạm Quốc Tùng', '0901234570', 'default_avatar.png', 'default_cover.png', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'STAFF', 'silver', 'active', NULL, NULL),
+-- KOC Gốc (Mai Phương - Đầy đủ thông tin hoạt động thực tế như bản vẽ thiết kế)
+(1, 'maiphuong.official', 'maiphuong@koc.vn', '$2a$10$8.2qPhOlNC9W2Fm.l1BKy.23yM2G53.O7.TjG9i3l7oR/m583yvG2', 'Mai Phương', '0987654321', 'profile_avatar.png', 'profile_cover.png', 'Gò Vấp, TP. Hồ Chí Minh', 'https://tiktok.com/@koc_khampha', 'https://shopee.vn/maiphuong.store', NULL, NULL, 'Vietcombank', 'Mai Phương', '**** **** 1234', 'KOL/KOC', 'diamond', 'active', 1001, 'REF-KOC2026'),
+-- KOC con (Được mời bởi Mai Phương - id: 1) - Mặc định để trống thông tin cá nhân bổ sung, chờ đăng nhập vào tự điền
+(6, 'duc.review', 'duc.review@koc.vn', '$2a$10$8.2qPhOlNC9W2Fm.l1BKy.23yM2G53.O7.TjG9i3l7oR/m583yvG2', 'Nguyễn Minh Đức', '0912345678', 'default_avatar.png', 'default_cover.png', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'KOL/KOC', 'silver', 'active', 1, 'REF-KOC006'),
+(7, 'bao.store', 'bao.store@koc.vn', '$2a$10$8.2qPhOlNC9W2Fm.l1BKy.23yM2G53.O7.TjG9i3l7oR/m583yvG2', 'Trần Quốc Bảo', '0912345679', 'default_avatar.png', 'default_cover.png', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'KOL/KOC', 'silver', 'active', 1, 'REF-KOC007'),
+(8, 'huong.unbox', 'huong.unbox@koc.vn', '$2a$10$8.2qPhOlNC9W2Fm.l1BKy.23yM2G53.O7.TjG9i3l7oR/m583yvG2', 'Phạm Thu Hương', '0912345680', 'default_avatar.png', 'default_cover.png', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'KOL/KOC', 'silver', 'active', 1, 'REF-KOC008'),
+(9, 'nam.tech', 'nam.tech@koc.vn', '$2a$10$8.2qPhOlNC9W2Fm.l1BKy.23yM2G53.O7.TjG9i3l7oR/m583yvG2', 'Lê Hoàng Nam KOC', '0912345681', 'default_avatar.png', 'default_cover.png', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'KOL/KOC', 'silver', 'active', 1, 'REF-KOC009'),
+(10, 'vy.beauty', 'vy.beauty@koc.vn', '$2a$10$8.2qPhOlNC9W2Fm.l1BKy.23yM2G53.O7.TjG9i3l7oR/m583yvG2', 'Vũ Thảo Vy', '0912345682', 'default_avatar.png', 'default_cover.png', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'KOL/KOC', 'silver', 'active', 1, 'REF-KOC010'),
+(11, 'khoa.gaming', 'khoa.gaming@koc.vn', '$2a$10$8.2qPhOlNC9W2Fm.l1BKy.23yM2G53.O7.TjG9i3l7oR/m583yvG2', 'Đỗ Anh Khoa', '0912345683', 'default_avatar.png', 'default_cover.png', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'KOL/KOC', 'silver', 'active', 1, 'REF-KOC011'),
 -- Các KOC độc lập khác
-(2, 'ducanh.review', 'ducanh@koc.vn', '$2a$10$8.2qPhOlNC9W2Fm.l1BKy.23yM2G53.O7.TjG9i3l7oR/m583yvG2', 'Đức Anh', '0912345684', 'profile_avatar.png', 'KOL/KOC', 'gold', 'active', NULL, NULL),
-(3, 'vythao.beauty', 'vythao@koc.vn', '$2a$10$8.2qPhOlNC9W2Fm.l1BKy.23yM2G53.O7.TjG9i3l7oR/m583yvG2', 'Thảo Vy', '0912345685', 'profile_avatar.png', 'KOL/KOC', 'silver', 'active', NULL, NULL),
-(4, 'huy.fitlife', 'quanghuy@koc.vn', '$2a$10$8.2qPhOlNC9W2Fm.l1BKy.23yM2G53.O7.TjG9i3l7oR/m583yvG2', 'Quang Huy', '0912345686', 'profile_avatar.png', 'KOL/KOC', 'basic', 'suspended', NULL, NULL),
-(5, 'linhchi.daily', 'linhchi@koc.vn', '$2a$10$8.2qPhOlNC9W2Fm.l1BKy.23yM2G53.O7.TjG9i3l7oR/m583yvG2', 'Linh Chi', '0912345687', 'profile_avatar.png', 'KOL/KOC', 'silver', 'active', NULL, NULL);
+(2, 'ducanh.review', 'ducanh@koc.vn', '$2a$10$8.2qPhOlNC9W2Fm.l1BKy.23yM2G53.O7.TjG9i3l7oR/m583yvG2', 'Đức Anh', '0912345684', 'default_avatar.png', 'default_cover.png', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'KOL/KOC', 'gold', 'active', NULL, NULL),
+(3, 'vythao.beauty', 'vythao@koc.vn', '$2a$10$8.2qPhOlNC9W2Fm.l1BKy.23yM2G53.O7.TjG9i3l7oR/m583yvG2', 'Thảo Vy', '0912345685', 'default_avatar.png', 'default_cover.png', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'KOL/KOC', 'silver', 'active', NULL, NULL),
+(4, 'huy.fitlife', 'quanghuy@koc.vn', '$2a$10$8.2qPhOlNC9W2Fm.l1BKy.23yM2G53.O7.TjG9i3l7oR/m583yvG2', 'Quang Huy', '0912345686', 'default_avatar.png', 'default_cover.png', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'KOL/KOC', 'basic', 'suspended', NULL, NULL),
+(5, 'linhchi.daily', 'linhchi@koc.vn', '$2a$10$8.2qPhOlNC9W2Fm.l1BKy.23yM2G53.O7.TjG9i3l7oR/m583yvG2', 'Linh Chi', '0912345687', 'default_avatar.png', 'default_cover.png', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'KOL/KOC', 'silver', 'active', NULL, NULL);
 
 
 -- --- B. NẠP VÍ TIỀN & SỐ DƯ HOA HỒNG USER_BALANCES ---

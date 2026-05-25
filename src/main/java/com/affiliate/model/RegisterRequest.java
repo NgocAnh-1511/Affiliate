@@ -14,4 +14,5 @@ public class RegisterRequest {
     private String password;
     private String confirmPassword;
     private boolean agreeToTerms;
+    private String referralCode; // Mã giới thiệu (không bắt buộc)
 }

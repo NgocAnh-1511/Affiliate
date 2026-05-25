@@ -12,7 +12,6 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Sử dụng Clipboard API để sao chép
             navigator.clipboard.writeText(idString).then(function() {
-                // Tạo thông báo tạm thời (Tooltip) ngay cạnh nút sao chép
                 showTooltip(copyIdBtn, 'Đã sao chép!');
             }).catch(function(err) {
                 console.error('Lỗi khi sao chép: ', err);
@@ -22,7 +21,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Hàm tạo tooltip động bay lên mượt mà
     function showTooltip(anchorElement, message) {
-        // Xóa tooltip cũ nếu có
         const oldTooltip = document.querySelector('.copied-tooltip');
         if (oldTooltip) oldTooltip.remove();
 
@@ -30,7 +28,6 @@ document.addEventListener('DOMContentLoaded', function() {
         tooltip.className = 'copied-tooltip';
         tooltip.innerText = message;
         
-        // CSS inline cho tooltip cao cấp
         tooltip.style.position = 'absolute';
         tooltip.style.backgroundColor = '#1e293b';
         tooltip.style.color = '#ffffff';
@@ -45,14 +42,12 @@ document.addEventListener('DOMContentLoaded', function() {
         tooltip.style.whiteSpace = 'nowrap';
         tooltip.style.animation = 'tooltipFadeUp 0.3s ease forwards';
         
-        // Đảm bảo phần tử chứa có position relative
         const container = anchorElement.closest('.koc-id-group');
         if (container) {
             container.style.position = 'relative';
             container.appendChild(tooltip);
         }
 
-        // Tự động biến mất sau 1.5 giây
         setTimeout(function() {
             tooltip.style.animation = 'tooltipFadeOut 0.3s ease forwards';
             setTimeout(function() {
@@ -76,16 +71,26 @@ document.addEventListener('DOMContentLoaded', function() {
     document.head.appendChild(styleSheet);
 
     // --------------------------------------------------------------------------
-    // 2. Ẩn/Hiện Số tài khoản thanh toán (Toggle Bank Account Visibility)
+    // 2. Ẩn/Hiện Số tài khoản thanh toán tự động (Dynamic Bank Account Masking)
     // --------------------------------------------------------------------------
     const toggleBankBtn = document.getElementById('toggleBankBtn');
     const bankAccountText = document.getElementById('bankAccountNumber');
 
     if (toggleBankBtn && bankAccountText) {
-        // Trạng thái gốc
+        const originalAccountNumber = bankAccountText.innerText.trim();
         let isMasked = true;
-        const maskedNumber = bankAccountText.innerText;
-        const realNumber = "1011 2026 1234"; // Mock Số tài khoản thực
+
+        // Hàm che số tài khoản, chỉ chừa lại 4 số cuối
+        function maskAccountNumber(number) {
+            if (number.length <= 4) return number;
+            // Nếu số đã bị che sẵn rồi (chứa dấu *) thì giữ nguyên
+            if (number.includes('*')) return number;
+            return '*'.repeat(number.length - 4).replace(/(.{4})/g, '$1 ').trim() + ' ' + number.slice(-4);
+        }
+
+        // Che ngay khi load trang
+        const maskedNumber = maskAccountNumber(originalAccountNumber);
+        bankAccountText.innerText = maskedNumber;
 
         const eyeOpenSVG = `
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -110,7 +115,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 toggleBankBtn.innerHTML = eyeClosedSVG;
                 toggleBankBtn.setAttribute('aria-label', 'Hiển thị số tài khoản');
             } else {
-                bankAccountText.innerText = realNumber;
+                bankAccountText.innerText = originalAccountNumber;
                 toggleBankBtn.innerHTML = eyeOpenSVG;
                 toggleBankBtn.setAttribute('aria-label', 'Ẩn số tài khoản');
             }
@@ -118,26 +123,26 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // --------------------------------------------------------------------------
-    // 3. Chuông báo thông báo (Notification Bell Toast)
+    // 3. Chuông báo thông báo (Notification Bell Alert)
     // --------------------------------------------------------------------------
     const bellBtn = document.getElementById('bellNotificationBtn');
     if (bellBtn) {
         bellBtn.addEventListener('click', function() {
             alert('Bạn có 3 thông báo mới chưa đọc từ hệ thống KOC/KOL Affiliate Network!');
             const badge = bellBtn.querySelector('.notification-badge');
-            if (badge) badge.remove(); // Xoá badge khi đã click xem
+            if (badge) badge.remove();
         });
     }
 
     // --------------------------------------------------------------------------
-    // 4. Menu thả xuống của Hồ sơ góc phải (Right Header Dropdown Menu Toggle)
+    // 4. Dropdown Menu góc phải (Profile Dropdown Menu)
     // --------------------------------------------------------------------------
     const userProfileMenu = document.getElementById('userProfileMenu');
     const userDropdownMenu = document.getElementById('userDropdownMenu');
 
     if (userProfileMenu && userDropdownMenu) {
         userProfileMenu.addEventListener('click', function(e) {
-            e.stopPropagation(); // Ngăn sự kiện nổi bọt để tránh tự đóng ngay lập tức
+            e.stopPropagation();
             const isShown = userDropdownMenu.classList.contains('show');
             
             if (isShown) {
@@ -151,7 +156,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
-        // Đóng dropdown khi người dùng nhấp chuột ra ngoài vùng menu
         document.addEventListener('click', function(e) {
             if (!userProfileMenu.contains(e.target) && !userDropdownMenu.contains(e.target)) {
                 userDropdownMenu.classList.remove('show');
@@ -160,4 +164,97 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+
+    // --------------------------------------------------------------------------
+    // 5. Điều khiển Modal chỉnh sửa hồ sơ (Edit Profile Modal Controller)
+    // --------------------------------------------------------------------------
+    const editModal = document.getElementById('editProfileModal');
+    const openProfileBtn = document.getElementById('openProfileModalBtn');
+    const openSocialBtn = document.getElementById('openSocialModalBtn');
+    const openPaymentBtn = document.getElementById('openPaymentModalBtn');
+    const closeProfileBtn = document.getElementById('closeProfileModalBtn');
+    const cancelModalBtn = document.getElementById('cancelModalBtn');
+
+    // Mở modal và pre-select tab tương ứng
+    function openModalWithTab(tabId) {
+        if (!editModal) return;
+        editModal.style.display = 'flex';
+        setTimeout(() => editModal.classList.add('show'), 10);
+        
+        // Active tab tương ứng
+        const tabButton = editModal.querySelector(`.tab-btn[data-tab="${tabId}"]`);
+        if (tabButton) {
+            tabButton.click();
+        }
+    }
+
+    if (openProfileBtn) {
+        openProfileBtn.addEventListener('click', () => openModalWithTab('tab-personal'));
+    }
+    if (openSocialBtn) {
+        openSocialBtn.addEventListener('click', () => openModalWithTab('tab-social'));
+    }
+    if (openPaymentBtn) {
+        openPaymentBtn.addEventListener('click', () => openModalWithTab('tab-payment'));
+    }
+
+    // Đóng modal
+    function closeModal() {
+        if (!editModal) return;
+        editModal.classList.remove('show');
+        setTimeout(() => editModal.style.display = 'none', 300);
+    }
+
+    if (closeProfileBtn) closeProfileBtn.addEventListener('click', closeModal);
+    if (cancelModalBtn) cancelModalBtn.addEventListener('click', closeModal);
+
+    // Đóng modal khi click ra ngoài vùng content
+    if (editModal) {
+        editModal.addEventListener('click', function(e) {
+            if (e.target === editModal) {
+                closeModal();
+            }
+        });
+    }
+
+    // Chuyển đổi qua lại giữa các tab trong Modal
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    const tabPanes = document.querySelectorAll('.tab-pane');
+
+    tabButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+            // Remove active classes
+            tabButtons.forEach(b => b.classList.remove('active'));
+            tabPanes.forEach(p => p.classList.remove('active'));
+            
+            // Add active to current
+            this.classList.add('active');
+            const targetPaneId = this.getAttribute('data-tab');
+            const targetPane = document.getElementById(targetPaneId);
+            if (targetPane) {
+                targetPane.classList.add('active');
+            }
+        });
+    });
+
+    // --------------------------------------------------------------------------
+    // 6. Tự động ẩn thông báo sau 4 giây (Auto-dismiss alert banners)
+    // --------------------------------------------------------------------------
+    const alerts = document.querySelectorAll('.alert');
+    alerts.forEach(function(alert) {
+        // Tự động đóng sau 4 giây (4000ms)
+        setTimeout(function() {
+            if (alert && alert.parentNode) {
+                alert.style.opacity = '0';
+                alert.style.transform = 'translateY(-8px)';
+                setTimeout(() => {
+                    alert.style.height = '0';
+                    alert.style.padding = '0';
+                    alert.style.margin = '0';
+                    alert.style.border = 'none';
+                    setTimeout(() => alert.remove(), 400);
+                }, 400);
+            }
+        }, 4000);
+    });
 });

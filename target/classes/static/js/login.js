@@ -121,4 +121,25 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     }
+
+    // --------------------------------------------------------------------------
+    // 3. Tự động ẩn thông báo sau 4 giây (Auto-dismiss alert banners)
+    // --------------------------------------------------------------------------
+    const alerts = document.querySelectorAll('.alert');
+    alerts.forEach(function(alert) {
+        // Tự động đóng sau 4 giây (4000ms)
+        setTimeout(function() {
+            if (alert && alert.parentNode) {
+                alert.style.opacity = '0';
+                alert.style.transform = 'translateY(-8px)';
+                setTimeout(() => {
+                    alert.style.height = '0';
+                    alert.style.padding = '0';
+                    alert.style.margin = '0';
+                    alert.style.border = 'none';
+                    setTimeout(() => alert.remove(), 400);
+                }, 400);
+            }
+        }, 4000);
+    });
 });

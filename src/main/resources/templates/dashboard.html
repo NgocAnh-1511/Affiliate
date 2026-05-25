@@ -28,7 +28,7 @@
             
             <!-- Thanh tác vụ trên cùng (Header bar) -->
             <header class="header-bar">
-                <h1 class="welcome-heading">Chào ngày mới, Mai Phương! 👋</h1>
+                <h1 class="welcome-heading">Chào ngày mới, <span th:text="${profile?.fullName}">Mai Phương</span>! 👋</h1>
                 
                 <div class="header-actions">
                     <!-- Nút thông báo -->
@@ -43,14 +43,14 @@
                     <!-- Thẻ chứa Avatar & Họ tên góc -->
                     <div class="user-dropdown-container">
                         <div class="user-profile-menu" id="userProfileMenu" aria-haspopup="true" aria-expanded="false">
-                            <img src="../static/images/profile_avatar.png" th:src="@{/images/profile_avatar.png}" class="user-small-avatar" alt="Avatar góc">
+                            <img src="../static/images/default_avatar.png" th:src="@{/images/{img}(img=${profile?.avatar != null ? profile.avatar : 'default_avatar.png'})}" class="user-small-avatar" alt="Avatar góc">
                             <span class="user-menu-name" th:text="${profile?.fullName}">Mai Phương</span>
                             <svg class="chevron-down" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
                         </div>
                         
                         <!-- Hộp thoại dropdown Đăng xuất -->
                         <div class="dropdown-menu" id="userDropdownMenu" role="menu">
-                            <a href="login.html" th:href="@{/login}" class="dropdown-item" role="menuitem">
+                            <a href="login.html" th:href="@{/logout}" class="dropdown-item" role="menuitem">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                                     <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
                                     <polyline points="16 17 21 12 16 7"/>

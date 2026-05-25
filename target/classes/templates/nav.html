@@ -93,7 +93,7 @@
                     </svg>
                 </div>
                 <div class="gold-meta">
-                    <span class="gold-title" th:text="${profile?.rank}">KOC Hạng Vàng</span>
+                    <span class="gold-title" th:text="${profile != null ? (profile.getClass().getSimpleName() == 'User' ? (profile.tier == 'diamond' ? 'KOC Hạng Kim Cương' : (profile.tier == 'gold' ? 'KOC Hạng Vàng' : (profile.tier == 'silver' ? 'KOC Hạng Bạc' : 'KOC Mới/Cơ bản'))) : profile.rank) : 'KOC Mới/Cơ bản'}">KOC Hạng Vàng</span>
                     <p class="gold-subtitle">Bạn đang ở hạng cao nhất</p>
                 </div>
                 <div class="gold-arrow">

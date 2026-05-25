@@ -49,14 +49,14 @@
                     <!-- Thẻ chứa Avatar & Họ tên góc -->
                     <div class="user-dropdown-container">
                         <div class="user-profile-menu" id="userProfileMenu" aria-haspopup="true" aria-expanded="false">
-                            <img src="../static/images/profile_avatar.png" th:src="@{/images/profile_avatar.png}" class="user-small-avatar" alt="Avatar góc">
+                            <img src="../static/images/default_avatar.png" th:src="@{/images/{img}(img=${profile?.avatar != null ? profile.avatar : 'default_avatar.png'})}" class="user-small-avatar" alt="Avatar góc">
                             <span class="user-menu-name" th:text="${profile?.fullName}">Mai Phương</span>
                             <svg class="chevron-down" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
                         </div>
                         
                         <!-- Hộp thoại dropdown Đăng xuất -->
                         <div class="dropdown-menu" id="userDropdownMenu" role="menu">
-                            <a href="login.html" th:href="@{/login}" class="dropdown-item" role="menuitem">
+                            <a href="login.html" th:href="@{/logout}" class="dropdown-item" role="menuitem">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                                     <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
                                     <polyline points="16 17 21 12 16 7"/>
@@ -310,15 +310,15 @@
                     <ul class="bank-box-details">
                         <li class="bank-box-row">
                             <span class="bank-box-label">Ngân hàng thụ hưởng</span>
-                            <span class="bank-box-value">Vietcombank</span>
+                            <span class="bank-box-value" th:text="${profile?.bankName != null ? profile.bankName : 'Chưa liên kết'}">Vietcombank</span>
                         </li>
                         <li class="bank-box-row">
                             <span class="bank-box-label">Tên chủ tài khoản</span>
-                            <span class="bank-box-value">Mai Phương</span>
+                            <span class="bank-box-value" th:text="${profile?.bankAccountName != null ? profile.bankAccountName : 'Chưa liên kết'}">Mai Phương</span>
                         </li>
                         <li class="bank-box-row">
                             <span class="bank-box-label">Số tài khoản nhận</span>
-                            <span class="bank-box-value">**** **** 1234</span>
+                            <span class="bank-box-value" th:text="${profile?.bankAccountNumber != null ? profile.bankAccountNumber : 'Chưa liên kết'}">**** **** 1234</span>
                         </li>
                     </ul>
                 </div>
@@ -346,7 +346,7 @@
                     <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
                 </div>
                 <h4 class="success-heading">Yêu cầu Rút tiền Thành công!</h4>
-                <p class="success-desc">Số tiền rút của bạn đã được chuyển khoản thành công vào tài khoản Vietcombank của đối tác Mai Phương.</p>
+                <p class="success-desc">Số tiền rút của bạn đã được chuyển khoản thành công vào tài khoản <span th:text="${profile?.bankName != null ? profile.bankName : 'ngân hàng'}">Vietcombank</span> của đối tác <span th:text="${profile?.fullName}">Mai Phương</span>.</p>
                 <button type="button" class="btn-success-close" id="btnSuccessClose">Đóng biểu mẫu</button>
             </div>
         </div>

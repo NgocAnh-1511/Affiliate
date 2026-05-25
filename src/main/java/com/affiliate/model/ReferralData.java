@@ -14,6 +14,9 @@ public class ReferralData {
     private int totalReferred;
     private int activeReferred;
     private String totalCommissionEarned;
+    private String totalReferredTrend;
+    private String activeReferredTrend;
+    private String commissionTrend;
     private List<ReferredKoc> referredKocs;
 
     @Data

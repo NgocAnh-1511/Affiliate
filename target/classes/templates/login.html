@@ -55,22 +55,24 @@
                 <form id="loginForm" class="login-form" th:action="@{/login}" th:object="${loginRequest}" method="POST">
                     
                     <!-- Hiển thị thông báo LỖI từ Spring Boot Controller -->
-                    <div th:if="${errorMessage}" class="alert alert-danger" th:classappend="${errorMessage != null} ? 'alert-show' : ''" role="alert">
+                    <div th:if="${errorMessage}" class="alert alert-danger" th:classappend="${errorMessage != null} ? 'alert-show' : ''" role="alert" style="transition: opacity 0.4s ease, transform 0.4s ease, margin 0.4s ease, padding 0.4s ease, height 0.4s ease;">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                             <circle cx="12" cy="12" r="10"/>
                             <line x1="12" y1="8" x2="12" y2="12"/>
                             <line x1="12" y1="16" x2="12.01" y2="16"/>
                         </svg>
                         <span th:text="${errorMessage}">Thông báo lỗi đăng nhập</span>
+                        <button type="button" class="alert-close-btn" style="background: none; border: none; color: inherit; font-size: 1.3rem; cursor: pointer; margin-left: auto; line-height: 1; padding: 0 4px; display: flex; align-items: center; justify-content: center;" onclick="this.parentElement.style.opacity='0'; this.parentElement.style.transform='translateY(-8px)'; setTimeout(() => { this.parentElement.style.height='0'; this.parentElement.style.padding='0'; this.parentElement.style.margin='0'; this.parentElement.style.border='none'; setTimeout(() => this.parentElement.remove(), 400); }, 400);" aria-label="Đóng">&times;</button>
                     </div>
 
                     <!-- Hiển thị thông báo THÀNH CÔNG từ Spring Boot Controller -->
-                    <div th:if="${successMessage}" class="alert alert-success" th:classappend="${successMessage != null} ? 'alert-show' : ''" role="alert">
+                    <div th:if="${successMessage}" class="alert alert-success" th:classappend="${successMessage != null} ? 'alert-show' : ''" role="alert" style="transition: opacity 0.4s ease, transform 0.4s ease, margin 0.4s ease, padding 0.4s ease, height 0.4s ease;">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                             <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
                             <polyline points="22,4 12,14.01 9,11.01"/>
                         </svg>
                         <span th:text="${successMessage}">Thông báo đăng nhập thành công</span>
+                        <button type="button" class="alert-close-btn" style="background: none; border: none; color: inherit; font-size: 1.3rem; cursor: pointer; margin-left: auto; line-height: 1; padding: 0 4px; display: flex; align-items: center; justify-content: center;" onclick="this.parentElement.style.opacity='0'; this.parentElement.style.transform='translateY(-8px)'; setTimeout(() => { this.parentElement.style.height='0'; this.parentElement.style.padding='0'; this.parentElement.style.margin='0'; this.parentElement.style.border='none'; setTimeout(() => this.parentElement.remove(), 400); }, 400);" aria-label="Đóng">&times;</button>
                     </div>
                     
                     <!-- Ô nhập liệu: Email hoặc Số điện thoại -->
