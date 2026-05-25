@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hạng thành viên - KOC/KOL Affiliate Network</title>
+    
+    <!-- Meta SEO tiêu chuẩn -->
+    <meta name="description" content="Khám phá lộ trình thăng hạng thành viên KOC/KOL, theo dõi doanh thu tích lũy và mở khóa các đặc quyền hoa hồng, quà tặng hấp dẫn.">
+    <meta name="robots" content="noindex, nofollow">
+    
+    <!-- Liên kết Tệp CSS thiết kế cao cấp (Có fallback href để mở trực tiếp trên trình duyệt) -->
+    <link rel="stylesheet" href="../static/css/rank.css" th:href="@{/css/rank.css}">
+</head>
+<body>
+
+    <div class="rank-container">
+        
+        <!-- ==========================================================================
+           Thanh Điều hướng Bên trái (Left Sidebar) - Có Menu phụ mở rộng
+           ========================================================================== -->
+        <!-- ==========================================================================
+           Thanh Điều hướng Bên trái (Left Sidebar) - Nạp từ fragment nav.html
+           ========================================================================== -->
+        <aside th:replace="~{nav :: sidebar('rank')}"></aside>
+        
+        <!-- ==========================================================================
+           Khung nội dung chính (Main Content Area)
+           ========================================================================== -->
+        <main class="main-content">
+            
+            <!-- Thanh tác vụ trên cùng (Header bar) -->
+            <header class="header-bar">
+                <div class="header-title-wrapper">
+                    <h1 class="welcome-heading">Hạng thành viên</h1>
+                    <p class="welcome-subtitle">Càng bán nhiều – Càng nhận nhiều đặc quyền xứng đáng!</p>
+                </div>
+                
+                <div class="header-actions">
+                    <!-- Nút thông báo -->
+                    <button type="button" class="icon-button" id="bellNotificationBtn" aria-label="Thông báo hệ thống">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                        </svg>
+                        <span class="notification-badge"></span>
+                    </button>
+                    
+                    <!-- Thẻ chứa Avatar & Họ tên góc -->
+                    <div class="user-dropdown-container">
+                        <div class="user-profile-menu" id="userProfileMenu" aria-haspopup="true" aria-expanded="false">
+                            <img src="../static/images/profile_avatar.png" th:src="@{/images/profile_avatar.png}" class="user-small-avatar" alt="Avatar góc">
+                            <div class="user-dropdown-meta">
+                                <span class="user-menu-name" th:text="${profile?.fullName}">Mai Phương</span>
+                                <span class="user-menu-rank"><span class="crown-icon-inline">👑</span> KOC Hạng Vàng</span>
+                            </div>
+                            <svg class="chevron-down" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+                        </div>
+                        
+                        <!-- Hộp thoại dropdown Đăng xuất -->
+                        <div class="dropdown-menu" id="userDropdownMenu" role="menu">
+                            <a href="login.html" th:href="@{/login}" class="dropdown-item" role="menuitem">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                                    <polyline points="16 17 21 12 16 7"/>
+                                    <line x1="21" y1="12" x2="9" y2="12"/>
+                                </svg>
+                                <span>Đăng xuất</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- PREMIUM DARK-GOLD SHOWCASE BANNER -->
+            <div class="premium-rank-banner">
+                <!-- Hạt bụi vàng lung linh chìm (background particles) -->
+                <div class="dust-particles"></div>
+                
+                <!-- Cột trái: Tiến trình thăng hạng -->
+                <div class="banner-left">
+                    <span class="status-label">TRẠNG THÁI HIỆN TẠI</span>
+                    <h2 class="current-rank-heading">HẠNG VÀNG</h2>
+                    
+                    <div class="badge-hint-group">
+                        <div class="star-badge-icon">👑</div>
+                        <span class="badge-hint-text">Bạn đang ở Hạng Vàng</span>
+                    </div>
+                    
+                    <!-- Lưới Progress Bar -->
+                    <div class="progress-section">
+                        <div class="progress-header">
+                            <div class="revenue-display">
+                                <span class="rev-label">Doanh thu hiện tại</span>
+                                <span class="rev-value" id="currentRevenueVal">50,000,000 VNĐ</span>
+                            </div>
+                            <span class="goal-label">Mục tiêu: <span class="highlight-yellow">100,000,000 VNĐ</span> để lên Hạng Kim Cương</span>
+                        </div>
+                        
+                        <div class="progress-bar-container">
+                            <div class="progress-bar-fill" id="progressBarFill">
+                                <div class="progress-glow-pointer"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="progress-labels">
+                            <span>0 VNĐ</span>
+                            <span class="mid-label" id="midLabelPointer">50,000,000 VNĐ</span>
+                            <span>100,000,000 VNĐ</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Cột giữa: Huy hiệu Lá chắn Vàng khổng lồ -->
+                <div class="banner-center">
+                    <div class="shield-gold-wrapper">
+                        <!-- Cánh nguyệt quế và vương miện chìm tỏa sáng -->
+                        <div class="wing-left"></div>
+                        <div class="shield-gold">
+                            <div class="shield-inner">
+                                <span class="shield-crown">👑</span>
+                                <span class="shield-text-top">HẠNG</span>
+                                <span class="shield-text-bottom">VÀNG</span>
+                            </div>
+                        </div>
+                        <div class="wing-right"></div>
+                    </div>
+                </div>
+                
+                <!-- Cột phải: Floating Tip Card -->
+                <div class="banner-right">
+                    <div class="floating-tip-card">
+                        <div class="trophy-box">🏆</div>
+                        <div class="tip-meta">
+                            <h4 class="tip-title">Giữ vững phong độ!</h4>
+                            <p class="tip-desc">Bạn chỉ còn <span class="bold-highlight-purple">50,000,000 VNĐ</span> nữa để đạt hạng <span class="bold-highlight-purple">Kim Cương</span>.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- PHẦN 2: LƯỚI ĐẶC QUYỀN HẠNG VÀNG -->
+            <section class="privileges-section">
+                <h3 class="section-title">Đặc quyền Hạng Vàng của bạn</h3>
+                <div class="privileges-grid">
+                    <!-- Thẻ 1 -->
+                    <div class="privilege-card">
+                        <div class="priv-icon-wrapper circle-gold">
+                            <span class="priv-icon">%</span>
+                        </div>
+                        <div class="priv-meta">
+                            <h4 class="priv-card-title">Hoa hồng cơ bản + 2%</h4>
+                            <p class="priv-card-desc">Nhận thêm 2% trên tổng hoa hồng so với mức cơ bản.</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Thẻ 2 -->
+                    <div class="privilege-card">
+                        <div class="priv-icon-wrapper circle-gift">
+                            <span class="priv-icon">🎁</span>
+                        </div>
+                        <div class="priv-meta">
+                            <h4 class="priv-card-title">Nhận mẫu thử (Sample) LSOUL miễn phí</h4>
+                            <p class="priv-card-desc">Ưu tiên nhận các sản phẩm mẫu mới nhất từ LSOUL.</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Thẻ 3 -->
+                    <div class="privilege-card">
+                        <div class="priv-icon-wrapper circle-bolt">
+                            <span class="priv-icon">⚡</span>
+                        </div>
+                        <div class="priv-meta">
+                            <h4 class="priv-card-title">Ưu tiên đối soát nhanh</h4>
+                            <p class="priv-card-desc">Hồ sơ của bạn sẽ được ưu tiên xét duyệt và đối soát.</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Thẻ 4 -->
+                    <div class="privilege-card">
+                        <div class="priv-icon-wrapper circle-support">
+                            <span class="priv-icon">🎧</span>
+                        </div>
+                        <div class="priv-meta">
+                            <h4 class="priv-card-title">Hỗ trợ KOC 1-1</h4>
+                            <p class="priv-card-desc">Có riêng team hỗ trợ chuyên biệt dành cho bạn.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- PHẦN 3: LỘ TRÌNH THĂNG HẠNG (SO SÁNH BẢNG) -->
+            <section class="roadmap-section">
+                <h3 class="section-title">Lộ trình thăng hạng</h3>
+                
+                <div class="roadmap-table-container">
+                    <table class="roadmap-table">
+                        <thead>
+                            <tr>
+                                <th class="col-criteria-header">Quyền lợi</th>
+                                
+                                <!-- Cấp 1 -->
+                                <th class="col-tier-header">
+                                    <div class="tier-header-cell">
+                                        <span class="tier-icon silver">🛡️</span>
+                                        <span class="tier-name">HẠNG BẠC</span>
+                                        <span class="tier-range">0 - 20,000,000 VNĐ</span>
+                                    </div>
+                                </th>
+                                
+                                <!-- Cấp 2: HẠNG VÀNG ACTIVE -->
+                                <th class="col-tier-header active">
+                                    <div class="crown-floating">👑</div>
+                                    <div class="tier-header-cell">
+                                        <span class="tier-icon gold">👑</span>
+                                        <span class="tier-name">HẠNG VÀNG</span>
+                                        <span class="tier-range">20,000,001 - 100,000,000 VNĐ</span>
+                                    </div>
+                                </th>
+                                
+                                <!-- Cấp 3 -->
+                                <th class="col-tier-header">
+                                    <div class="tier-header-cell">
+                                        <span class="tier-icon diamond">💎</span>
+                                        <span class="tier-name">HẠNG KIM CƯƠNG</span>
+                                        <span class="tier-range">100,000,001 - 500,000,000 VNĐ</span>
+                                    </div>
+                                </th>
+                                
+                                <!-- Cấp 4 -->
+                                <th class="col-tier-header">
+                                    <div class="tier-header-cell">
+                                        <span class="tier-icon vip">🏆</span>
+                                        <span class="tier-name">HẠNG VIP</span>
+                                        <span class="tier-range">Trên 500,000,000 VNĐ</span>
+                                    </div>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Hàng 1 -->
+                            <tr>
+                                <td class="col-criteria">
+                                    <div class="criteria-cell">
+                                        <span class="criteria-icon">📈</span>
+                                        <span>Tỷ lệ hoa hồng cơ bản</span>
+                                    </div>
+                                </td>
+                                <td>+ 0%</td>
+                                <td class="active">+ 2%</td>
+                                <td>+ 5%</td>
+                                <td>+ 8%</td>
+                            </tr>
+                            
+                            <!-- Hàng 2 -->
+                            <tr>
+                                <td class="col-criteria">
+                                    <div class="criteria-cell">
+                                        <span class="criteria-icon">💵</span>
+                                        <span>Thưởng doanh số tháng</span>
+                                    </div>
+                                </td>
+                                <td class="dim-text">-</td>
+                                <td class="active font-gold-bold">1,000,000 VNĐ</td>
+                                <td class="font-bold">5,000,000 VNĐ</td>
+                                <td class="font-bold">10,000,000 VNĐ+</td>
+                            </tr>
+                            
+                            <!-- Hàng 3 -->
+                            <tr>
+                                <td class="col-criteria">
+                                    <div class="criteria-cell">
+                                        <span class="criteria-icon">🔥</span>
+                                        <span>Ưu tiên chiến dịch HOT</span>
+                                    </div>
+                                </td>
+                                <td class="red-cross">✕</td>
+                                <td class="active green-check">✓</td>
+                                <td class="green-check">✓</td>
+                                <td class="green-check">✓</td>
+                            </tr>
+                            
+                            <!-- Hàng 4 -->
+                            <tr>
+                                <td class="col-criteria">
+                                    <div class="criteria-cell">
+                                        <span class="criteria-icon">🤝</span>
+                                        <span>Hỗ trợ đặc biệt</span>
+                                    </div>
+                                </td>
+                                <td class="text-muted">Hỗ trợ tiêu chuẩn</td>
+                                <td class="active font-gold-semibold">Hỗ trợ KOC 1-1</td>
+                                <td>Hỗ trợ ưu tiên 24/7</td>
+                                <td class="font-bold">Account Manager riêng</td>
+                            </tr>
+                            
+                            <!-- Hàng 5 -->
+                            <tr>
+                                <td class="col-criteria">
+                                    <div class="criteria-cell">
+                                        <span class="criteria-icon">🎂</span>
+                                        <span>Quà tặng sinh nhật</span>
+                                    </div>
+                                </td>
+                                <td class="red-cross">✕</td>
+                                <td class="active">
+                                    <div class="gift-cell">
+                                        <span>🎁</span> Quà tặng giá trị
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="gift-cell">
+                                        <span>🎁</span> Quà tặng cao cấp
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="gift-cell">
+                                        <span>✈️</span> Quà tặng VIP & Du lịch
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+            
+        </main>
+        
+    </div>
+
+    <!-- Liên kết Tệp Javascript xử lý logic động (Có fallback src để mở trực tiếp trên trình duyệt) -->
+    <script src="../static/js/rank.js" th:src="@{/js/rank.js}"></script>
+</body>
+</html>

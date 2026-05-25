@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý Tài khoản & Phân quyền - Admin Portal</title>
+    
+    <!-- Meta SEO tiêu chuẩn -->
+    <meta name="description" content="Quản lý phê duyệt đối tác KOC/KOL và phân quyền nhân sự nội bộ hệ thống.">
+    <meta name="robots" content="noindex, nofollow">
+    
+    <!-- Liên kết CSS (overview.css chứa sidebar, users.css chứa giao diện trang) -->
+    <link rel="stylesheet" href="../../static/css/admin/overview.css" th:href="@{/css/admin/overview.css}">
+    <link rel="stylesheet" href="../../static/css/admin/users.css" th:href="@{/css/admin/users.css}">
+</head>
+<body>
+
+    <div class="overview-container">
+        
+        <!-- Thanh Điều hướng Bên trái Admin dùng chung (Sidebar Fragment) -->
+        <aside th:replace="~{admin/nav :: sidebar('users')}"></aside>
+        
+        <!-- Khung nội dung chính (Main Content Area) -->
+        <main class="main-content">
+            
+            <!-- Thanh tác vụ trên cùng (Header bar) -->
+            <header class="header-bar">
+                <!-- Tabs Quản trị -->
+                <div class="header-tabs-wrapper">
+                    <button type="button" class="tab-trigger active" id="tabKocBtn">Quản lý KOC/KOL</button>
+                    <button type="button" class="tab-trigger" id="tabStaffBtn">Nhân sự Nội bộ</button>
+                </div>
+                
+                <div class="header-actions">
+                    <!-- Nút thông báo hệ thống -->
+                    <button type="button" class="icon-button" id="bellNotificationBtn" aria-label="Thông báo hệ thống">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                        </svg>
+                        <span class="notification-badge"></span>
+                    </button>
+                    
+                    <!-- Dropdown Admin -->
+                    <div class="user-dropdown-container">
+                        <div class="user-profile-menu" id="userProfileMenu" aria-haspopup="true" aria-expanded="false">
+                            <img src="../../static/images/profile_avatar.png" th:src="@{/images/profile_avatar.png}" class="user-small-avatar" alt="Admin Avatar">
+                            <span class="user-menu-name">Admin System</span>
+                            <svg class="chevron-down" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+                        </div>
+                        
+                        <!-- Dropdown menu Đăng xuất -->
+                        <div class="dropdown-menu" id="userDropdownMenu" role="menu">
+                            <a href="../login.html" th:href="@{/login}" class="dropdown-item" role="menuitem">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                                    <polyline points="16 17 21 12 16 7"/>
+                                    <line x1="21" y1="12" x2="9" y2="12"/>
+                                </svg>
+                                <span>Đăng xuất</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- BẢNG YÊU CẦU GIA NHẬP CHỜ DUYỆT -->
+            <section class="card requests-card" id="joinRequestsSection">
+                <div class="card-header-meta flex-header">
+                    <div class="title-group">
+                        <h3 class="card-title">Yêu cầu gia nhập chờ duyệt</h3>
+                        <span class="badge-count" id="requestBadge" th:text="${usersData?.pendingCount + ' yêu cầu'}">5 yêu cầu</span>
+                    </div>
+                </div>
+                
+                <div class="table-container">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Họ tên KOC</th>
+                                <th>Kênh Mạng Xã Hội</th>
+                                <th>Người theo dõi</th>
+                                <th>Ngày đăng ký</th>
+                                <th style="text-align: right;">Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody id="joinRequestsTableBody">
+                            <!-- Vòng lặp các yêu cầu -->
+                            <tr th:each="request : ${usersData?.pendingRequests}" th:data-id="${request.id}" class="request-row">
+                                <td class="col-user">
+                                    <div class="user-info-cell">
+                                        <img src="../../static/images/profile_avatar.png" th:src="@{/images/profile_avatar.png}" class="table-avatar" alt="Avatar">
+                                        <div class="user-names">
+                                            <span class="user-full-name" th:text="${request.name}">Trần Thu Hà</span>
+                                            <span class="user-handle" th:text="${request.username}">@thuhahashion</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="col-platform">
+                                    <div class="platform-badge" th:classappend="${request.platform}">
+                                        <!-- Biểu tượng TikTok -->
+                                        <svg th:if="${request.platform == 'tiktok'}" class="platform-icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.07-2.89-.52-4.06-1.39v7.94c.02 1.83-.53 3.65-1.63 5.09-1.35 1.78-3.53 2.87-5.78 2.87-2.3 0-4.57-1.12-5.91-2.99-1.26-1.74-1.66-4.04-1.13-6.14.52-2.12 2.05-3.95 4.14-4.66.86-.3 1.77-.42 2.68-.37v4.13c-.76-.11-1.57.07-2.19.53-.66.49-1.03 1.3-1.02 2.12.01 1.05.67 2.03 1.67 2.37.95.33 2.08.08 2.75-.68.64-.73.78-1.77.75-2.71v-14.3c-.01 0-.01-.01-.01-.02z"/></svg>
+                                        <!-- Biểu tượng Shopee -->
+                                        <span th:if="${request.platform == 'shopee'}" class="platform-icon-shopee">S</span>
+                                        <span th:text="${request.platform == 'tiktok' ? 'TikTok' : 'Shopee'}">TikTok</span>
+                                    </div>
+                                </td>
+                                <td class="col-followers" th:text="${request.followers}">125,000</td>
+                                <td class="col-date" th:text="${request.date}">19/05/2024 14:32</td>
+                                <td class="col-actions">
+                                    <button type="button" class="btn-approve-koc" th:data-id="${request.id}" th:data-name="${request.name}">
+                                        ✓ Duyệt
+                                    </button>
+                                    <button type="button" class="btn-reject-koc" th:data-id="${request.id}" th:data-name="${request.name}">
+                                        ✕ Từ chối
+                                    </button>
+                                    <button type="button" class="btn-more-options" aria-label="Lựa chọn khác">⋮</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="card-footer">
+                    <span class="footer-stats" id="footerRequestStats">Hiển thị 5 trên tổng số 5 yêu cầu</span>
+                    <a href="#" class="footer-link">Xem tất cả yêu cầu →</a>
+                </div>
+            </section>
+            
+            <!-- LƯỚI HAI CỘT: KOC HOẠT ĐỘNG (60%) & NHÂN SỰ NỘI BỘ (40%) -->
+            <div class="users-grid-row">
+                
+                <!-- BẢNG DANH SÁCH KOC HOẠT ĐỘNG (60%) -->
+                <section class="card active-koc-card">
+                    <div class="card-header-meta flex-header">
+                        <h3 class="card-title">Danh sách KOC hoạt động</h3>
+                        <div class="header-filters">
+                            <div class="search-input-wrapper">
+                                <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                                <input type="text" id="searchKocInput" class="search-input" placeholder="Tìm kiếm KOC...">
+                            </div>
+                            <button type="button" class="btn-filter-toggle">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
+                                <span>Bộ lọc</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="table-container">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>KOC/KOL</th>
+                                    <th>Kênh chính</th>
+                                    <th>Người theo dõi</th>
+                                    <th>Thứ bậc (Tier)</th>
+                                    <th>Trạng thái</th>
+                                    <th style="text-align: right;">Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody id="activeKocTableBody">
+                                <tr th:each="koc : ${usersData?.activeKocs}" th:data-id="${koc.id}" class="koc-row-item">
+                                    <td class="col-user">
+                                        <div class="user-info-cell">
+                                            <img src="../../static/images/profile_avatar.png" th:src="@{/images/profile_avatar.png}" class="table-avatar" alt="Avatar">
+                                            <div class="user-names">
+                                                <span class="user-full-name" th:text="${koc.name}">Mai Phương</span>
+                                                <span class="user-handle" th:text="${koc.username}">@maiphuong.official</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="col-platform">
+                                        <div class="platform-badge" th:classappend="${koc.platform}">
+                                            <svg th:if="${koc.platform == 'tiktok'}" class="platform-icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.07-2.89-.52-4.06-1.39v7.94c.02 1.83-.53 3.65-1.63 5.09-1.35 1.78-3.53 2.87-5.78 2.87-2.3 0-4.57-1.12-5.91-2.99-1.26-1.74-1.66-4.04-1.13-6.14.52-2.12 2.05-3.95 4.14-4.66.86-.3 1.77-.42 2.68-.37v4.13c-.76-.11-1.57.07-2.19.53-.66.49-1.03 1.3-1.02 2.12.01 1.05.67 2.03 1.67 2.37.95.33 2.08.08 2.75-.68.64-.73.78-1.77.75-2.71v-14.3c-.01 0-.01-.01-.01-.02z"/></svg>
+                                            <span th:if="${koc.platform == 'shopee'}" class="platform-icon-shopee">S</span>
+                                            <span th:text="${koc.platform == 'tiktok' ? 'TikTok' : 'Shopee'}">TikTok</span>
+                                        </div>
+                                    </td>
+                                    <td class="col-followers" th:text="${koc.followers}">320,000</td>
+                                    <td class="col-tier">
+                                        <div class="select-wrapper">
+                                            <select class="tier-select" th:data-id="${koc.id}">
+                                                <option value="diamond" th:selected="${koc.tier == 'diamond'}">💎 Hạng Kim Cương</option>
+                                                <option value="gold" th:selected="${koc.tier == 'gold'}">🏆 Hạng Vàng</option>
+                                                <option value="silver" th:selected="${koc.tier == 'silver'}">🥈 Hạng Bạc</option>
+                                                <option value="basic" th:selected="${koc.tier == 'basic'}">😊 Cơ bản</option>
+                                            </select>
+                                        </div>
+                                    </td>
+                                    <td class="col-status">
+                                        <span class="status-pill" th:classappend="${koc.status}" th:text="${koc.status == 'active' ? 'Hoạt động' : 'Tạm khóa'}">Hoạt động</span>
+                                    </td>
+                                    <td class="col-actions">
+                                        <button type="button" class="btn-more-options" aria-label="Lựa chọn khác">⋮</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Phân trang Active KOC -->
+                    <div class="pagination-container">
+                        <div class="rows-select-group">
+                            <span class="pagination-label">Hiển thị</span>
+                            <select class="rows-select">
+                                <option value="10">10</option>
+                                <option value="20">20</option>
+                                <option value="50">50</option>
+                            </select>
+                            <span class="pagination-label">trên mỗi trang</span>
+                        </div>
+                        
+                        <div class="page-numbers">
+                            <button type="button" class="page-arrow" disabled>‹</button>
+                            <button type="button" class="page-num active">1</button>
+                            <button type="button" class="page-num">2</button>
+                            <button type="button" class="page-num">3</button>
+                            <button type="button" class="page-num">4</button>
+                            <button type="button" class="page-num">5</button>
+                            <span class="page-dots">...</span>
+                            <button type="button" class="page-num">20</button>
+                            <button type="button" class="page-arrow">›</button>
+                        </div>
+                    </div>
+                </section>
+                
+                <!-- BẢNG PHÂN QUYỀN NHÂN VIÊN (40%) -->
+                <section class="card staff-card">
+                    <div class="card-header-meta flex-header">
+                        <h3 class="card-title">Vai trò Nhân viên (Roles)</h3>
+                        <button type="button" class="btn-add-staff" id="addStaffBtn">
+                            <span>+ Thêm nhân viên</span>
+                        </button>
+                    </div>
+                    
+                    <!-- Danh sách nhân viên nội bộ -->
+                    <div class="staff-list">
+                        <!-- Nhân viên 1 -->
+                        <div th:each="staff, iterStat : ${usersData?.staffMembers}" 
+                             class="staff-item" 
+                             th:classappend="${iterStat.first} ? 'active' : ''" 
+                             th:data-id="${staff.id}"
+                             th:data-permissions="${#strings.listJoin(staff.permissions, ',')}"
+                             th:data-name="${staff.name}">
+                            
+                            <img src="../../static/images/profile_avatar.png" th:src="@{/images/profile_avatar.png}" class="staff-avatar" alt="Avatar">
+                            <div class="staff-meta">
+                                <span class="staff-name" th:text="${staff.name}">Nguyễn Văn A</span>
+                                <span class="staff-email" th:text="${staff.email}">nguyenvana@koc.vn</span>
+                            </div>
+                            <div class="staff-role-wrapper">
+                                <select class="role-select" th:data-id="${staff.id}">
+                                    <option value="accounting" th:selected="${staff.role == 'accounting'}">Nhân viên Kế toán</option>
+                                    <option value="cskh" th:selected="${staff.role == 'cskh'}">Nhân viên CSKH</option>
+                                    <option value="campaign_manager" th:selected="${staff.role == 'campaign_manager'}">Quản lý Chiến dịch</option>
+                                </select>
+                            </div>
+                            <button type="button" class="btn-more-options" aria-label="Lựa chọn">⋮</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Khung xem chi tiết Quyền hạn (Permissions) dựa trên nhân viên được click -->
+                    <div class="permissions-detail-panel">
+                        <h4 class="detail-panel-title">Chi tiết Quyền hạn (Permissions)</h4>
+                        <p class="detail-panel-subtitle">Đang chỉnh sửa quyền cho: <strong id="activeStaffName">Nguyễn Văn A</strong></p>
+                        
+                        <div class="permissions-grid">
+                            <label class="permission-checkbox-label">
+                                <input type="checkbox" class="permission-checkbox" value="view_balance">
+                                <span class="custom-checkbox"></span>
+                                <span class="checkbox-text">Xem số dư</span>
+                            </label>
+                            
+                            <label class="permission-checkbox-label">
+                                <input type="checkbox" class="permission-checkbox" value="approve_withdrawal">
+                                <span class="custom-checkbox"></span>
+                                <span class="checkbox-text">Phê duyệt rút tiền</span>
+                            </label>
+                            
+                            <label class="permission-checkbox-label">
+                                <input type="checkbox" class="permission-checkbox" value="manage_koc">
+                                <span class="custom-checkbox"></span>
+                                <span class="checkbox-text">Quản lý KOC</span>
+                            </label>
+                            
+                            <label class="permission-checkbox-label">
+                                <input type="checkbox" class="permission-checkbox" value="edit_campaign">
+                                <span class="custom-checkbox"></span>
+                                <span class="checkbox-text">Chỉnh sửa chiến dịch</span>
+                            </label>
+                            
+                            <label class="permission-checkbox-label">
+                                <input type="checkbox" class="permission-checkbox" value="manage_users">
+                                <span class="custom-checkbox"></span>
+                                <span class="checkbox-text">Quản lý người dùng</span>
+                            </label>
+                            
+                            <label class="permission-checkbox-label">
+                                <input type="checkbox" class="permission-checkbox" value="delete_data">
+                                <span class="custom-checkbox"></span>
+                                <span class="checkbox-text">Xóa dữ liệu</span>
+                            </label>
+                        </div>
+                        
+                        <!-- Nút bấm lưu quyền -->
+                        <div class="permissions-actions">
+                            <button type="button" class="btn-cancel-permissions" id="btnCancelPermissions">Hủy bỏ</button>
+                            <button type="button" class="btn-save-permissions" id="btnSavePermissions">Lưu thay đổi</button>
+                        </div>
+                    </div>
+                </section>
+                
+            </div>
+            
+        </main>
+    </div>
+
+    <!-- TOAST THÔNG BÁO CHO ADMIN -->
+    <div class="toast-notification" id="adminToast">
+        <span class="toast-icon">✓</span>
+        <span class="toast-message">Đã phê duyệt đối tác thành công!</span>
+    </div>
+
+    <!-- Script điều hướng logic trang -->
+    <script src="../../static/js/admin/users.js" th:src="@{/js/admin/users.js}"></script>
+</body>
+</html>

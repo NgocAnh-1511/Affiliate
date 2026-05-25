@@ -1,0 +1,1002 @@
+/* Import Font chữ công nghệ Plus Jakarta Sans */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+    --primary-color: #3f2fd4;
+    --primary-hover: #2e1fc1;
+    --primary-light: #f0efff;
+    --bg-dark: #080c24; /* Sidebar màu xanh đen sâu cực kỳ cao cấp */
+    --bg-main: #f8fafc; /* Nền chính xám xanh nhạt dịu mắt */
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+    --text-link: #3f2fd4;
+    --border-color: #f1f5f9;
+    --border-hover: #e2e8f0;
+    --font-family: 'Plus Jakarta Sans', sans-serif;
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    --shadow-lg: 0 10px 15px -3px rgba(15, 23, 42, 0.04), 0 4px 6px -2px rgba(15, 23, 42, 0.02);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font-family);
+    color: var(--text-main);
+    background-color: var(--bg-main);
+    height: 100vh;
+    overflow: hidden;
+    line-height: 1.5;
+}
+
+/* Khung Bố cục chính Dashboard */
+.dashboard-container {
+    display: flex;
+    height: 100vh;
+    width: 100vw;
+}
+
+/* ==========================================================================
+   Thanh Điều hướng Bên trái (Left Sidebar) - Đồng bộ hoàn toàn với Profile
+   ========================================================================== */
+.sidebar {
+    width: 280px;
+    height: 100%;
+    background-color: var(--bg-dark);
+    display: flex;
+    flex-direction: column;
+    padding: 2rem 1.5rem;
+    color: #ffffff;
+    flex-shrink: 0;
+}
+
+/* Logo Sidebar */
+.sidebar-logo {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 3rem;
+    padding-left: 0.5rem;
+}
+
+.logo-icon {
+    width: 36px;
+    height: 36px;
+    filter: drop-shadow(0 4px 6px rgba(63, 47, 212, 0.25));
+}
+
+.logo-text-group {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.logo-text-top {
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: #ffffff;
+    letter-spacing: -0.5px;
+    text-transform: uppercase;
+    line-height: 1.1;
+}
+
+.logo-text-bottom {
+    font-size: 0.52rem;
+    font-weight: 700;
+    color: #94a3b8;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-top: 0.1rem;
+    line-height: 1.1;
+}
+
+/* Danh sách Menu */
+.menu-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.menu-item-link {
+    text-decoration: none;
+    color: #94a3b8;
+}
+
+.menu-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.85rem 1.25rem;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.menu-item.active {
+    background-color: var(--primary-color);
+    color: #ffffff;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(63, 47, 212, 0.35);
+}
+
+.menu-item:hover:not(.active) {
+    background-color: rgba(255, 255, 255, 0.05);
+    color: #ffffff;
+}
+
+/* Thẻ hạng KOC Vàng dưới Sidebar */
+.gold-card {
+    margin-top: auto;
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(217, 119, 6, 0.05) 100%);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    border-radius: 16px;
+    padding: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.gold-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(245, 158, 11, 0.5);
+    box-shadow: 0 6px 12px rgba(245, 158, 11, 0.1);
+}
+
+.gold-crown-icon {
+    width: 32px;
+    height: 32px;
+    background: linear-gradient(135deg, #fef08a 0%, #f59e0b 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #78350f;
+    box-shadow: 0 4px 6px rgba(245, 158, 11, 0.2);
+}
+
+.gold-meta {
+    flex: 1;
+}
+
+.gold-title {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: #fef08a;
+}
+
+.gold-subtitle {
+    font-size: 0.7rem;
+    color: #cbd5e1;
+    margin-top: 0.1rem;
+}
+
+.gold-arrow {
+    color: #fef08a;
+    display: flex;
+    align-items: center;
+}
+
+/* ==========================================================================
+   Khung nội dung chính (Main Content Area)
+   ========================================================================== */
+.main-content {
+    flex: 1;
+    height: 100%;
+    background-color: var(--bg-main);
+    padding: 1.75rem 2.25rem;
+    overflow-y: auto;
+    /* Ẩn scrollbar để tạo cảm giác no-scroll premium */
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.main-content::-webkit-scrollbar {
+    display: none;
+}
+
+/* Header bar phía trên */
+.header-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.25rem;
+}
+
+.welcome-heading {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: var(--text-main);
+    letter-spacing: -0.5px;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.icon-button {
+    background: #ffffff;
+    border: 1px solid var(--border-color);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--text-muted);
+    position: relative;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.2s ease;
+}
+
+.icon-button:hover {
+    color: var(--text-main);
+    border-color: var(--border-hover);
+}
+
+.notification-badge {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    width: 8px;
+    height: 8px;
+    background-color: #ef4444;
+    border-radius: 50%;
+    border: 1px solid #ffffff;
+}
+
+.user-dropdown-container {
+    position: relative;
+}
+
+.user-profile-menu {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    cursor: pointer;
+    padding: 0.35rem 0.75rem;
+    border-radius: 9999px;
+    background-color: #ffffff;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+    transition: all 0.2s ease;
+}
+
+.user-profile-menu:hover {
+    background-color: #f8fafc;
+    border-color: var(--border-hover);
+}
+
+.user-profile-menu.active {
+    background-color: #f1f5f9;
+}
+
+.user-small-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    object-fit: cover;
+    box-shadow: var(--shadow-sm);
+}
+
+.user-menu-name {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+.chevron-down {
+    color: var(--text-muted);
+    transition: transform 0.2s ease;
+}
+
+.user-profile-menu.active .chevron-down {
+    transform: rotate(180deg);
+}
+
+/* Menu thả xuống */
+.dropdown-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    width: 150px;
+    background-color: #ffffff;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.08), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
+    padding: 0.4rem;
+    z-index: 100;
+    opacity: 0;
+    transform: translateY(-8px);
+    pointer-events: none;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dropdown-menu.show {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.65rem 0.75rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #ef4444;
+    text-decoration: none;
+    transition: all 0.15s ease;
+    cursor: pointer;
+}
+
+.dropdown-item:hover {
+    background-color: #fef2f2;
+}
+
+/* ==========================================================================
+   Filter Bar & Actions
+   ========================================================================== */
+.filter-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.select-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    background-color: #ffffff;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 0.5rem 1rem 0.5rem 2.5rem;
+    box-shadow: var(--shadow-sm);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.select-wrapper:hover {
+    border-color: var(--border-hover);
+}
+
+.select-icon {
+    position: absolute;
+    left: 0.85rem;
+    color: var(--text-muted);
+}
+
+.filter-select {
+    appearance: none;
+    border: none;
+    background: transparent;
+    font-family: var(--font-family);
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-main);
+    padding-right: 1.5rem;
+    outline: none;
+    cursor: pointer;
+}
+
+.chevron-select {
+    position: absolute;
+    right: 0.85rem;
+    color: var(--text-muted);
+    pointer-events: none;
+}
+
+.btn-export {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background-color: #ffffff;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 0.55rem 1rem;
+    font-family: var(--font-family);
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-main);
+    cursor: pointer;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.2s ease;
+}
+
+.btn-export:hover {
+    background-color: #f8fafc;
+    border-color: var(--border-hover);
+    transform: translateY(-0.5px);
+}
+
+/* ==========================================================================
+   Lưới bộ 4 thẻ KPI chỉ số (Grid 4 Columns)
+   ========================================================================== */
+.kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.25rem;
+    margin-bottom: 1.5rem;
+}
+
+.kpi-card {
+    background-color: #ffffff;
+    border-radius: 20px;
+    padding: 1.25rem;
+    border: 1px solid rgba(241, 245, 249, 0.8);
+    box-shadow: var(--shadow-md);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.kpi-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.kpi-icon-box {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow-sm);
+}
+
+.kpi-icon-box.blue {
+    background-color: #eff6ff;
+    color: #2563eb;
+}
+
+.kpi-icon-box.purple {
+    background-color: #faf5ff;
+    color: #7c3aed;
+}
+
+.kpi-icon-box.green {
+    background-color: #f0fdf4;
+    color: #10b981;
+}
+
+.kpi-icon-box.light-purple {
+    background-color: #f3e8ff;
+    color: #8b5cf6;
+}
+
+.kpi-title-group {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.kpi-title {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+.kpi-info-icon {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background-color: #f1f5f9;
+    color: var(--text-muted);
+    font-size: 0.65rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: help;
+}
+
+.kpi-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.kpi-value {
+    font-size: 1.65rem;
+    font-weight: 800;
+    color: var(--text-main);
+    letter-spacing: -0.5px;
+    line-height: 1.1;
+}
+
+.kpi-change {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.kpi-change.green {
+    color: #10b981;
+}
+
+.kpi-change-sub {
+    color: var(--text-muted);
+    font-weight: 500;
+    margin-left: 0.15rem;
+}
+
+/* ==========================================================================
+   Biểu đồ Click & Order lớn ở trung tâm
+   ========================================================================== */
+.chart-card {
+    background-color: #ffffff;
+    border-radius: 20px;
+    padding: 1.5rem;
+    border: 1px solid rgba(241, 245, 249, 0.8);
+    box-shadow: var(--shadow-md);
+    margin-bottom: 1.5rem;
+}
+
+.chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.25rem;
+}
+
+.chart-title {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: var(--text-main);
+    letter-spacing: -0.25px;
+}
+
+.chart-legend-actions {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.chart-legends {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.legend-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.legend-dot.blue {
+    background-color: #2563eb;
+}
+
+.legend-dot.purple {
+    background-color: #7c3aed;
+}
+
+.chart-select-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    background-color: #ffffff;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 0.35rem 0.75rem 0.35rem 0.75rem;
+    cursor: pointer;
+}
+
+.chart-filter-select {
+    appearance: none;
+    border: none;
+    background: transparent;
+    font-family: var(--font-family);
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text-main);
+    padding-right: 1.25rem;
+    outline: none;
+    cursor: pointer;
+}
+
+.chart-canvas-container {
+    width: 100%;
+    position: relative;
+}
+
+/* ==========================================================================
+   Khung Lưới Thẻ bên dưới (2 Thẻ: 60% / 40%)
+   ========================================================================== */
+.bottom-grid {
+    display: grid;
+    grid-template-columns: 60% 40%;
+    gap: 1.5rem;
+}
+
+.card {
+    background-color: #ffffff;
+    border-radius: 20px;
+    padding: 1.5rem;
+    box-shadow: var(--shadow-md);
+    border: 1px solid rgba(241, 245, 249, 0.8);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.card-title-group {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 0.75rem;
+}
+
+.card-title {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: var(--text-main);
+    letter-spacing: -0.25px;
+}
+
+/* Bảng chiến dịch */
+.table-container {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.campaign-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.campaign-table th {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    padding: 0.5rem 0.5rem 0.75rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.campaign-table td {
+    padding: 0.6rem 0.5rem;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 0.85rem;
+    vertical-align: middle;
+}
+
+.campaign-table tr:last-child td {
+    border-bottom: none;
+}
+
+.col-rank {
+    font-weight: 700;
+    color: var(--text-muted);
+    width: 25px;
+}
+
+.campaign-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.campaign-avatar-box {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    overflow: hidden;
+    background-color: var(--primary-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.campaign-avatar {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.campaign-name {
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+.col-traffic {
+    width: 130px;
+}
+
+.traffic-badge {
+    width: 24px;
+    height: 24px;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    box-shadow: var(--shadow-sm);
+}
+
+.traffic-badge.tiktok {
+    background-color: #000000;
+}
+
+.traffic-badge.shopee {
+    background-color: #fe5722;
+}
+
+.badge-shopee {
+    font-weight: 800;
+    font-size: 0.85rem;
+}
+
+.col-orders {
+    font-weight: 700;
+    color: var(--text-main);
+    width: 80px;
+}
+
+.col-commission {
+    font-weight: 700;
+    color: var(--primary-color);
+    text-align: right;
+}
+
+/* Chân bảng: Link xem tất cả */
+.campaign-footer-link {
+    margin-top: 0.75rem;
+}
+
+.view-all-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    text-decoration: none;
+    transition: transform 0.2s ease;
+}
+
+.view-all-link:hover {
+    color: var(--primary-hover);
+}
+
+.view-all-link svg {
+    transition: transform 0.2s ease;
+}
+
+.view-all-link:hover svg {
+    transform: translateX(2px);
+}
+
+/* ==========================================================================
+   Thẻ Tỷ lệ thiết bị mua hàng
+   ========================================================================== */
+.device-body {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    margin-bottom: 1.25rem;
+    flex: 1;
+}
+
+.donut-container {
+    position: relative;
+    width: 130px;
+    height: 130px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Nhãn text nằm ở tâm vòng donut */
+.donut-center-label {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    line-height: 1.1;
+    pointer-events: none;
+}
+
+.donut-label-sub {
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+.donut-label-val {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: var(--text-main);
+    letter-spacing: -0.5px;
+    margin: 0.05rem 0;
+}
+
+.donut-legend {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+}
+
+.donut-legend-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+.legend-title-box {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.legend-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.legend-dot.blue {
+    background-color: #005bf6;
+}
+
+.legend-dot.purple {
+    background-color: #7c3aed;
+}
+
+.legend-device-name {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+.legend-stat-box {
+    display: flex;
+    align-items: baseline;
+    gap: 0.35rem;
+    padding-left: 0.9rem;
+}
+
+.legend-percent {
+    font-size: 0.95rem;
+    font-weight: 800;
+}
+
+.legend-percent.text-blue {
+    color: #005bf6;
+}
+
+.legend-percent.text-purple {
+    color: #7c3aed;
+}
+
+.legend-orders-count {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+/* Alert Banner màu xanh ở chân Donut */
+.alert-info-banner {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    background-color: #eff6ff;
+    border-radius: 12px;
+    padding: 0.65rem 1rem;
+    margin-top: auto;
+}
+
+.alert-banner-icon {
+    color: #1d4ed8;
+    display: flex;
+    align-items: center;
+}
+
+.alert-banner-text {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #1d4ed8;
+}
+
+/* ==========================================================================
+   Tương thích thiết bị di động (Responsive Dashboard)
+   ========================================================================== */
+@media (max-width: 1200px) {
+    .kpi-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .bottom-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 992px) {
+    .dashboard-container {
+        flex-direction: column;
+    }
+    
+    .sidebar {
+        width: 100%;
+        height: auto;
+        padding: 1.25rem;
+    }
+    
+    .sidebar-logo {
+        margin-bottom: 1.5rem;
+    }
+    
+    .menu-list {
+        flex-direction: row;
+        overflow-x: auto;
+        padding-bottom: 0.5rem;
+    }
+    
+    .menu-item {
+        white-space: nowrap;
+    }
+    
+    .gold-card {
+        display: none; /* Ẩn thẻ vàng góc dưới trên màn hình nhỏ */
+    }
+    
+    .main-content {
+        padding: 1.25rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .header-bar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    .kpi-grid {
+        grid-template-columns: 1fr;
+    }
+    .chart-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+    .chart-legend-actions {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+}

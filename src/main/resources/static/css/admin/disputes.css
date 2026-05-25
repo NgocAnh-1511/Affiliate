@@ -1,0 +1,654 @@
+/**
+ * ==========================================================================
+ * Stylesheet riêng cho Trang Quản lý Khiếu nại & Hỗ trợ (Dispute Resolution)
+ * ==========================================================================
+ */
+
+/* Thống kê chỉ số trên đầu trang */
+.header-stats-panel {
+    display: flex;
+    gap: 0.75rem;
+    margin-right: auto;
+}
+
+.stat-pill-wrapper {
+    background-color: #ffffff;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 0.45rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    box-shadow: var(--shadow-sm);
+}
+
+.stat-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+.stat-value {
+    font-size: 0.95rem;
+    font-weight: 800;
+}
+
+/* Khung hai cột */
+.disputes-columns-container {
+    display: flex;
+    gap: 1.25rem;
+    margin-bottom: 1.5rem;
+    height: calc(100vh - 150px);
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.ticket-list-card {
+    flex: 1.2;
+    display: flex;
+    flex-direction: column;
+    padding: 1.25rem;
+    height: 100%;
+}
+
+.ticket-chat-card {
+    flex: 1.8;
+    display: flex;
+    flex-direction: column;
+    padding: 1.5rem;
+    height: 100%;
+}
+
+/* Tìm kiếm bộ lọc cột trái */
+.list-search-filters {
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+    margin-bottom: 1rem;
+}
+
+.list-search-filters .search-input-wrapper {
+    width: 100%;
+}
+
+.list-search-filters .search-input-wrapper input {
+    width: 100%;
+    font-family: var(--font-family);
+    font-size: 0.8rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 0.45rem 0.65rem 0.45rem 1.85rem;
+    background-color: #ffffff;
+}
+
+.list-search-filters .search-input-wrapper input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+.filters-row {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.filter-select-status {
+    flex: 1;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 0.4rem 0.65rem;
+    font-family: var(--font-family);
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--text-main);
+    background-color: #ffffff;
+    cursor: pointer;
+}
+
+.btn-more-filters {
+    background-color: #ffffff;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-more-filters:hover {
+    border-color: var(--border-hover);
+    color: var(--text-main);
+}
+
+/* Danh sách scrollable tickets */
+.tickets-scroll-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+    overflow-y: auto;
+    flex: 1;
+    padding-right: 0.15rem;
+}
+
+.tickets-scroll-list::-webkit-scrollbar {
+    width: 4px;
+}
+
+.tickets-scroll-list::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 2px;
+}
+
+.ticket-list-item {
+    display: flex;
+    gap: 0.65rem;
+    padding: 0.75rem 0.85rem;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+}
+
+.ticket-list-item:hover {
+    border-color: var(--border-hover);
+    background-color: #fafafa;
+}
+
+.ticket-list-item.active {
+    border-color: rgba(99, 102, 241, 0.22);
+    background-color: var(--primary-light);
+    box-shadow: var(--shadow-sm);
+}
+
+/* Chấm hiển thị dòng active bên trái */
+.active-indicator-dot {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3.5px;
+    height: 60%;
+    background-color: var(--secondary-color);
+    border-radius: 0 4px 4px 0;
+    display: none;
+}
+
+.ticket-list-item.active .active-indicator-dot {
+    display: block;
+}
+
+.ticket-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1.5px solid var(--border-color);
+    flex-shrink: 0;
+}
+
+.ticket-list-item.active .ticket-avatar {
+    border-color: var(--secondary-color);
+}
+
+.ticket-item-meta {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+}
+
+.item-top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.05rem;
+}
+
+.ticket-item-id {
+    font-size: 0.75rem;
+    font-family: monospace;
+    font-weight: 700;
+    color: var(--text-muted);
+}
+
+.ticket-item-date {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+}
+
+.ticket-item-koc {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+.ticket-item-subject {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text-main);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: 0.15rem;
+}
+
+.item-bottom-row {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 0.35rem;
+}
+
+.comment-count-pill {
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    background-color: rgba(0, 0, 0, 0.03);
+    padding: 0.1rem 0.4rem;
+    border-radius: 20px;
+}
+
+
+/* ==========================================================================
+   CHI TIẾT HỘI THOẠI BÊN PHẢI (Chat Panel)
+   ========================================================================== */
+.chat-header {
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 0.95rem;
+    margin-bottom: 1.1rem;
+    flex-shrink: 0;
+}
+
+.chat-header-title-row {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    margin-bottom: 0.65rem;
+}
+
+.chat-ticket-id {
+    font-size: 1.25rem;
+    font-family: monospace;
+    font-weight: 800;
+    color: var(--text-main);
+}
+
+.chat-status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.2rem 0.55rem;
+    border-radius: 20px;
+    font-size: 0.72rem;
+    font-weight: 800;
+    line-height: 1.2;
+}
+
+.chat-status-badge.pending {
+    background-color: rgba(245, 158, 11, 0.08);
+    color: var(--amber-color);
+}
+
+.chat-status-badge.resolved {
+    background-color: rgba(16, 185, 129, 0.08);
+    color: var(--emerald-color);
+}
+
+.chat-status-badge.closed {
+    background-color: rgba(239, 68, 68, 0.08);
+    color: #ef4444;
+}
+
+.chat-koc-profile {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    position: relative;
+}
+
+.chat-koc-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.05rem;
+}
+
+.name-tier-group {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+}
+
+.chat-koc-name {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+.chat-koc-tier-badge {
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 0.05rem 0.45rem;
+    border-radius: 4px;
+    background-color: rgba(245, 158, 11, 0.08);
+    color: #d97706;
+    border: 1px solid rgba(245, 158, 11, 0.18);
+}
+
+.chat-koc-handle {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.chat-timestamps {
+    margin-left: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.15rem;
+}
+
+.chat-time-label {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+}
+
+.chat-time-label strong {
+    color: var(--text-main);
+    font-weight: 600;
+}
+
+/* Vùng hội thoại */
+.chat-conversation-area {
+    flex: 1;
+    overflow-y: auto;
+    padding-right: 0.25rem;
+    margin-bottom: 1.1rem;
+}
+
+.chat-conversation-area::-webkit-scrollbar {
+    width: 4px;
+}
+
+.chat-conversation-area::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 2px;
+}
+
+.ticket-dispute-content-box {
+    background-color: #fafafa;
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 1.1rem;
+    margin-bottom: 1rem;
+}
+
+.box-section-title {
+    font-size: 0.85rem;
+    font-weight: 800;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.65rem;
+}
+
+.dispute-body-text {
+    font-size: 0.88rem;
+    line-height: 1.5;
+    color: var(--text-main);
+}
+
+/* Files đính kèm */
+.dispute-attachments-section {
+    margin-top: 1.1rem;
+    border-top: 1px dashed var(--border-color);
+    padding-top: 0.85rem;
+}
+
+.attachments-title {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    margin-bottom: 0.55rem;
+}
+
+.attachments-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.65rem;
+}
+
+.attachment-item {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    background-color: #ffffff;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 0.45rem 0.65rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.attachment-item:hover {
+    border-color: var(--primary-color);
+    background-color: var(--primary-light);
+}
+
+.attachment-preview-img {
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.attachment-meta {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.attachment-name {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-main);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.attachment-size {
+    font-size: 0.68rem;
+    color: var(--text-muted);
+}
+
+/* Các tin nhắn Admin phản hồi */
+.admin-replies-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+    margin-top: 0.85rem;
+}
+
+.admin-chat-bubble {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    align-self: flex-end;
+    max-width: 80%;
+    margin-left: auto;
+}
+
+.bubble-time {
+    font-size: 0.68rem;
+    color: var(--text-muted);
+    margin-bottom: 0.2rem;
+    margin-right: 0.4rem;
+}
+
+.bubble-content {
+    background: linear-gradient(135deg, var(--secondary-color) 0%, var(--primary-color) 100%);
+    color: #ffffff;
+    padding: 0.65rem 0.95rem;
+    border-radius: 16px 16px 2px 16px;
+    font-size: 0.85rem;
+    line-height: 1.45;
+    box-shadow: 0 2px 6px rgba(168, 85, 247, 0.15);
+}
+
+/* Khung admin gõ text phản hồi */
+.chat-response-panel {
+    border-top: 1px solid var(--border-color);
+    padding-top: 0.95rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+    flex-shrink: 0;
+}
+
+.response-textarea {
+    width: 100%;
+    min-height: 70px;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 0.65rem 0.85rem;
+    font-family: var(--font-family);
+    font-size: 0.85rem;
+    resize: none;
+    background-color: #ffffff;
+    transition: border-color 0.2s;
+}
+
+.response-textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+.response-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.toolbar-left {
+    display: flex;
+    gap: 0.35rem;
+}
+
+.tool-btn {
+    background: transparent;
+    border: none;
+    font-size: 1.05rem;
+    cursor: pointer;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.tool-btn:hover {
+    background-color: rgba(0, 0, 0, 0.04);
+}
+
+.toolbar-actions {
+    display: flex;
+    gap: 0.4rem;
+}
+
+.btn-chat-reply {
+    background: linear-gradient(135deg, var(--secondary-color) 0%, var(--primary-color) 100%);
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    padding: 0.45rem 1rem;
+    font-family: var(--font-family);
+    font-size: 0.78rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    box-shadow: 0 2px 4px rgba(168, 85, 247, 0.15);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-chat-reply:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(168, 85, 247, 0.3);
+    filter: brightness(1.05);
+}
+
+.btn-chat-resolve {
+    background-color: #ffffff;
+    border: 1.5px solid rgba(16, 185, 129, 0.38);
+    color: var(--emerald-color);
+    padding: 0.45rem 0.9rem;
+    border-radius: 8px;
+    font-family: var(--font-family);
+    font-size: 0.78rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-chat-resolve:hover {
+    background-color: var(--emerald-color);
+    color: #ffffff;
+    border-color: var(--emerald-color);
+}
+
+.btn-chat-reject {
+    background-color: #ffffff;
+    border: 1.5px solid rgba(239, 68, 68, 0.38);
+    color: #ef4444;
+    padding: 0.45rem 0.9rem;
+    border-radius: 8px;
+    font-family: var(--font-family);
+    font-size: 0.78rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-chat-reject:hover {
+    background-color: #ef4444;
+    color: #ffffff;
+    border-color: #ef4444;
+}
+
+/* Mobile responsive */
+@media (max-width: 992px) {
+    .disputes-columns-container {
+        flex-direction: column;
+        height: auto;
+        overflow: visible;
+    }
+    
+    .ticket-list-card, .ticket-chat-card {
+        width: 100%;
+        height: auto;
+        flex: unset;
+    }
+    
+    .tickets-scroll-list {
+        max-height: 300px;
+    }
+    
+    .response-toolbar {
+        flex-direction: column;
+        gap: 0.75rem;
+        align-items: stretch;
+    }
+    
+    .toolbar-actions {
+        flex-direction: column;
+        gap: 0.4rem;
+    }
+    
+    .btn-chat-reply, .btn-chat-resolve, .btn-chat-reject {
+        width: 100%;
+        justify-content: center;
+    }
+}

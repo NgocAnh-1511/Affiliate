@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hỗ trợ & Khiếu nại - KOC/KOL Affiliate Network</title>
+    
+    <!-- Meta SEO tiêu chuẩn -->
+    <meta name="description" content="Gửi yêu cầu hỗ trợ và khiếu nại sai lệch đơn hàng, đối soát hoa hồng dành cho đối tác KOC/KOL.">
+    <meta name="robots" content="noindex, nofollow">
+    
+    <!-- Liên kết Tệp CSS thiết kế cao cấp (Có fallback href để mở trực tiếp trên trình duyệt) -->
+    <link rel="stylesheet" href="../static/css/report.css" th:href="@{/css/report.css}">
+</head>
+<body>
+
+    <div class="report-container">
+        
+        <!-- ==========================================================================
+           Thanh Điều hướng Bên trái (Left Sidebar) - 5 mục tiêu chuẩn đồng bộ
+           ========================================================================== -->
+        <!-- ==========================================================================
+           Thanh Điều hướng Bên trái (Left Sidebar) - Nạp từ fragment nav.html
+           ========================================================================== -->
+        <aside th:replace="~{nav :: sidebar('report')}"></aside>
+        
+        <!-- ==========================================================================
+           Khung nội dung chính (Main Content Area)
+           ========================================================================== -->
+        <main class="main-content">
+            
+            <!-- Thanh tác vụ trên cùng (Header bar) -->
+            <header class="header-bar">
+                <div class="header-title-wrapper">
+                    <h1 class="welcome-heading">Hỗ trợ & Khiếu nại</h1>
+                    <p class="welcome-subtitle">Chúng tôi luôn sẵn sàng lắng nghe và hỗ trợ bạn.</p>
+                </div>
+                
+                <div class="header-actions">
+                    <!-- Nút thông báo -->
+                    <button type="button" class="icon-button" id="bellNotificationBtn" aria-label="Thông báo hệ thống">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                        </svg>
+                        <span class="notification-badge"></span>
+                    </button>
+                    
+                    <!-- Thẻ chứa Avatar & Họ tên góc -->
+                    <div class="user-dropdown-container">
+                        <div class="user-profile-menu" id="userProfileMenu" aria-haspopup="true" aria-expanded="false">
+                            <img src="../static/images/profile_avatar.png" th:src="@{/images/profile_avatar.png}" class="user-small-avatar" alt="Avatar góc">
+                            <span class="user-menu-name" th:text="${profile?.fullName}">Mai Phương</span>
+                            <svg class="chevron-down" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+                        </div>
+                        
+                        <!-- Hộp thoại dropdown Đăng xuất -->
+                        <div class="dropdown-menu" id="userDropdownMenu" role="menu">
+                            <a href="login.html" th:href="@{/login}" class="dropdown-item" role="menuitem">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                                    <polyline points="16 17 21 12 16 7"/>
+                                    <line x1="21" y1="12" x2="9" y2="12"/>
+                                </svg>
+                                <span>Đăng xuất</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- BIỂU MẪU GỬI YÊU CẦU MỚI -->
+            <section class="card form-section-card">
+                <div class="card-header-meta">
+                    <h3 class="card-title">Gửi Yêu Cầu Hỗ Trợ / Khiếu Nại</h3>
+                    <p class="card-subtitle-text">Vui lòng cung cấp chi tiết sự cố để Admin hỗ trợ nhanh nhất.</p>
+                </div>
+                
+                <form id="disputeForm" class="dispute-form">
+                    <div class="form-row-2">
+                        <!-- Trường 1: Chủ đề khiếu nại -->
+                        <div class="form-group">
+                            <label for="disputeSubject" class="form-label">Chủ đề khiếu nại</label>
+                            <div class="select-wrapper">
+                                <select id="disputeSubject" class="form-select" required>
+                                    <option value="" disabled selected>Sai lệch hoa hồng, Mất đơn hàng...</option>
+                                    <option value="commission">Sai lệch số tiền hoa hồng</option>
+                                    <option value="missing_order">Mất đơn hàng (Mất tracking)</option>
+                                    <option value="payment">Trục trặc thanh toán/Rút tiền</option>
+                                    <option value="system_error">Lỗi kỹ thuật hệ thống/Công cụ</option>
+                                    <option value="other">Vấn đề khác</option>
+                                </select>
+                                <svg class="chevron-select" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                            </div>
+                        </div>
+                        
+                        <!-- Trường 2: Mã đơn hàng/Mã chiến dịch -->
+                        <div class="form-group">
+                            <label for="disputeCode" class="form-label">Mã đơn hàng / Mã chiến dịch liên quan</label>
+                            <input type="text" id="disputeCode" class="form-text-input" placeholder="Nhập mã đơn hàng hoặc mã chiến dịch..." required>
+                        </div>
+                    </div>
+                    
+                    <!-- Trường 3: Mô tả chi tiết -->
+                    <div class="form-group full-width">
+                        <label for="disputeDesc" class="form-label">Mô tả chi tiết sự cố</label>
+                        <textarea id="disputeDesc" class="form-textarea" placeholder="Vui lòng mô tả chi tiết vấn đề bạn đang gặp phải..." required></textarea>
+                    </div>
+                    
+                    <!-- Khung kéo thả tải tệp đối soát -->
+                    <div class="form-row-upload">
+                        <div class="drag-drop-area" id="dragDropArea">
+                            <input type="file" id="fileInput" class="file-hidden-input" accept="image/*,application/pdf">
+                            <div class="upload-content">
+                                <div class="upload-cloud-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.2 15c.7-1.2 1-2.5.7-3.9-.5-2-2.4-3.5-4.4-3.5h-1.2C15.6 4.8 12.5 2 9 2 5.3 2 2.3 4.9 2 8.5C1 9.4.2 10.7.1 12.2c-.2 2 1.1 3.8 3.1 4.3h14.7c1.4 0 2.7-.6 3.6-1.5z"/><polyline points="16 12 12 8 8 12"/><line x1="12" y1="8" x2="12" y2="18"/></svg>
+                                </div>
+                                <div class="upload-text-group">
+                                    <p class="upload-main-text">Kéo thả hoặc nhấp để tải lên hình ảnh đối soát (Tối đa 5MB)</p>
+                                    <p class="upload-sub-text">Định dạng hỗ trợ: JPG, PNG, PDF</p>
+                                </div>
+                            </div>
+                            <!-- Vùng hiển thị tệp đã chọn -->
+                            <div class="selected-file-display" id="selectedFileDisplay">
+                                <span class="file-icon">📄</span>
+                                <span class="file-name" id="selectedFileName">screenshot_doisoat.png</span>
+                                <span class="file-size" id="selectedFileSize">(1.2 MB)</span>
+                                <button type="button" class="btn-remove-file" id="btnRemoveFile" aria-label="Xóa tệp này">✕</button>
+                            </div>
+                        </div>
+                        
+                        <!-- Nút gửi yêu cầu -->
+                        <button type="submit" class="btn-submit-dispute" id="btnSubmitDispute">GỬI YÊU CẦU</button>
+                    </div>
+                </form>
+            </section>
+            
+            <!-- BẢNG LỊCH SỬ YÊU CẦU -->
+            <section class="card history-section-card">
+                <div class="card-header-meta border-bottom">
+                    <h3 class="card-title">Lịch sử Yêu cầu của bạn</h3>
+                </div>
+                
+                <div class="table-container">
+                    <table class="tickets-table">
+                        <thead>
+                            <tr>
+                                <th>Mã Ticket</th>
+                                <th>Chủ đề</th>
+                                <th>Ngày gửi</th>
+                                <th>Trạng thái</th>
+                                <th style="text-align: right;">Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ticketsTableBody">
+                            <!-- Hàng 1 -->
+                            <tr>
+                                <td class="col-ticket-id">#TK-1042</td>
+                                <td class="col-ticket-subject">Sai lệch hoa hồng đơn hàng #ORD12345678</td>
+                                <td class="col-ticket-date">19/05/2024 14:32</td>
+                                <td class="col-ticket-status">
+                                    <div class="status-badge pending">
+                                        <span class="status-dot"></span>
+                                        <span>Đang xử lý</span>
+                                    </div>
+                                </td>
+                                <td class="col-ticket-action">
+                                    <button type="button" class="btn-view-ticket" data-id="#TK-1042" data-subject="Sai lệch hoa hồng đơn hàng #ORD12345678" data-date="19/05/2024 14:32" data-status="pending" data-status-text="Đang xử lý" data-desc="Tôi đã bán được một đơn hàng trị giá 1,250,000đ từ chiến dịch LSOUL thông qua liên kết TikTok Shop, tuy nhiên hoa hồng thực tế ghi nhận trên dashboard chỉ đạt 100,000đ thay vì mức 187,500đ theo tỷ lệ 15% đã công bố. Tôi đã đính kèm hình ảnh đối soát đơn hàng giao thành công từ TikTok Shop. Mong Admin kiểm tra và hỗ trợ cộng bù phần thiếu hụt này giúp tôi. Xin cảm ơn!">Xem chi tiết</button>
+                                </td>
+                            </tr>
+                            
+                            <!-- Hàng 2 -->
+                            <tr>
+                                <td class="col-ticket-id">#TK-1037</td>
+                                <td class="col-ticket-subject">Mất đơn hàng từ chiến dịch BST LSOUL TikTok</td>
+                                <td class="col-ticket-date">16/05/2024 09:15</td>
+                                <td class="col-ticket-status">
+                                    <div class="status-badge success">
+                                        <span class="status-dot"></span>
+                                        <span>Đã giải quyết</span>
+                                    </div>
+                                </td>
+                                <td class="col-ticket-action">
+                                    <button type="button" class="btn-view-ticket" data-id="#TK-1037" data-subject="Mất đơn hàng từ chiến dịch BST LSOUL TikTok" data-date="16/05/2024 09:15" data-status="success" data-status-text="Đã giải quyết" data-desc="Người theo dõi của tôi phản hồi đã đặt mua Combo 2 đầm LSOUL thông qua link affiliate tôi gắn ở phần bình luận clip TikTok. Tuy nhiên, sau 2 ngày tôi vẫn chưa thấy đơn hàng này hiển thị trong mục đơn hàng tạm tính của Quản lý thu nhập. Đơn hàng có mã vận đơn là LH-7832-VCB. Mong hệ thống đối soát dữ liệu với nhà bán hàng giúp tôi.">Xem chi tiết</button>
+                                </td>
+                            </tr>
+                            
+                            <!-- Hàng 3 -->
+                            <tr>
+                                <td class="col-ticket-id">#TK-1031</td>
+                                <td class="col-ticket-subject">Yêu cầu đối soát nhanh</td>
+                                <td class="col-ticket-date">12/05/2024 16:20</td>
+                                <td class="col-ticket-status">
+                                    <div class="status-badge success">
+                                        <span class="status-dot"></span>
+                                        <span>Đã giải quyết</span>
+                                    </div>
+                                </td>
+                                <td class="col-ticket-action">
+                                    <button type="button" class="btn-view-ticket" data-id="#TK-1031" data-subject="Yêu cầu đối soát nhanh" data-date="12/05/2024 16:20" data-status="success" data-status-text="Đã giải quyết" data-desc="Tôi có một số đơn hàng phát sinh từ đầu tháng 4 đã giao hàng thành công từ lâu nhưng hiện tại trạng thái vẫn ghi là 'Chờ đối soát' thay vì hoàn thành. Nhóm đơn này có tổng giá trị hoa hồng tạm tính là 1,500,000 VNĐ. Vì tôi cần rút tiền xoay vòng vốn sản xuất video nên mong Admin hỗ trợ chạy đối soát thủ công nhanh riêng cho KOC Hạng Vàng giúp tôi. Cảm ơn admin nhiều!">Xem chi tiết</button>
+                                </td>
+                            </tr>
+                            
+                            <!-- Hàng 4 -->
+                            <tr>
+                                <td class="col-ticket-id">#TK-1028</td>
+                                <td class="col-ticket-subject">Sai thông tin đơn hàng Shopee</td>
+                                <td class="col-ticket-date">10/05/2024 11:05</td>
+                                <td class="col-ticket-status">
+                                    <div class="status-badge pending">
+                                        <span class="status-dot"></span>
+                                        <span>Đang xử lý</span>
+                                    </div>
+                                </td>
+                                <td class="col-ticket-action">
+                                    <button type="button" class="btn-view-ticket" data-id="#TK-1028" data-subject="Sai thông tin đơn hàng Shopee" data-date="10/05/2024 11:05" data-status="pending" data-status-text="Đang xử lý" data-desc="Đơn hàng Shopee mã #SHP-9908123 hiển thị sai tên sản phẩm. Đơn hàng khách mua là áo khoác phao trị giá 550k nhưng hệ thống ghi nhận là kẹp tóc trị giá 15k, dẫn đến hoa hồng bị chia sai lệch rất nhiều. Tôi đã đính kèm ảnh chụp màn hình bill thanh toán Shopee thực tế từ khách gửi.">Xem chi tiết</button>
+                                </td>
+                            </tr>
+                            
+                            <!-- Hàng 5 -->
+                            <tr>
+                                <td class="col-ticket-id">#TK-1020</td>
+                                <td class="col-ticket-subject">Hỏi về chính sách hoa hồng cấp 2</td>
+                                <td class="col-ticket-date">05/05/2024 10:45</td>
+                                <td class="col-ticket-status">
+                                    <div class="status-badge success">
+                                        <span class="status-dot"></span>
+                                        <span>Đã giải quyết</span>
+                                    </div>
+                                </td>
+                                <td class="col-ticket-action">
+                                    <button type="button" class="btn-view-ticket" data-id="#TK-1020" data-subject="Hỏi về chính sách hoa hồng cấp 2" data-date="05/05/2024 10:45" data-status="success" data-status-text="Đã giải quyết" data-desc="Tôi muốn tìm hiểu kỹ hơn về cơ chế thưởng giới thiệu KOC/KOL F1 tham gia mạng lưới. Có phải khi KOC F1 của tôi phát sinh đơn hàng thành công, tôi sẽ nhận thêm 2% hoa hồng gián tiếp trích từ ngân sách hệ thống mà không ảnh hưởng tới thu nhập của F1 không? Nhờ Admin gửi tài liệu hướng dẫn chính thức bằng tiếng Việt giúp tôi.">Xem chi tiết</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Phân trang (Pagination) -->
+                <footer class="table-footer">
+                    <div class="footer-left">
+                        <span>Hiển thị</span>
+                        <div class="rows-select-wrapper">
+                            <select class="rows-select">
+                                <option>10</option>
+                                <option>20</option>
+                                <option>50</option>
+                            </select>
+                            <svg class="chevron-select-small" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                        </div>
+                        <span>trên mỗi trang</span>
+                    </div>
+                    
+                    <div class="footer-right">
+                        <ul class="pagination-list">
+                            <li class="page-item-btn"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></li>
+                            <li class="page-item active">1</li>
+                            <li class="page-item">2</li>
+                            <li class="page-item">3</li>
+                            <li class="page-item">4</li>
+                            <li class="page-item">5</li>
+                            <li class="page-dots">...</li>
+                            <li class="page-item">12</li>
+                            <li class="page-item-btn"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></li>
+                        </ul>
+                    </div>
+                </footer>
+            </section>
+            
+        </main>
+        
+    </div>
+
+    <!-- TICKET DETAIL MODAL (Động) -->
+    <div class="modal-overlay" id="ticketModalOverlay">
+        <div class="ticket-modal">
+            <div class="modal-header">
+                <h4 class="modal-title-heading" id="modalTicketId">Chi tiết Yêu cầu #TK-1042</h4>
+                <button type="button" class="btn-close-modal" id="btnCloseModal">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-meta-row">
+                    <div class="meta-item">
+                        <span class="meta-label">Ngày gửi:</span>
+                        <span class="meta-val" id="modalTicketDate">19/05/2024 14:32</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Trạng thái:</span>
+                        <span id="modalTicketBadge" class="status-badge pending">
+                            <span class="status-dot"></span>
+                            <span id="modalTicketStatusText">Đang xử lý</span>
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="modal-content-group">
+                    <h5 class="content-title">Chủ đề:</h5>
+                    <p class="content-body-text" id="modalTicketSubject">Sai lệch hoa hồng đơn hàng #ORD12345678</p>
+                </div>
+                
+                <div class="modal-content-group">
+                    <h5 class="content-title">Mô tả sự cố:</h5>
+                    <p class="content-body-text justify-text" id="modalTicketDesc">Nội dung mô tả chi tiết sự cố của KOC...</p>
+                </div>
+                
+                <div class="modal-content-group" id="modalAttachmentGroup">
+                    <h5 class="content-title">Hình ảnh đối soát đính kèm:</h5>
+                    <div class="attachment-preview-box">
+                        <span class="attachment-icon">📁</span>
+                        <span class="attachment-name">screenshot_doisoat.png (1.2 MB)</span>
+                        <a href="#" class="btn-download-attachment" onclick="alert('Đang tải hình ảnh đối soát gốc xuống thiết bị...'); return false;">Tải xuống</a>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-modal-close-action" id="btnModalCloseAction">Đóng</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION FOR FORM SUBMISSION -->
+    <div class="toast-notification" id="toastNotification">
+        <span class="toast-icon">✓</span>
+        <span class="toast-message">Gửi yêu cầu hỗ trợ thành công! Mã ticket: #TK-1043</span>
+    </div>
+
+    <!-- Liên kết Tệp Javascript xử lý logic động (Có fallback src để mở trực tiếp trên trình duyệt) -->
+    <script src="../static/js/report.js" th:src="@{/js/report.js}"></script>
+</body>
+</html>

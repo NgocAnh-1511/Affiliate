@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giám sát Hệ thống - KOC/KOL Affiliate Network</title>
+    
+    <!-- Meta SEO -->
+    <meta name="description" content="Hệ thống giám sát traffic clicks thời gian thực và phát hiện gian lận bằng AI.">
+    <meta name="robots" content="noindex, nofollow">
+    
+    <!-- CSS (overview.css chứa sidebar, tracking.css chứa giao diện trang) -->
+    <link rel="stylesheet" href="../../static/css/admin/overview.css" th:href="@{/css/admin/overview.css}">
+    <link rel="stylesheet" href="../../static/css/admin/tracking.css" th:href="@{/css/admin/tracking.css}">
+</head>
+<body>
+
+    <div class="overview-container">
+        
+        <!-- Thanh Điều hướng Bên trái Admin -->
+        <aside th:replace="~{admin/nav :: sidebar('tracking')}"></aside>
+        
+        <!-- Khung nội dung chính -->
+        <main class="main-content">
+            
+            <!-- Thanh tác vụ trên cùng -->
+            <header class="header-bar">
+                <div class="header-title-wrapper">
+                    <h1 class="welcome-heading">Giám sát Hệ thống (Real-time)</h1>
+                    <p class="welcome-subtitle">Theo dõi và phát hiện gian lận trong thời gian thực để bảo vệ hệ thống.</p>
+                </div>
+                
+                <div class="header-actions">
+                    <!-- Trạng thái quét click -->
+                    <div class="realtime-status-wrapper">
+                        <span class="pulse-point green-pulse"></span>
+                        <span class="status-scanning-text">Hệ thống đang quét 2,450 clicks/giây</span>
+                        <span class="timestamp-text" id="monitoringClock">Cập nhật lúc: 10:24:35</span>
+                        <button type="button" class="help-btn" title="Trợ giúp kiểm tra clicks">?</button>
+                    </div>
+                    
+                    <!-- Dropdown Admin -->
+                    <div class="user-dropdown-container">
+                        <div class="user-profile-menu" id="userProfileMenu" aria-haspopup="true" aria-expanded="false">
+                            <img src="../../static/images/profile_avatar.png" th:src="@{/images/profile_avatar.png}" class="user-small-avatar" alt="Admin Avatar">
+                            <span class="user-menu-name">Admin System</span>
+                            <svg class="chevron-down" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+                        </div>
+                        
+                        <!-- Dropdown menu Đăng xuất -->
+                        <div class="dropdown-menu" id="userDropdownMenu" role="menu">
+                            <a href="../login.html" th:href="@{/login}" class="dropdown-item" role="menuitem">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                                    <polyline points="16 17 21 12 16 7"/>
+                                    <line x1="21" y1="12" x2="9" y2="12"/>
+                                </svg>
+                                <span>Đăng xuất</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- LƯỚI 4 CARD KPI TRUY VẤT REAL-TIME -->
+            <div class="kpi-grid">
+                <!-- Thẻ 1: Tổng Click hôm nay -->
+                <div class="kpi-card">
+                    <div class="kpi-header">
+                        <div class="kpi-icon-box blue">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
+                        </div>
+                        <div class="kpi-title-group">
+                            <span class="kpi-title">Tổng Clicks (Hôm nay)</span>
+                            <div class="kpi-info-icon" title="Tổng số lượt nhấp vào các liên kết trong ngày">i</div>
+                        </div>
+                    </div>
+                    <div class="kpi-body">
+                        <h2 class="kpi-value blue-text" th:text="${tracking?.totalClicks}">154,200</h2>
+                        <div class="sparkline-wrapper">
+                            <!-- SVG Sparkline mượt mà đại diện luồng click -->
+                            <svg class="sparkline-svg" viewBox="0 0 100 30">
+                                <path d="M0,25 Q15,10 30,18 T60,8 T90,12 T100,5" fill="none" stroke="#3b82f6" stroke-width="2.5"></path>
+                            </svg>
+                        </div>
+                        <span class="kpi-change green">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="18 15 12 9 6 15"/></svg>
+                            <span>↑ 12.5%</span> <span class="kpi-change-sub">so với hôm qua</span>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Thẻ 2: Click Hợp lệ -->
+                <div class="kpi-card">
+                    <div class="kpi-header">
+                        <div class="kpi-icon-box green">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                        </div>
+                        <div class="kpi-title-group">
+                            <span class="kpi-title">Click Hợp Lệ</span>
+                            <div class="kpi-info-icon" title="Lượt nhấp từ người dùng thật được xác minh">i</div>
+                        </div>
+                    </div>
+                    <div class="kpi-body">
+                        <h2 class="kpi-value green-text" th:text="${tracking?.validClicks}">148,000</h2>
+                        <div class="sparkline-wrapper">
+                            <svg class="sparkline-svg" viewBox="0 0 100 30">
+                                <path d="M0,22 Q20,15 40,25 T70,10 T100,8" fill="none" stroke="#10b981" stroke-width="2.5"></path>
+                            </svg>
+                        </div>
+                        <span class="kpi-change green">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="18 15 12 9 6 15"/></svg>
+                            <span>↑ 11.8%</span> <span class="kpi-change-sub">so với hôm qua</span>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Thẻ 3: Click Bị chặn / Gian lận -->
+                <div class="kpi-card">
+                    <div class="kpi-header">
+                        <div class="kpi-icon-box red">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                        </div>
+                        <div class="kpi-title-group">
+                            <span class="kpi-title">Click Bị Chặn / Gian Lận</span>
+                            <div class="kpi-info-icon" title="Nhấp bot, click spam hoặc thiết bị giả lập bị tường lửa chặn">i</div>
+                        </div>
+                    </div>
+                    <div class="kpi-body">
+                        <h2 class="kpi-value red-text" th:text="${tracking?.blockedClicks}">6,200</h2>
+                        <div class="sparkline-wrapper">
+                            <svg class="sparkline-svg" viewBox="0 0 100 30">
+                                <path d="M0,28 L20,28 L40,25 L60,10 L80,15 L100,5" fill="none" stroke="#ef4444" stroke-width="2.5"></path>
+                            </svg>
+                        </div>
+                        <span class="kpi-change red">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="18 15 12 9 6 15"/></svg>
+                            <span>↑ 45.2%</span> <span class="kpi-change-sub">so với hôm qua</span>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Thẻ 4: Chỉ số tin cậy Traffic -->
+                <div class="kpi-card">
+                    <div class="kpi-header">
+                        <div class="kpi-icon-box indigo">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                        </div>
+                        <div class="kpi-title-group">
+                            <span class="kpi-title">Chỉ số tin cậy Traffic</span>
+                            <div class="kpi-info-icon" title="Đánh giá chất lượng toàn bộ lưu lượng truy cập hôm nay">i</div>
+                        </div>
+                    </div>
+                    <div class="kpi-body">
+                        <h2 class="kpi-value indigo-text" th:text="${tracking?.trustScore}">95/100</h2>
+                        <div class="trust-progress-container">
+                            <div class="trust-progress-bar" style="width: 95%;"></div>
+                        </div>
+                        <div class="trust-ruler">
+                            <span>0</span>
+                            <span>50</span>
+                            <span>100</span>
+                        </div>
+                        <span class="trust-status-text">Rất an toàn</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- HÀNG TRUNG TÂM: BIỂU ĐỒ REAL-TIME & CẢNH BÁO GIAN LẬN (65% / 35%) -->
+            <div class="kpi-row">
+                <!-- Biểu đồ miền Real-time cuộn (60%) -->
+                <div class="card chart-card">
+                    <div class="card-header-meta flex-header">
+                        <div class="header-left">
+                            <h3 class="card-title">Biểu đồ Lưu lượng (Real-time)</h3>
+                            <p class="card-subtitle-text">Tự động vẽ và cập nhật click theo giây để nhận diện biến động</p>
+                        </div>
+                        <select class="time-range-select">
+                            <option value="5m">5 phút qua</option>
+                            <option value="15m">15 phút qua</option>
+                            <option value="1h">1 giờ qua</option>
+                        </select>
+                    </div>
+                    
+                    <div class="chart-wrapper">
+                        <!-- Canvas biểu đồ -->
+                        <canvas id="realtimeTrafficChart"></canvas>
+                        <!-- Annotation cảnh báo bất thường giống thiết kế -->
+                        <div class="anomaly-warning-bubble">
+                            <div class="anomaly-circle-dotted"></div>
+                            <span class="anomaly-text">CẢNH BÁO<br>Traffic bất thường<br>tăng đột biến</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bảng cảnh báo phát hiện gian lận (40%) -->
+                <div class="card alerts-card">
+                    <div class="card-header-meta flex-header">
+                        <h3 class="card-title">Cảnh báo Phát hiện Gian lận</h3>
+                        <button type="button" class="btn-alerts-badge">
+                            🔔 <span id="alertCountText">12 cảnh báo mới</span>
+                        </button>
+                    </div>
+
+                    <div class="alerts-list">
+                        <!-- Lặp danh sách cảnh báo -->
+                        <div th:each="alert : ${tracking?.alerts}" class="alert-item">
+                            <span class="alert-time" th:text="${alert.time}">10:24:31</span>
+                            <span class="alert-message" th:text="${alert.message}">Cảnh báo Bot Click từ dải IP 192.168.x.x - Đã chặn</span>
+                            <span class="severity-badge" th:classappend="${alert.severity == 'Cao' ? 'high' : 'medium'}" th:text="${alert.severity}">Cao</span>
+                        </div>
+                    </div>
+
+                    <div class="card-footer-link">
+                        <a href="#" class="footer-link-blue">Xem tất cả cảnh báo →</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BẢNG DANH SÁCH ĐỐI TƯỢNG TÌNH NGHI -->
+            <section class="card suspects-card">
+                <div class="card-header-meta flex-header">
+                    <div class="title-group">
+                        <h3 class="card-title">Danh sách Đối tượng Tình nghi</h3>
+                        <span class="badge-count-red" id="suspectBadge">8 đối tượng</span>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Tên KOC</th>
+                                <th>Nguồn Traffic</th>
+                                <th>Hành vi nghi ngờ</th>
+                                <th>Tỷ lệ Spam Click</th>
+                                <th>Số Click bị chặn</th>
+                                <th>Phát hiện lần cuối</th>
+                                <th style="text-align: right;">Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody id="suspectsTableBody">
+                            <tr th:each="suspect : ${tracking?.suspects}" th:data-id="${suspect.id}" class="suspect-row">
+                                <td class="col-user">
+                                    <div class="user-info-cell">
+                                        <img src="../../static/images/profile_avatar.png" th:src="@{/images/profile_avatar.png}" class="table-avatar" alt="Avatar">
+                                        <div class="user-names">
+                                            <span class="user-full-name" th:text="${suspect.kocName}">User 123</span>
+                                            <span class="user-handle" th:text="${suspect.username}">@user_123</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="col-platform">
+                                    <div class="platform-badge" th:classappend="${suspect.platform}">
+                                        <svg th:if="${suspect.platform == 'tiktok'}" class="platform-icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.07-2.89-.52-4.06-1.39v7.94c.02 1.83-.53 3.65-1.63 5.09-1.35 1.78-3.53 2.87-5.78 2.87-2.3 0-4.57-1.12-5.91-2.99-1.26-1.74-1.66-4.04-1.13-6.14.52-2.12 2.05-3.95 4.14-4.66.86-.3 1.77-.42 2.68-.37v4.13c-.76-.11-1.57.07-2.19.53-.66.49-1.03 1.3-1.02 2.12.01 1.05.67 2.03 1.67 2.37.95.33 2.08.08 2.75-.68.64-.73.78-1.77.75-2.71v-14.3c-.01 0-.01-.01-.01-.02z"/></svg>
+                                        <span th:if="${suspect.platform == 'shopee'}" class="platform-icon-shopee">S</span>
+                                        <span th:if="${suspect.platform == 'facebook'}" class="platform-icon-facebook">F</span>
+                                        <span th:text="${suspect.trafficSource}">TikTok</span>
+                                    </div>
+                                </td>
+                                <td class="col-behavior" th:text="${suspect.behavior}">Dùng tool auto-click</td>
+                                <td class="col-spam-rate red-text" th:text="${suspect.spamRate}">100%</td>
+                                <td class="col-blocked-count red-text" th:text="${suspect.blockedCount}">2,450</td>
+                                <td class="col-last-detection" th:text="${suspect.lastDetection}">10:24:31</td>
+                                <td class="col-actions">
+                                    <button type="button" class="btn-lock-account" th:data-id="${suspect.id}" th:data-name="${suspect.kocName}">
+                                        🔒 Khóa Tài khoản
+                                    </button>
+                                    <button type="button" class="btn-ignore-suspect" th:data-id="${suspect.id}" th:data-name="${suspect.kocName}">
+                                        Bỏ qua
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="pagination-container">
+                    <span class="pagination-info">Hiển thị 10 trên mỗi trang</span>
+                    <div class="page-numbers">
+                        <button type="button" class="page-arrow" disabled>‹</button>
+                        <button type="button" class="page-num active">1</button>
+                        <button type="button" class="page-num">2</button>
+                        <button type="button" class="page-num">3</button>
+                        <button type="button" class="page-num">4</button>
+                        <button type="button" class="page-num">5</button>
+                        <span class="page-dots">...</span>
+                        <button type="button" class="page-num">10</button>
+                        <button type="button" class="page-arrow">›</button>
+                    </div>
+                </div>
+            </section>
+            
+        </main>
+    </div>
+
+    <!-- TOAST THÔNG BÁO CHO ADMIN -->
+    <div class="toast-notification" id="adminToast">
+        <span class="toast-icon">✓</span>
+        <span class="toast-message">Đã khóa tài khoản KOC thành công!</span>
+    </div>
+
+    <!-- Chart.js & Script điều phối logic trang -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="../../static/js/admin/tracking.js" th:src="@{/js/admin/tracking.js}"></script>
+</body>
+</html>

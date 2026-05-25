@@ -1,0 +1,586 @@
+/* Import Font chữ công nghệ hiện đại hỗ trợ tiếng Việt sắc nét */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+
+/* Định nghĩa hệ thống màu sắc & thiết kế thống nhất (Design Tokens) */
+:root {
+    --primary-color: #3f2fd4;
+    --primary-hover: #2e1fc1;
+    --primary-light: #f0efff;
+    --text-main: #111827;
+    --text-muted: #6b7280;
+    --text-link: #3f2fd4;
+    --bg-input: #ffffff;
+    --border-color: #e5e7eb;
+    --border-hover: #cbd5e1;
+    --border-focus: #3f2fd4;
+    --font-family: 'Plus Jakarta Sans', sans-serif;
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(63, 47, 212, 0.1), 0 4px 6px -2px rgba(63, 47, 212, 0.05);
+}
+
+/* Reset CSS tiêu chuẩn */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font-family);
+    color: var(--text-main);
+    background-color: #ffffff;
+    height: 100vh;
+    overflow: hidden;
+    line-height: 1.5;
+}
+
+/* Khung bố cục chính chia 2 cột */
+.container {
+    display: flex;
+    height: 100vh;
+    width: 100vw;
+}
+
+/* ==========================================================================
+   Cột Trái - Banner Quảng cáo (Thích ứng linh hoạt)
+   ========================================================================== */
+.banner-column {
+    width: 60%; /* Occupies 60% of the screen width */
+    height: 100%;
+    background-image: url('../images/left_banner.png');
+    background-size: 100% 100%; /* Perfect non-cropping fit for the new banner */
+    background-position: center center;
+    background-repeat: no-repeat;
+    position: relative;
+}
+
+/* Thừa kế và áp dụng banner riêng cho trang Đăng ký */
+.banner-column.register-banner {
+    background-image: url('../images/register_banner.png');
+}
+
+/* Overlay gradient nhẹ giúp làm dịu và tạo chiều sâu cho ảnh banner */
+.banner-column::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(185deg, rgba(63, 47, 212, 0.05) 0%, rgba(244, 63, 94, 0.05) 100%);
+    pointer-events: none;
+}
+
+/* ==========================================================================
+   Cột Phải - Form Đăng nhập
+   ========================================================================== */
+.form-column {
+    width: 40%; /* Occupies 40% of the screen width */
+    height: 100%;
+    background-color: #ffffff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden; /* Prevent scrolling entirely on standard desktop */
+    padding: 1rem 2.5rem; /* Tighter padding to fit perfectly */
+}
+
+/* Khung chứa form giới hạn chiều rộng chuẩn UI/UX */
+.form-wrapper {
+    width: 100%;
+    max-width: 460px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.logo-container {
+    display: flex;
+    flex-direction: row; /* Horizontal layout matching the image! */
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+}
+
+.logo-icon {
+    width: 42px; /* Compact width for horizontal alignment */
+    height: 42px;
+    filter: drop-shadow(0 4px 6px rgba(63, 47, 212, 0.15));
+    transition: transform 0.3s ease;
+}
+
+.logo-container:hover .logo-icon {
+    transform: scale(1.08) rotate(5deg);
+}
+
+.logo-text-group {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.logo-text-top {
+    font-size: 1.35rem; /* Bold modern text next to icon */
+    font-weight: 800;
+    color: var(--primary-color);
+    letter-spacing: -0.5px;
+    text-transform: uppercase;
+    line-height: 1.1;
+}
+
+.logo-text-bottom {
+    font-size: 0.55rem;
+    font-weight: 700;
+    color: #1e293b;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-top: 0.1rem;
+    opacity: 0.85;
+    line-height: 1.1;
+}
+
+/* Tiêu đề & Lời chào */
+.welcome-header {
+    text-align: center;
+    margin-bottom: 1.25rem; /* Reduced margin */
+    width: 100%;
+}
+
+.welcome-title {
+    font-size: 1.5rem; /* Slightly smaller for premium compact look */
+    font-weight: 700;
+    color: var(--text-main);
+    letter-spacing: -0.5px;
+    margin-bottom: 0.35rem;
+}
+
+.welcome-subtitle {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    font-weight: 400;
+}
+
+/* Form chính */
+.login-form {
+    width: 100%;
+}
+
+/* Alert thông báo lỗi / thành công động từ Spring Boot Controller */
+.alert {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border-radius: 12px;
+    font-size: 0.825rem;
+    margin-bottom: 1rem;
+    display: none; /* Hide by default in static HTML, dynamically show with .alert-show */
+    align-items: center;
+    gap: 0.5rem;
+    animation: slideDown 0.3s ease;
+}
+
+.alert.alert-show {
+    display: flex; /* Show only when rendered dynamically by Thymeleaf */
+}
+
+.alert-danger {
+    background-color: #fef2f2;
+    border: 1px solid #fee2e2;
+    color: #b91c1c;
+}
+
+.alert-success {
+    background-color: #f0fdf4;
+    border: 1px solid #dcfce7;
+    color: #15803d;
+}
+
+/* Nhóm nhập liệu */
+.input-group {
+    position: relative;
+    margin-bottom: 0.85rem; /* Reduced margin */
+    width: 100%;
+}
+
+.input-icon-left {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #9ca3af;
+    pointer-events: none;
+    transition: color 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.input-icon-right {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #9ca3af;
+    cursor: pointer;
+    background: none;
+    border: none;
+    outline: none;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.3s ease;
+}
+
+.input-icon-right:hover {
+    color: var(--primary-color);
+}
+
+.form-input {
+    width: 100%;
+    padding: 0.75rem 1rem 0.75rem 2.5rem; /* Reduced padding for vertical tightness */
+    font-size: 0.9rem;
+    font-family: var(--font-family);
+    color: var(--text-main);
+    background-color: var(--bg-input);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.form-input-password {
+    padding-right: 2.5rem; /* Dành chỗ cho nút ẩn/hiện mật khẩu */
+}
+
+/* Hiệu ứng tương tác Focus tinh tế */
+.form-input:focus {
+    border-color: var(--border-focus);
+    box-shadow: 0 0 0 4px rgba(63, 47, 212, 0.12);
+}
+
+.form-input:focus + .input-icon-left {
+    color: var(--primary-color);
+}
+
+/* CSS để căn lề ô input khi bị lỗi validate */
+.form-input.is-invalid {
+    border-color: #ef4444;
+}
+
+.form-input.is-invalid:focus {
+    box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.12);
+}
+
+.validation-error {
+    color: #ef4444;
+    font-size: 0.75rem;
+    margin-top: 0.25rem;
+    padding-left: 0.25rem;
+    display: block;
+}
+
+/* Các tuỳ chọn phụ (Remember me & Forgot Password) */
+.options-group {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem; /* Reduced margin */
+    font-size: 0.8rem;
+    width: 100%;
+}
+
+.remember-me {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+    color: #374151;
+}
+
+.remember-me input {
+    margin-right: 0.5rem;
+    width: 16px;
+    height: 16px;
+    accent-color: var(--primary-color);
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.forgot-password-link {
+    color: var(--text-link);
+    text-decoration: none;
+    font-weight: 500;
+    transition: opacity 0.2s ease;
+}
+
+.forgot-password-link:hover {
+    text-decoration: underline;
+    opacity: 0.85;
+}
+
+/* Nút Submit Đăng nhập */
+.btn-submit {
+    width: 100%;
+    padding: 0.8rem; /* Reduced padding */
+    background-color: var(--primary-color);
+    color: #ffffff;
+    border: none;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    letter-spacing: 0.5px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.btn-submit:hover {
+    background-color: var(--primary-hover);
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-1px);
+}
+
+.btn-submit:active {
+    transform: translateY(1px);
+}
+
+/* Dải phân cách "Hoặc" */
+.divider {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    margin: 0.85rem 0; /* Reduced margin */
+    color: #9ca3af;
+    font-size: 0.8rem;
+    font-weight: 400;
+}
+
+.divider::before,
+.divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background-color: var(--border-color);
+}
+
+.divider span {
+    padding: 0 1rem;
+}
+
+/* Các nút Đăng nhập Mạng xã hội */
+.social-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem; /* Reduced gap */
+    width: 100%;
+    margin-bottom: 1rem; /* Reduced margin */
+}
+
+.btn-social {
+    width: 100%;
+    padding: 0.65rem 1rem; /* Reduced padding */
+    background-color: #ffffff;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #1e293b;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    transition: all 0.25s ease;
+}
+
+.btn-social:hover {
+    background-color: #f8fafc;
+    border-color: var(--border-hover);
+    box-shadow: var(--shadow-sm);
+    transform: translateY(-0.5px);
+}
+
+.btn-social:active {
+    transform: translateY(0.5px);
+}
+
+.social-logo {
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Footer Đăng ký */
+.signup-footer {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    text-align: center;
+    width: 100%;
+}
+
+.signup-link {
+    color: var(--text-link);
+    text-decoration: none;
+    font-weight: 600;
+    transition: opacity 0.2s ease;
+}
+
+.signup-link:hover {
+    text-decoration: underline;
+    opacity: 0.85;
+}
+
+/* ==========================================================================
+   Hiệu ứng chuyển động (Animations)
+   ========================================================================== */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ==========================================================================
+   Tương thích thiết bị di động (Responsive Design)
+   ========================================================================== */
+
+/* Màn hình máy tính bảng và màn hình nhỏ hơn (< 992px) */
+@media (max-width: 992px) {
+    /* Ẩn cột banner quảng cáo để nhường toàn bộ không gian cho form đăng nhập */
+    .banner-column {
+        display: none;
+    }
+    
+    .form-column {
+        width: 100%;
+        padding: 2rem 1.5rem;
+    }
+    
+    .form-wrapper {
+        max-width: 420px;
+    }
+}
+
+/* Màn hình điện thoại siêu nhỏ (< 480px) */
+@media (max-width: 480px) {
+    .form-column {
+        padding: 1.5rem 1rem;
+    }
+    
+    .welcome-title {
+        font-size: 1.5rem;
+    }
+    
+    .welcome-header {
+        margin-bottom: 1.5rem;
+    }
+    
+    .logo-container {
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-input {
+        padding: 0.8rem 1rem 0.8rem 2.5rem;
+    }
+    
+    .btn-submit {
+        padding: 0.85rem;
+    }
+}
+
+/* ==========================================================================
+   Khung cuộn ẩn (Scrollable column without visible scrollbars for Register)
+   ========================================================================== */
+.form-column.scrollable {
+    overflow-y: auto;
+}
+
+/* Ẩn thanh cuộn Chrome, Safari và Opera */
+.form-column.scrollable::-webkit-scrollbar {
+    display: none;
+}
+
+/* Ẩn thanh cuộn IE, Edge và Firefox */
+.form-column.scrollable {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+}
+
+/* ==========================================================================
+   Thiết lập đặc thù cho Trang Đăng ký (Tỉ lệ 40% - 60% và Không cuộn)
+   ========================================================================== */
+.register-container .banner-column {
+    width: 40%; /* Banner chiếm 40% */
+}
+
+.register-container .form-column {
+    width: 60%; /* Form đăng ký chiếm 60% */
+    overflow: hidden; /* Tuyệt đối không xuất hiện thanh cuộn */
+    padding: 1.5rem 3rem;
+}
+
+.register-container .form-wrapper {
+    max-width: 580px; /* Form rộng rãi hơn để hiển thị các ô nhập liệu dạng cột đôi */
+}
+
+/* Bố cục dòng đôi cho các ô nhập liệu */
+.form-row {
+    display: flex;
+    gap: 1rem;
+    width: 100%;
+}
+
+.form-row .input-group {
+    flex: 1;
+}
+
+/* Bố cục dàn ngang cho các nút mạng xã hội */
+.register-container .social-group {
+    flex-direction: row;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+}
+
+.register-container .btn-social {
+    flex: 1;
+    padding: 0.65rem 0.5rem;
+    font-size: 0.8rem;
+    gap: 0.5rem;
+}
+
+/* Responsive cho thiết bị di động */
+@media (max-width: 768px) {
+    .form-row {
+        flex-direction: column;
+        gap: 0;
+    }
+    
+    .register-container .social-group {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+}
+
+

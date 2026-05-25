@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Công cụ Affiliate & Chiến dịch - Affiliate Network</title>
+    
+    <!-- Meta SEO tiêu chuẩn -->
+    <meta name="description" content="Khám phá các chiến dịch hot từ TikTok, Shopee, Lazada, Tiki và tạo link rút gọn Affiliate nhanh chóng để gia tăng thu nhập.">
+    <meta name="robots" content="noindex, nofollow">
+    
+    <!-- Liên kết Tệp CSS thiết kế cao cấp (Có fallback href để mở trực tiếp trên trình duyệt) -->
+    <link rel="stylesheet" href="../static/css/tools.css" th:href="@{/css/tools.css}">
+</head>
+<body>
+
+    <div class="tools-container">
+        
+        <!-- ==========================================================================
+           Thanh Điều hướng Bên trái (Left Sidebar) - Đồng bộ hoàn toàn thương hiệu
+           ========================================================================== -->
+        <!-- ==========================================================================
+           Thanh Điều hướng Bên trái (Left Sidebar) - Nạp từ fragment nav.html
+           ========================================================================== -->
+        <aside th:replace="~{nav :: sidebar('tools')}"></aside>
+        
+        <!-- ==========================================================================
+           Khung nội dung chính (Main Content Area)
+           ========================================================================== -->
+        <main class="main-content">
+            
+            <!-- Thanh tác vụ trên cùng (Header bar) -->
+            <header class="header-bar">
+                <div class="header-title-wrapper">
+                    <h1 class="welcome-heading">Công cụ Affiliate & Chiến dịch</h1>
+                    <p class="welcome-subtitle">Khám phá chiến dịch và tạo link Affiliate để bắt đầu kiếm hoa hồng.</p>
+                </div>
+                
+                <div class="header-actions">
+                    <!-- Nút thông báo -->
+                    <button type="button" class="icon-button" id="bellNotificationBtn" aria-label="Thông báo hệ thống">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                        </svg>
+                        <span class="notification-badge"></span>
+                    </button>
+                    
+                    <!-- Thẻ chứa Avatar & Họ tên góc -->
+                    <div class="user-dropdown-container">
+                        <div class="user-profile-menu" id="userProfileMenu" aria-haspopup="true" aria-expanded="false">
+                            <img src="../static/images/profile_avatar.png" th:src="@{/images/profile_avatar.png}" class="user-small-avatar" alt="Avatar góc">
+                            <span class="user-menu-name" th:text="${profile?.fullName}">Mai Phương</span>
+                            <svg class="chevron-down" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+                        </div>
+                        
+                        <!-- Hộp thoại dropdown Đăng xuất -->
+                        <div class="dropdown-menu" id="userDropdownMenu" role="menu">
+                            <a href="login.html" th:href="@{/login}" class="dropdown-item" role="menuitem">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                                    <polyline points="16 17 21 12 16 7"/>
+                                    <line x1="21" y1="12" x2="9" y2="12"/>
+                                </svg>
+                                <span>Đăng xuất</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- Bố cục chính 2 Cột: Left (65%) & Right (35%) -->
+            <div class="layout-grid">
+                
+                <!-- CỘT TRÁI: KHÁM PHÁ CHIẾN DỊCH (65% width) -->
+                <section class="left-section">
+                    
+                    <!-- Hộp lọc và tìm kiếm ở trên lưới -->
+                    <div class="filter-header">
+                        <!-- Ô tìm kiếm chiến dịch -->
+                        <div class="search-box">
+                            <input type="text" id="searchCampaign" class="search-input" placeholder="Tìm kiếm chiến dịch...">
+                            <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                        </div>
+                        
+                        <!-- Bộ tab lọc và Sắp xếp -->
+                        <div class="filter-controls">
+                            <div class="filter-tabs">
+                                <button type="button" class="tab-btn active" id="tabAll">Tất cả</button>
+                                <button type="button" class="tab-btn" id="tabHighComm">Hoa hồng cao</button>
+                                <button type="button" class="tab-btn" id="tabNewest">Mới nhất</button>
+                            </div>
+                            
+                            <div class="sort-wrapper">
+                                <select class="sort-select" id="sortCampaign">
+                                    <option value="suggested">Sắp xếp: Đề xuất</option>
+                                    <option value="high-comm">Hoa hồng: Cao → Thấp</option>
+                                    <option value="popular">Phổ biến nhất</option>
+                                </select>
+                                <svg class="chevron-select" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Lưới chiến dịch (Campaign Cards Grid - 2 columns) -->
+                    <div class="campaign-grid" id="campaignGrid">
+                        <!-- Mỗi Card đại diện cho một chiến dịch -->
+                        <div class="campaign-card" th:each="camp : ${campaigns}" th:data-name="${camp.name}" th:data-commission="${camp.commission}" th:data-featured="${camp.featured}" th:data-source="${camp.trafficSource}">
+                            <!-- Banner đầu card có bo góc và text -->
+                            <div class="camp-banner" th:classappend="${camp.bannerClass}">
+                                <div class="camp-banner-overlay"></div>
+                                <span class="camp-tag" th:if="${camp.tag != ''}" th:text="${camp.tag}">NỔI BẬT</span>
+                                <h3 class="camp-banner-title" th:text="${camp.name}">Chiến dịch BST LSOUL</h3>
+                            </div>
+                            
+                            <!-- Thân card chỉ số -->
+                            <div class="camp-body">
+                                <h4 class="camp-name-text" th:text="${camp.name}">Chiến dịch BST LSOUL</h4>
+                                
+                                <!-- Nhãn nền mờ cao cấp -->
+                                <div class="camp-badges-group">
+                                    <!-- Nguồn traffic badge -->
+                                    <div class="platform-badge" th:classappend="${camp.trafficSource}">
+                                        <span th:if="${camp.trafficSource == 'shopee'}" class="badge-letter shopee">Shopee</span>
+                                        <span th:if="${camp.trafficSource == 'tiktok'}" class="badge-letter tiktok">TikTok Shop</span>
+                                        <span th:if="${camp.trafficSource == 'lazada'}" class="badge-letter lazada">Lazada</span>
+                                        <span th:if="${camp.trafficSource == 'tiki'}" class="badge-letter tiki">Tiki</span>
+                                    </div>
+                                    <!-- Phần trăm hoa hồng badge -->
+                                    <span class="commission-badge" th:text="${camp.commission}">Hoa hồng 15%</span>
+                                </div>
+                                
+                                <!-- Thời gian và số KOC tham gia -->
+                                <div class="camp-meta-list">
+                                    <div class="camp-meta-row">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                        <span class="camp-meta-text" th:text="${camp.time}">Thời gian: 10/05/2024 - 31/05/2024</span>
+                                    </div>
+                                    <div class="camp-meta-row">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                                        <span class="camp-meta-text" th:text="${camp.joinedCount}">Đã tham gia: 1,245 KOC/KOL</span>
+                                    </div>
+                                </div>
+                                
+                                <!-- Nút Tham gia hành động -->
+                                <button type="button" class="btn-join-camp" th:data-url="'https://' + ${camp.trafficSource} + '.vn/product-' + ${camp.bannerClass}">Tham gia</button>
+                            </div>
+                        </div>
+                        
+                        <!-- Fallback Static Cards for direct file rendering -->
+                        <div class="campaign-card" th:remove="all">
+                            <div class="camp-banner shopee-sale">
+                                <div class="camp-banner-overlay"></div>
+                                <h3 class="camp-banner-title">Siêu Sale Shopee 5.5</h3>
+                            </div>
+                            <div class="camp-body">
+                                <h4 class="camp-name-text">Siêu Sale Shopee 5.5</h4>
+                                <div class="camp-badges-group">
+                                    <div class="platform-badge shopee">
+                                        <span class="badge-letter shopee">Shopee</span>
+                                    </div>
+                                    <span class="commission-badge">Hoa hồng 12%</span>
+                                </div>
+                                <div class="camp-meta-list">
+                                    <div class="camp-meta-row">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                        <span class="camp-meta-text">Thời gian: 01/05/2024 - 05/05/2024</span>
+                                    </div>
+                                    <div class="camp-meta-row">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                                        <span class="camp-meta-text">Đã tham gia: 2,560 KOC/KOL</span>
+                                    </div>
+                                </div>
+                                <button type="button" class="btn-join-camp" data-url="https://shopee.vn/siêu-sale-5.5">Tham gia</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                
+                <!-- CỘT PHẢI: CÔNG CỤ TẠO LINK NHANH (35% width) -->
+                <section class="right-section">
+                    <div class="card tools-card">
+                        
+                        <!-- Tiêu đề bộ tạo link -->
+                        <div class="tools-card-header">
+                            <svg class="tools-header-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                            <h3 class="tools-card-title">Công cụ Tạo Link Nhanh</h3>
+                        </div>
+                        
+                        <!-- BƯỚC 1: DÁN LINK GỐC -->
+                        <div class="step-group">
+                            <span class="step-label">Bước 1: Dán link sản phẩm gốc</span>
+                            <div class="textarea-wrapper">
+                                <textarea id="originalLinkInput" class="textarea-input" placeholder="Dán link sản phẩm gốc vào đây..."></textarea>
+                                <svg class="link-input-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                            </div>
+                            <span class="step-hint">Ví dụ: https://shopee.vn/ao-thun-nu-cotton-lsoul</span>
+                        </div>
+                        
+                        <!-- BƯỚC 2: NÚT TẠO LINK -->
+                        <div class="step-group">
+                            <span class="step-label">Bước 2: Tạo link Affiliate</span>
+                            <button type="button" class="btn-generate" id="btnGenerateLink">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                                <span>Tạo Link Affiliate</span>
+                            </button>
+                        </div>
+                        
+                        <!-- BƯỚC 3: KẾT QUẢ LINK ĐỘNG (Ban đầu ẩn, hiện mượt bằng Class hoạt động) -->
+                        <div class="tools-step3-section" id="toolsStep3Section">
+                            <span class="step-label">Bước 3: Lấy link để chia sẻ</span>
+                            
+                            <!-- Link gốc gắn mã -->
+                            <div class="step-group">
+                                <span class="input-label">Link gốc gắn mã (Tracking Link) <span class="info-bubble" title="Link đã nhúng ID KOC của bạn để tracking hoa hồng">?</span></span>
+                                <div class="input-wrapper">
+                                    <input type="text" id="trackingLinkOutput" class="text-input" readonly value="">
+                                    <button type="button" class="btn-input-copy" id="btnCopyTracking" aria-label="Sao chép Link dài">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Link rút gọn -->
+                            <div class="step-group">
+                                <span class="input-label">Link rút gọn (Short Link) <span class="info-bubble" title="Đường link rút gọn thẩm mỹ giúp tăng tỷ lệ click trên mạng xã hội">?</span></span>
+                                <div class="short-link-box">
+                                    <span class="short-link-text" id="shortLinkOutput">go.aff.vn/lsoul-koc</span>
+                                    
+                                    <div class="short-link-actions">
+                                        <button type="button" class="btn-copy-short" id="btnCopyShort">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                                            <span>Sao chép</span>
+                                        </button>
+                                        <button type="button" class="btn-qr" id="btnShowQr" aria-label="Tải mã QR">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><line x1="7" y1="7" x2="7.01" y2="7"/><line x1="17" y1="7" x2="17.01" y2="7"/><line x1="7" y1="17" x2="7.01" y2="17"/><line x1="17" y1="17" x2="17.01" y2="17"/></svg>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Banner thông báo thành công ở đáy -->
+                            <div class="alert-success-banner">
+                                <div class="alert-banner-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                                </div>
+                                <span class="alert-banner-text">Đã tạo link thành công!</span>
+                            </div>
+                            
+                        </div>
+                    </div>
+                </section>
+                
+            </div>
+            
+        </main>
+        
+    </div>
+
+    <!-- Liên kết Tệp Javascript xử lý logic động (Có fallback src để mở trực tiếp trên trình duyệt) -->
+    <script src="../static/js/tools.js" th:src="@{/js/tools.js}"></script>
+</body>
+</html>

@@ -1,0 +1,662 @@
+/**
+ * ==========================================================================
+ * Stylesheet riêng cho Trang Khởi tạo Chiến dịch Mới Admin
+ * ==========================================================================
+ */
+
+/* Breadcrumbs điều hướng */
+.breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-bottom: 0.35rem;
+    font-weight: 600;
+}
+
+.breadcrumb-item {
+    color: var(--text-muted);
+    text-decoration: none;
+}
+
+.breadcrumb-item.active {
+    color: var(--primary-color);
+}
+
+.breadcrumb-separator {
+    color: var(--text-muted);
+    font-size: 0.65rem;
+}
+
+/* Dropdown chọn trạng thái chiến dịch */
+.campaign-status-select {
+    appearance: none;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 0.45rem 1.6rem 0.45rem 0.85rem;
+    font-family: var(--font-family);
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--text-main);
+    background-color: #ffffff;
+    cursor: pointer;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.2s ease;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2212%22%20height%3D%2212%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%2364748b%22%20stroke-width%3D%223%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 10px;
+}
+
+.campaign-status-select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px var(--primary-light);
+}
+
+.status-dropdown-container {
+    position: relative;
+}
+
+/* Badge thông báo đếm số */
+.notification-badge-count {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background-color: #ef4444;
+    color: #ffffff;
+    font-size: 0.65rem;
+    font-weight: 800;
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1.5px solid #ffffff;
+    box-shadow: 0 2px 4px rgba(239, 68, 68, 0.2);
+    line-height: 1;
+}
+
+
+/* ==========================================================================
+   FORM INPUT CARD LAYOUT
+   ========================================================================= */
+.form-card {
+    margin-bottom: 1.25rem;
+    padding: 1.5rem;
+}
+
+.card-section-title {
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: var(--text-main);
+    margin-bottom: 1.1rem;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 0.75rem;
+}
+
+.form-grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.1rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.form-label {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+.required {
+    color: #ef4444;
+    font-weight: 700;
+}
+
+.form-control-input {
+    font-family: var(--font-family);
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text-main);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 0.55rem 0.8rem;
+    width: 100%;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    background-color: #ffffff;
+}
+
+.form-control-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px var(--primary-light);
+}
+
+/* Thẻ input tích hợp icon bên trái */
+.input-icon-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-icon-svg {
+    position: absolute;
+    left: 12px;
+    color: var(--text-muted);
+    pointer-events: none;
+    transition: color 0.2s;
+}
+
+.form-control-input.has-icon {
+    padding-left: 2.1rem;
+}
+
+.form-control-input:focus + .input-icon-svg {
+    color: var(--primary-color);
+}
+
+/* Thẻ input tích hợp hậu tố VNĐ bên phải */
+.input-suffix-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.form-control-input.has-suffix {
+    padding-right: 3.2rem;
+}
+
+.input-suffix-text {
+    position: absolute;
+    right: 12px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    pointer-events: none;
+}
+
+
+/* ==========================================================================
+   CẤU HÌNH HOA HỒNG THEO HẠNG (Tiered Commission Table)
+   ========================================================================== */
+.commission-tiers-wrapper {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Tiêu đề bảng */
+.tiers-header-row {
+    display: flex;
+    padding: 0.75rem 1.1rem;
+    border-bottom: 2px solid var(--border-color);
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    background-color: #fafafa;
+    border-radius: 8px 8px 0 0;
+}
+
+.col-hdr-tier { flex: 2.5; }
+.col-hdr-rate { flex: 1.5; text-align: center; }
+.col-hdr-status { flex: 1; text-align: center; }
+.col-hdr-action { flex: 0.4; }
+
+.tiers-list-container {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Dòng cấu hình */
+.tier-row {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1.1rem;
+    border-bottom: 1px solid var(--border-color);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    background-color: #ffffff;
+}
+
+.tier-row:hover {
+    background-color: #fafafa;
+}
+
+/* Khi tắt công tắc, mờ dòng */
+.tier-row.disabled {
+    opacity: 0.55;
+}
+
+.col-tier-info {
+    flex: 2.5;
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+}
+
+/* Vòng tròn icon Hạng */
+.tier-icon-circle {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.95rem;
+    background-color: #f1f5f9;
+    border: 1.5px solid var(--border-color);
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.tier-icon-circle.diamond {
+    background-color: rgba(6, 182, 212, 0.08);
+    border-color: rgba(6, 182, 212, 0.18);
+}
+
+.tier-icon-circle.gold {
+    background-color: rgba(245, 158, 11, 0.08);
+    border-color: rgba(245, 158, 11, 0.18);
+}
+
+.tier-icon-circle.silver {
+    background-color: rgba(148, 163, 184, 0.08);
+    border-color: rgba(148, 163, 184, 0.18);
+}
+
+.tier-icon-circle.basic {
+    background-color: rgba(0, 0, 0, 0.03);
+    border-color: rgba(0, 0, 0, 0.06);
+}
+
+.tier-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.05rem;
+}
+
+.tier-name-input {
+    font-family: var(--font-family);
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-main);
+    border: 1px solid transparent;
+    background: transparent;
+    padding: 0.1rem 0.3rem;
+    border-radius: 4px;
+    width: 160px;
+    transition: all 0.2s;
+}
+
+.tier-name-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    background-color: #ffffff;
+}
+
+.tier-name-text {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+.tier-requirement-text {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+}
+
+.col-tier-rate {
+    flex: 1.5;
+    display: flex;
+    justify-content: center;
+}
+
+/* Ô nhập Tỷ lệ % */
+.rate-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 90px;
+}
+
+.rate-input-control {
+    font-family: var(--font-family);
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-align: center;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 0.4rem 1.6rem 0.4rem 0.6rem;
+    width: 100%;
+    transition: all 0.2s ease;
+    background-color: #ffffff;
+}
+
+.rate-input-control:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+.rate-input-control:disabled {
+    background-color: #f1f5f9;
+    color: var(--text-muted);
+    cursor: not-allowed;
+    border-color: var(--border-color);
+}
+
+.rate-suffix {
+    position: absolute;
+    right: 8px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    pointer-events: none;
+}
+
+.col-tier-status {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+}
+
+/* Custom Toggle Switch (Công tắc bật tắt) */
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 36px;
+    height: 20px;
+    cursor: pointer;
+}
+
+.toggle-checkbox {
+    display: none;
+}
+
+.toggle-slider {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #cbd5e1;
+    border-radius: 20px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.toggle-slider::before {
+    content: "";
+    position: absolute;
+    height: 16px;
+    width: 16px;
+    left: 2px;
+    bottom: 2px;
+    background-color: #ffffff;
+    border-radius: 50%;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.toggle-checkbox:checked + .toggle-slider {
+    background-color: var(--primary-color);
+}
+
+.toggle-checkbox:checked + .toggle-slider::before {
+    transform: translateX(16px);
+}
+
+.col-tier-action {
+    flex: 0.4;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.drag-handle-btn {
+    color: var(--text-muted);
+    cursor: grab;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.2rem;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.drag-handle-btn:hover {
+    color: var(--text-main);
+    background-color: rgba(0, 0, 0, 0.04);
+}
+
+.drag-handle-btn:active {
+    cursor: grabbing;
+}
+
+.drag-icon {
+    stroke-width: 2.5px;
+}
+
+/* Nút xoá cho các dòng tự thêm */
+.btn-delete-tier {
+    background: transparent;
+    border: none;
+    color: #ef4444;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.2rem;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.btn-delete-tier:hover {
+    background-color: rgba(239, 68, 68, 0.06);
+}
+
+/* Nút bấm viền nét đứt thêm hạng */
+.btn-add-tier-dashed {
+    background: transparent;
+    border: 1.5px dashed rgba(168, 85, 247, 0.3);
+    color: var(--primary-color);
+    font-family: var(--font-family);
+    font-size: 0.8rem;
+    font-weight: 700;
+    padding: 0.65rem;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    width: 100%;
+    margin-top: 0.75rem;
+}
+
+.btn-add-tier-dashed:hover {
+    border-style: solid;
+    border-color: var(--primary-color);
+    background-color: var(--primary-light);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+}
+
+.plus-icon {
+    font-size: 1.05rem;
+    line-height: 1;
+}
+
+
+/* ==========================================================================
+   THANH HÀNH ĐỘNG DƯỚI CÙNG (Footer Actions)
+   ========================================================================== */
+.campaign-form-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1.5rem;
+    border-top: 1px solid var(--border-color);
+    padding-top: 1.25rem;
+    padding-bottom: 1rem;
+    flex-shrink: 0;
+}
+
+.right-actions-group {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.btn-cancel-campaign {
+    background: transparent;
+    border: 1px solid var(--border-hover);
+    color: var(--text-muted);
+    font-family: var(--font-family);
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-cancel-campaign:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+    background-color: var(--primary-light);
+}
+
+.btn-draft-campaign {
+    background-color: #e2e8f0;
+    border: none;
+    color: var(--text-main);
+    font-family: var(--font-family);
+    font-size: 0.8rem;
+    font-weight: 700;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-draft-campaign:hover {
+    background-color: #cbd5e1;
+}
+
+.btn-submit-campaign {
+    background: linear-gradient(135deg, var(--secondary-color) 0%, var(--primary-color) 100%);
+    color: #ffffff;
+    border: none;
+    font-family: var(--font-family);
+    font-size: 0.8rem;
+    font-weight: 700;
+    padding: 0.5rem 1.15rem;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 4px rgba(99, 102, 241, 0.15);
+}
+
+.btn-submit-campaign:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(99, 102, 241, 0.3);
+    filter: brightness(1.05);
+}
+
+/* Spinner đang tải của nút Xuất bản */
+.btn-submit-campaign.loading {
+    position: relative;
+    color: transparent !important;
+    pointer-events: none;
+}
+
+.btn-submit-campaign.loading::after {
+    content: "";
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin: auto;
+    border: 2px solid transparent;
+    border-top-color: #ffffff;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+}
+
+
+/* Hoạt ảnh chèn dòng mới */
+@keyframes slide-in-row {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.tier-row.new-row {
+    animation: slide-in-row 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+
+/* ==========================================================================
+   Responsive di động
+   ========================================================================== */
+@media (max-width: 992px) {
+    .form-grid-3 {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .breadcrumb {
+        display: none;
+    }
+    
+    .header-bar {
+        flex-direction: column-reverse;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    
+    .header-actions {
+        width: 100%;
+        justify-content: space-between;
+    }
+    
+    .campaign-form-actions {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: stretch;
+    }
+    
+    .right-actions-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .btn-submit-campaign, .btn-draft-campaign, .btn-cancel-campaign {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .col-hdr-status, .col-tier-status {
+        display: none; /* Ẩn trạng thái trên mobile để chống vỡ bảng */
+    }
+}

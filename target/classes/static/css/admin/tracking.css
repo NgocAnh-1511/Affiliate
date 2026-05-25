@@ -1,0 +1,361 @@
+/**
+ * ==========================================================================
+ * Stylesheet riêng cho Trang Giám sát Hệ thống (Tracking & Traffic Audit)
+ * ==========================================================================
+ */
+
+/* Header realtime status indicator */
+.realtime-status-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    background-color: #ffffff;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 0.45rem 1rem;
+    box-shadow: var(--shadow-sm);
+    margin-right: auto;
+}
+
+.pulse-point {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.pulse-point.green-pulse {
+    background-color: var(--emerald-color);
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.25);
+    animation: monitoring-pulse 1.8s infinite;
+}
+
+@keyframes monitoring-pulse {
+    0% { box-shadow: 0 0 0 0px rgba(16, 185, 129, 0.5); }
+    100% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+}
+
+.status-scanning-text {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+.timestamp-text {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    border-left: 1px solid var(--border-color);
+    padding-left: 0.6rem;
+}
+
+.help-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-weight: 800;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: color 0.2s;
+    margin-left: 0.2rem;
+}
+
+.help-btn:hover {
+    color: var(--primary-color);
+}
+
+/* Sparkline trong thẻ KPI */
+.sparkline-wrapper {
+    height: 30px;
+    width: 100%;
+    margin: 0.1rem 0;
+}
+
+.sparkline-svg {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+}
+
+/* Thẻ Tiến độ Tin cậy */
+.trust-progress-container {
+    height: 6px;
+    width: 100%;
+    background-color: var(--border-color);
+    border-radius: 20px;
+    margin-top: 0.5rem;
+    overflow: hidden;
+}
+
+.trust-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #10b981 0%, #34d399 100%);
+    border-radius: 20px;
+    transition: width 0.8s ease-out;
+}
+
+.trust-ruler {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    margin-top: 0.2rem;
+    font-weight: 600;
+}
+
+.trust-status-text {
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: var(--emerald-color);
+    margin-top: 0.2rem;
+}
+
+
+/* ==========================================================================
+   BIỂU ĐỒ REAL-TIME CHUYÊN SÂU
+   ========================================================================= */
+.anomaly-warning-bubble {
+    position: absolute;
+    top: 35%;
+    right: 20%;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    background-color: rgba(239, 68, 68, 0.05);
+    border: 1.5px solid rgba(239, 68, 68, 0.2);
+    border-radius: 12px;
+    padding: 0.6rem 0.9rem;
+    backdrop-filter: blur(2px);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.1);
+    z-index: 10;
+}
+
+.anomaly-circle-dotted {
+    width: 32px;
+    height: 32px;
+    border: 2px dashed #ef4444;
+    border-radius: 50%;
+    animation: rotate-dashed 8s linear infinite;
+    flex-shrink: 0;
+}
+
+@keyframes rotate-dashed {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.anomaly-text {
+    font-size: 0.72rem;
+    font-weight: 800;
+    color: #ef4444;
+    line-height: 1.3;
+}
+
+/* Thẻ Cảnh báo Phát hiện Gian lận */
+.alerts-card {
+    display: flex;
+    flex-direction: column;
+}
+
+.btn-alerts-badge {
+    background-color: rgba(239, 68, 68, 0.08);
+    border: none;
+    color: #ef4444;
+    font-family: var(--font-family);
+    font-size: 0.78rem;
+    font-weight: 800;
+    padding: 0.35rem 0.7rem;
+    border-radius: 20px;
+    cursor: default;
+}
+
+.alerts-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+    overflow-y: auto;
+    flex: 1;
+    max-height: 250px;
+    padding-right: 0.2rem;
+}
+
+.alerts-list::-webkit-scrollbar {
+    width: 4px;
+}
+
+.alerts-list::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 2px;
+}
+
+.alert-item {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.55rem 0.75rem;
+    background-color: #fafafa;
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+    transition: all 0.2s ease;
+}
+
+.alert-item:hover {
+    border-color: rgba(239, 68, 68, 0.18);
+    background-color: rgba(239, 68, 68, 0.01);
+    transform: translateY(-1px);
+}
+
+.alert-time {
+    font-size: 0.72rem;
+    font-family: monospace;
+    font-weight: 700;
+    color: var(--text-muted);
+}
+
+.alert-message {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text-main);
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.severity-badge {
+    font-size: 0.65rem;
+    font-weight: 800;
+    padding: 0.1rem 0.45rem;
+    border-radius: 4px;
+    line-height: 1.2;
+}
+
+.severity-badge.high {
+    background-color: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+}
+
+.severity-badge.medium {
+    background-color: rgba(245, 158, 11, 0.1);
+    color: #d97706;
+}
+
+.card-footer-link {
+    margin-top: 0.75rem;
+    padding-top: 0.65rem;
+    border-top: 1px solid var(--border-color);
+    text-align: right;
+}
+
+.footer-link-blue {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--secondary-color);
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.footer-link-blue:hover {
+    color: var(--secondary-hover);
+    text-decoration: underline;
+}
+
+
+/* ==========================================================================
+   DANH SÁCH ĐỐI TƯỢNG TÌNH NGHI BẢNG DƯỚI
+   ========================================================================== */
+.badge-count-red {
+    background-color: #ef4444;
+    color: #ffffff;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0.18rem 0.55rem;
+    border-radius: 20px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    margin-left: 0.5rem;
+    box-shadow: 0 2px 6px rgba(239, 68, 68, 0.25);
+}
+
+.col-behavior {
+    font-weight: 600;
+    color: var(--text-main);
+}
+
+.col-spam-rate, .col-blocked-count {
+    font-family: monospace;
+    font-size: 0.88rem;
+    font-weight: 800;
+}
+
+.col-last-detection {
+    color: var(--text-muted);
+    font-family: monospace;
+}
+
+/* Nút Khóa tài khoản */
+.btn-lock-account {
+    background-color: rgba(239, 68, 68, 0.06);
+    border: 1px solid rgba(239, 68, 68, 0.18);
+    color: #ef4444;
+    padding: 0.35rem 0.7rem;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-lock-account:hover {
+    background-color: #ef4444;
+    color: #ffffff;
+    box-shadow: 0 2px 6px rgba(239, 68, 68, 0.25);
+    transform: translateY(-1px);
+}
+
+.btn-ignore-suspect {
+    background: transparent;
+    border: 1px solid var(--border-hover);
+    color: var(--text-muted);
+    border-radius: 6px;
+    padding: 0.35rem 0.7rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-left: 0.35rem;
+}
+
+.btn-ignore-suspect:hover {
+    border-color: var(--text-main);
+    color: var(--text-main);
+    background-color: #fafafa;
+}
+
+/* Xoá hàng nghi phạm */
+.suspect-row {
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.suspect-row.fade-out {
+    opacity: 0;
+    transform: translateX(-30px);
+}
+
+/* Di động và Máy tính bảng */
+@media (max-width: 768px) {
+    .realtime-status-wrapper {
+        width: 100%;
+        justify-content: space-between;
+    }
+    
+    .timestamp-text {
+        border: none;
+        padding-left: 0;
+    }
+    
+    .anomaly-warning-bubble {
+        display: none; /* Ẩn cảnh báo nổi trên di động */
+    }
+}

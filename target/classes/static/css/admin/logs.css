@@ -1,0 +1,262 @@
+/**
+ * ==========================================================================
+ * Stylesheet riêng cho Trang Nhật ký Hoạt động (Audit Trail System Logs)
+ * ==========================================================================
+ */
+
+/* Nút Xuất Log CSV góc trên header */
+.btn-export-csv {
+    background-color: #ffffff;
+    border: 1px solid var(--border-hover);
+    border-radius: 12px;
+    padding: 0.5rem 1rem;
+    font-family: var(--font-family);
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--text-main);
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    cursor: pointer;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    margin-right: auto;
+}
+
+.btn-export-csv:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+    background-color: var(--primary-light);
+}
+
+.export-icon {
+    stroke-width: 2.5px;
+}
+
+/* Lọc logs */
+.btn-filter-logs {
+    background-color: var(--secondary-color);
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    padding: 0.45rem 1rem;
+    font-family: var(--font-family);
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    box-shadow: 0 2px 4px rgba(99, 102, 241, 0.15);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-filter-logs:hover {
+    background-color: var(--secondary-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(99, 102, 241, 0.3);
+}
+
+.filter-icon {
+    stroke-width: 2.5px;
+}
+
+/* Bảng Audit Log các Cột */
+.col-time {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    white-space: nowrap;
+}
+
+.col-action-badge {
+    text-align: center;
+    width: 100px;
+}
+
+.log-action-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.2rem 0.55rem;
+    border-radius: 6px;
+    font-size: 0.72rem;
+    font-weight: 800;
+    line-height: 1.2;
+}
+
+.log-action-badge.update {
+    background-color: rgba(59, 130, 246, 0.08);
+    color: var(--blue-color);
+}
+
+.log-action-badge.approve {
+    background-color: rgba(16, 185, 129, 0.08);
+    color: var(--emerald-color);
+}
+
+.log-action-badge.delete {
+    background-color: rgba(239, 68, 68, 0.08);
+    color: #ef4444;
+}
+
+.col-target-object {
+    min-width: 150px;
+}
+
+.object-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 0.05rem;
+}
+
+.object-name {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+.object-id {
+    font-size: 0.72rem;
+    font-family: monospace;
+    color: var(--text-muted);
+}
+
+.col-detail {
+    font-size: 0.82rem;
+    color: var(--text-main);
+    line-height: 1.4;
+    max-width: 320px;
+}
+
+.col-ip {
+    font-family: monospace;
+    color: var(--text-muted);
+}
+
+.btn-expand-row {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.25s ease;
+}
+
+.btn-expand-row:hover {
+    background-color: rgba(0, 0, 0, 0.04);
+    color: var(--text-main);
+}
+
+.chevron-icon {
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Khi dòng được mở, quay chevron */
+.log-row.expanded .chevron-icon {
+    transform: rotate(180deg);
+    color: var(--primary-color);
+}
+
+.log-row.expanded {
+    background-color: #fafafa;
+}
+
+
+/* ==========================================================================
+   VÙNG MỞ RỘNG CHI TIẾT BẢN GHI LOG (Log Detail Expansion Panel)
+   ========================================================================== */
+.log-expansion-panel {
+    background-color: #0f172a; /* Nền xanh đen tối cao cấp */
+    border-radius: 12px;
+    padding: 1.1rem;
+    margin: 0.45rem 1.1rem 1.1rem 1.1rem;
+    position: relative;
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    box-shadow: inset 0 2px 8px rgba(0,0,0,0.5);
+    animation: audit-panel-slide 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes audit-panel-slide {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.panel-section-title {
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.75rem;
+}
+
+/* Nút Sao chép JSON */
+.copy-json-wrapper {
+    position: absolute;
+    top: 1rem;
+    right: 1.1rem;
+    z-index: 10;
+}
+
+.btn-copy-json {
+    background-color: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 6px;
+    padding: 0.3rem 0.65rem;
+    color: #cbd5e1;
+    font-family: var(--font-family);
+    font-size: 0.7rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-copy-json:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+    color: #ffffff;
+    border-color: rgba(255, 255, 255, 0.25);
+}
+
+.btn-copy-json.copied {
+    background-color: var(--emerald-color);
+    color: #ffffff;
+    border-color: var(--emerald-color);
+}
+
+/* Code block JSON format */
+.code-block-wrapper {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.code-block-wrapper pre {
+    margin: 0;
+}
+
+.code-block-wrapper pre code {
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 0.8rem;
+    line-height: 1.5;
+    color: #cbd5e1;
+    display: block;
+    white-space: pre;
+}
+
+/* Điệu đà giả lập cú pháp JSON highlight (bằng CSS regex đơn giản) */
+/* (Ở client-side JS ta có thể chèn các spans đổi màu) */
+.language-json {
+    /* Đã được cấu hình JS chèn spans đổi màu */
+}

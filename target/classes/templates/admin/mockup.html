@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${title}">Tính năng Admin - KOC/KOL Affiliate Network</title>
+    
+    <!-- Meta SEO -->
+    <meta name="robots" content="noindex, nofollow">
+    
+    <!-- Liên kết Tệp CSS thiết kế cao cấp -->
+    <link rel="stylesheet" href="../../static/css/admin/overview.css" th:href="@{/css/admin/overview.css}">
+</head>
+<body>
+
+    <div class="overview-container">
+        
+        <!-- Thanh Điều hướng Bên trái Admin dùng chung -->
+        <aside th:replace="~{admin/nav :: sidebar(${activePage})}"></aside>
+        
+        <!-- Khung nội dung chính -->
+        <main class="main-content">
+            
+            <!-- Thanh tác vụ trên cùng (Header bar) -->
+            <header class="header-bar">
+                <div class="header-title-wrapper">
+                    <h1 class="welcome-heading" th:text="${title}">Quản trị hệ thống</h1>
+                    <p class="welcome-subtitle">Các tính năng đang được vận hành bởi Administrator.</p>
+                </div>
+                
+                <div class="header-actions">
+                    <button type="button" class="icon-button" aria-label="Thông báo hệ thống" onclick="alert('Không có thông báo khẩn cấp nào.');">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                        </svg>
+                        <span class="notification-badge"></span>
+                    </button>
+                    
+                    <div class="user-dropdown-container">
+                        <div class="user-profile-menu">
+                            <img src="../../static/images/profile_avatar.png" th:src="@{/images/profile_avatar.png}" class="user-small-avatar" alt="Admin Avatar">
+                            <span class="user-menu-name">Administrator</span>
+                        </div>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- Thẻ thông báo tính năng đang phát triển -->
+            <section class="card mockup-section-card" style="flex: 1; display: flex; align-items: center; justify-content: center; text-align: center; padding: 4rem 2rem;">
+                <div class="mockup-content" style="max-width: 450px;">
+                    <div class="mockup-icon" style="font-size: 4rem; margin-bottom: 1.5rem; filter: drop-shadow(0 4px 10px rgba(168, 85, 247, 0.25));">⚙️</div>
+                    <h3 class="card-title" th:text="${title}" style="font-size: 1.5rem; margin-bottom: 0.5rem; background: linear-gradient(135deg, #a855f7, #6366f1); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Chức năng quản trị</h3>
+                    <p class="card-subtitle-text" style="font-size: 0.95rem; line-height: 1.6; margin-bottom: 2rem;">
+                        Tính năng đang được tích hợp dữ liệu đồng bộ và tối ưu hóa trải nghiệm người dùng bởi đội ngũ phát triển. Vui lòng quay lại sau!
+                    </p>
+                    <a href="overview.html" th:href="@{/admin/overview}" class="btn-submit-dispute" style="display: inline-flex; text-decoration: none; align-items: center; justify-content: center; min-height: 46px; font-weight: 700; padding: 0 2rem; background: linear-gradient(135deg, #a855f7 0%, #6366f1 100%); box-shadow: 0 4px 12px rgba(168, 85, 247, 0.3);">
+                        QUAY LẠI TỔNG QUAN
+                    </a>
+                </div>
+            </section>
+            
+        </main>
+        
+    </div>
+
+</body>
+</html>

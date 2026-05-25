@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cổng thông tin KOC/KOL - Đăng nhập Affiliate Network</title>
+    
+    <!-- Meta SEO tiêu chuẩn -->
+    <meta name="description" content="Đăng nhập vào hệ thống KOC/KOL Affiliate Network để quản lý chiến dịch quảng cáo và doanh thu trực quan, hiện đại.">
+    <meta name="robots" content="index, follow">
+    
+    <!-- Liên kết Tệp CSS thiết kế cao cấp (Có fallback href để mở trực tiếp trên trình duyệt) -->
+    <link rel="stylesheet" href="../static/css/login.css" th:href="@{/css/login.css}">
+</head>
+<body>
+
+    <div class="container">
+        
+        <!-- Cột Trái: Banner Quảng cáo Tiếp thị liên kết (Responsive tự động ẩn trên di động) -->
+        <div class="banner-column" id="bannerColumn"></div>
+        
+        <!-- Cột Phải: Form Đăng nhập chính thống -->
+        <div class="form-column">
+            <div class="form-wrapper">
+                
+                <!-- Logo Thương hiệu KOC/KOL Affiliate Network (Ngang giống ảnh gốc) -->
+                <div class="logo-container" id="brandLogo">
+                    <svg class="logo-icon" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                        <defs>
+                            <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#7c3aed" />
+                                <stop offset="60%" stop-color="#4f46e5" />
+                                <stop offset="100%" stop-color="#2563eb" />
+                            </linearGradient>
+                        </defs>
+                        <!-- Stylized star-person icon -->
+                        <circle cx="50" cy="20" r="10" fill="url(#logoGrad)" />
+                        <path d="M50 35C41 35 30 40 22 46C29 48 37 47 43 47V78C43 83 57 83 57 78V47C63 47 71 48 78 46C70 40 59 35 50 35Z" fill="url(#logoGrad)" />
+                        <path d="M28 42L18 78C16 83 24 85 26 80L36 45C32 44 30 43 28 42Z" fill="url(#logoGrad)" opacity="0.8" />
+                        <path d="M72 42L82 78C84 83 76 85 74 80L64 45C68 44 70 43 72 42Z" fill="url(#logoGrad)" opacity="0.8" />
+                    </svg>
+                    <div class="logo-text-group">
+                        <span class="logo-text-top">KOC/KOL</span>
+                        <span class="logo-text-bottom">Affiliate Network</span>
+                    </div>
+                </div>
+                
+                <!-- Tiêu đề & Lời chào chào đón người dùng -->
+                <div class="welcome-header">
+                    <h1 class="welcome-title">Cổng thông tin KOC/KOL</h1>
+                    <p class="welcome-subtitle">Đăng nhập để quản lý chiến dịch và doanh thu của bạn.</p>
+                </div>
+                
+                <!-- Biểu mẫu đăng nhập chính thức liên kết với Spring MVC Model -->
+                <form id="loginForm" class="login-form" th:action="@{/login}" th:object="${loginRequest}" method="POST">
+                    
+                    <!-- Hiển thị thông báo LỖI từ Spring Boot Controller -->
+                    <div th:if="${errorMessage}" class="alert alert-danger" th:classappend="${errorMessage != null} ? 'alert-show' : ''" role="alert">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <circle cx="12" cy="12" r="10"/>
+                            <line x1="12" y1="8" x2="12" y2="12"/>
+                            <line x1="12" y1="16" x2="12.01" y2="16"/>
+                        </svg>
+                        <span th:text="${errorMessage}">Thông báo lỗi đăng nhập</span>
+                    </div>
+
+                    <!-- Hiển thị thông báo THÀNH CÔNG từ Spring Boot Controller -->
+                    <div th:if="${successMessage}" class="alert alert-success" th:classappend="${successMessage != null} ? 'alert-show' : ''" role="alert">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                            <polyline points="22,4 12,14.01 9,11.01"/>
+                        </svg>
+                        <span th:text="${successMessage}">Thông báo đăng nhập thành công</span>
+                    </div>
+                    
+                    <!-- Ô nhập liệu: Email hoặc Số điện thoại -->
+                    <div class="input-group">
+                        <div class="input-icon-left">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                                <polyline points="22,6 12,13 2,6"/>
+                            </svg>
+                        </div>
+                        <input type="text" 
+                               id="username" 
+                               th:field="*{username}" 
+                               class="form-input" 
+                               placeholder="Email hoặc Số điện thoại" 
+                               autocomplete="username"
+                               required>
+                    </div>
+                    
+                    <!-- Ô nhập liệu: Mật khẩu -->
+                    <div class="input-group">
+                        <div class="input-icon-left">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                            </svg>
+                        </div>
+                        <input type="password" 
+                               id="password" 
+                               th:field="*{password}" 
+                               class="form-input form-input-password" 
+                               placeholder="Mật khẩu" 
+                               autocomplete="current-password"
+                               required>
+                        <!-- Nút Bật/Tắt hiển thị mật khẩu bằng JS -->
+                        <button type="button" class="input-icon-right" id="togglePassword" aria-label="Hiển thị mật khẩu">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/>
+                                <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/>
+                                <path d="M6.61 6.61A13.52 13.52 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/>
+                                <line x1="2" y1="2" x2="22" y2="22"/>
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <!-- Lựa chọn Ghi nhớ đăng nhập & Quên mật khẩu -->
+                    <div class="options-group">
+                        <label class="remember-me" for="rememberMe">
+                            <input type="checkbox" id="rememberMe" th:field="*{rememberMe}">
+                            <span>Ghi nhớ đăng nhập</span>
+                        </label>
+                        <a href="#" class="forgot-password-link">Quên mật khẩu?</a>
+                    </div>
+                    
+                    <!-- Nút Gửi biểu mẫu (ĐĂNG NHẬP) -->
+                    <button type="submit" class="btn-submit" id="btnSubmit">ĐĂNG NHẬP</button>
+                </form>
+                
+                <!-- Dải phân cách "Hoặc" -->
+                <div class="divider" role="separator">
+                    <span>Hoặc</span>
+                </div>
+                
+                <!-- Các nút Đăng nhập nhanh qua Mạng xã hội -->
+                <div class="social-group">
+                    <button type="button" class="btn-social" id="btnTikTokLogin">
+                        <div class="social-logo">
+                            <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.17-2.86-.74-3.94-1.74-.22-.2-.43-.4-.64-.62v7.14c.01 1.87-.5 3.79-1.75 5.17-1.42 1.58-3.67 2.45-5.79 2.14-2.45-.35-4.63-2.14-5.26-4.57-.75-2.9.75-6.09 3.52-7.14 1.13-.43 2.37-.53 3.55-.28V14c-1.39-.42-2.99-.08-4.04.91-1.17 1.1-1.49 2.94-.8 4.39.63 1.33 2.1 2.22 3.58 2.15 1.55.03 2.99-.95 3.42-2.43.14-.49.19-.99.18-1.5V.02h.02z"/>
+                            </svg>
+                        </div>
+                        <span>Đăng nhập với TikTok</span>
+                    </button>
+                    
+                    <button type="button" class="btn-social" id="btnGoogleLogin">
+                        <div class="social-logo">
+                            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05"/>
+                                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" fill="#EA4335"/>
+                            </svg>
+                        </div>
+                        <span>Đăng nhập với Google</span>
+                    </button>
+                    
+                    <button type="button" class="btn-social" id="btnFacebookLogin">
+                        <div class="social-logo">
+                            <svg viewBox="0 0 24 24" fill="#1877F2" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                            </svg>
+                        </div>
+                        <span>Đăng nhập với Facebook</span>
+                    </button>
+                </div>
+                
+                <!-- Chân trang liên kết đăng ký -->
+                <div class="signup-footer">
+                    <span>Bạn là KOC mới? </span>
+                    <a href="register.html" th:href="@{/register}" class="signup-link">Đăng ký tham gia mạng lưới</a>
+                </div>
+                
+            </div>
+        </div>
+        
+    </div>
+
+    <!-- Liên kết Tệp Javascript xử lý logic động (Có fallback src để mở trực tiếp trên trình duyệt) -->
+    <script src="../static/js/login.js" th:src="@{/js/login.js}"></script>
+</body>
+</html>

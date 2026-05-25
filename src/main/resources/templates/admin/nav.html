@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body>
+
+    <!-- ==========================================================================
+       Thanh Điều hướng Bên trái Admin (Admin Left Sidebar Shared Fragment)
+       ========================================================================== -->
+    <aside th:fragment="sidebar(activePage)" class="sidebar">
+        <!-- Logo Thương hiệu Admin -->
+        <div class="sidebar-logo">
+            <svg class="logo-icon" width="36" height="36" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <defs>
+                    <linearGradient id="logoGradAdmin" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#ec4899" />
+                        <stop offset="60%" stop-color="#a855f7" />
+                        <stop offset="100%" stop-color="#6366f1" />
+                    </linearGradient>
+                </defs>
+                <circle cx="50" cy="20" r="10" fill="url(#logoGradAdmin)" />
+                <path d="M50 35C41 35 30 40 22 46C29 48 37 47 43 47V78C43 83 57 83 57 78V47C63 47 71 48 78 46C70 40 59 35 50 35Z" fill="url(#logoGradAdmin)" />
+                <path d="M28 42L18 78C16 83 24 85 26 80L36 45C32 44 30 43 28 42Z" fill="url(#logoGradAdmin)" opacity="0.8" />
+                <path d="M72 42L82 78C84 83 76 85 74 80L64 45C68 44 70 43 72 42Z" fill="url(#logoGradAdmin)" opacity="0.8" />
+            </svg>
+            <div class="logo-text-group">
+                <span class="logo-text-top">ADMIN PORTAL</span>
+                <span class="logo-text-bottom">Affiliate Management</span>
+            </div>
+        </div>
+        
+        <!-- Danh sách các Menu chức năng Admin -->
+        <nav class="admin-nav-menu">
+            <ul class="menu-list">
+                <li>
+                    <a href="overview.html" th:href="@{/admin/overview}" class="menu-item-link">
+                        <div class="menu-item" th:classappend="${activePage == 'overview'} ? 'active'">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
+                            <span>Tổng quan</span>
+                        </div>
+                    </a>
+                </li>
+                <li>
+                    <a href="users.html" th:href="@{/admin/users}" class="menu-item-link">
+                        <div class="menu-item" th:classappend="${activePage == 'users'} ? 'active'">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                            <span>Tài khoản & Phân quyền</span>
+                        </div>
+                    </a>
+                </li>
+                <li>
+                    <a href="campaigns.html" th:href="@{/admin/campaigns}" class="menu-item-link">
+                        <div class="menu-item" th:classappend="${activePage == 'campaigns'} ? 'active'">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+                            <span>Quản lý dự án</span>
+                        </div>
+                    </a>
+                </li>
+                <li>
+                    <a href="tracking.html" th:href="@{/admin/tracking}" class="menu-item-link">
+                        <div class="menu-item" th:classappend="${activePage == 'tracking'} ? 'active'">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                            <span>Tracking & Giám sát</span>
+                        </div>
+                    </a>
+                </li>
+                <li>
+                    <a href="finance.html" th:href="@{/admin/finance}" class="menu-item-link">
+                        <div class="menu-item" th:classappend="${activePage == 'finance'} ? 'active'">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                            <span>Tài chính & Đối soát</span>
+                        </div>
+                    </a>
+                </li>
+                <li>
+                    <a href="disputes.html" th:href="@{/admin/disputes}" class="menu-item-link">
+                        <div class="menu-item" th:classappend="${activePage == 'disputes'} ? 'active'">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                            <span>Quản lý khiếu nại</span>
+                        </div>
+                    </a>
+                </li>
+                <li>
+                    <a href="logs.html" th:href="@{/admin/logs}" class="menu-item-link">
+                        <div class="menu-item" th:classappend="${activePage == 'logs'} ? 'active'">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                            <span>Nhật ký hệ thống</span>
+                        </div>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+        
+        <!-- Thẻ biểu thị Trạng thái hoạt động của Hệ thống phía góc dưới -->
+        <div class="system-status-card">
+            <div class="status-pulse-dot">
+                <span class="pulse-ring"></span>
+                <span class="pulse-point"></span>
+            </div>
+            <div class="status-meta">
+                <span class="status-title">Hệ thống: Bình thường</span>
+                <p class="status-subtitle">Server Uptime: 99.98%</p>
+            </div>
+        </div>
+    </aside>
+
+</body>
+</html>

@@ -1,0 +1,925 @@
+/* Import Font chữ công nghệ Plus Jakarta Sans */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+    --primary-color: #3f2fd4;
+    --primary-hover: #2e1fc1;
+    --primary-light: #f0efff;
+    --bg-dark: #080c24; /* Sidebar màu xanh đen sâu cực kỳ cao cấp */
+    --bg-main: #f8fafc; /* Nền chính xám xanh nhạt dịu mắt */
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+    --text-link: #3f2fd4;
+    --border-color: #f1f5f9;
+    --border-hover: #e2e8f0;
+    --font-family: 'Plus Jakarta Sans', sans-serif;
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    --shadow-lg: 0 10px 15px -3px rgba(15, 23, 42, 0.04), 0 4px 6px -2px rgba(15, 23, 42, 0.02);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font-family);
+    color: var(--text-main);
+    background-color: var(--bg-main);
+    height: 100vh;
+    overflow: hidden;
+    line-height: 1.5;
+}
+
+/* Khung Bố cục chính Dashboard */
+.profile-container {
+    display: flex;
+    height: 100vh;
+    width: 100vw;
+}
+
+/* ==========================================================================
+   Thanh Điều hướng Bên trái (Left Sidebar)
+   ========================================================================== */
+.sidebar {
+    width: 280px;
+    height: 100%;
+    background-color: var(--bg-dark);
+    display: flex;
+    flex-direction: column;
+    padding: 2rem 1.5rem;
+    color: #ffffff;
+    flex-shrink: 0;
+}
+
+/* Logo Sidebar */
+.sidebar-logo {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 3rem;
+    padding-left: 0.5rem;
+}
+
+.logo-icon {
+    width: 36px;
+    height: 36px;
+    filter: drop-shadow(0 4px 6px rgba(63, 47, 212, 0.25));
+}
+
+.logo-text-group {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.logo-text-top {
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: #ffffff;
+    letter-spacing: -0.5px;
+    text-transform: uppercase;
+    line-height: 1.1;
+}
+
+.logo-text-bottom {
+    font-size: 0.52rem;
+    font-weight: 700;
+    color: #94a3b8;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-top: 0.1rem;
+    line-height: 1.1;
+}
+
+/* Danh sách Menu */
+.menu-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.menu-item-link {
+    text-decoration: none;
+    color: #94a3b8;
+}
+
+.menu-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.85rem 1.25rem;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+/* Hiệu ứng Active cho Hồ sơ cá nhân */
+.menu-item.active {
+    background-color: var(--primary-color);
+    color: #ffffff;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(63, 47, 212, 0.35);
+}
+
+.menu-item:hover:not(.active) {
+    background-color: rgba(255, 255, 255, 0.05);
+    color: #ffffff;
+}
+
+/* Thẻ hạng KOC Vàng dưới Sidebar */
+.gold-card {
+    margin-top: auto;
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(217, 119, 6, 0.05) 100%);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    border-radius: 16px;
+    padding: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.gold-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(245, 158, 11, 0.5);
+    box-shadow: 0 6px 12px rgba(245, 158, 11, 0.1);
+}
+
+.gold-crown-icon {
+    width: 32px;
+    height: 32px;
+    background: linear-gradient(135deg, #fef08a 0%, #f59e0b 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #78350f;
+    box-shadow: 0 4px 6px rgba(245, 158, 11, 0.2);
+}
+
+.gold-meta {
+    flex: 1;
+}
+
+.gold-title {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: #fef08a;
+}
+
+.gold-subtitle {
+    font-size: 0.7rem;
+    color: #cbd5e1;
+    margin-top: 0.1rem;
+}
+
+.gold-arrow {
+    color: #fef08a;
+    display: flex;
+    align-items: center;
+}
+
+/* ==========================================================================
+   Khung nội dung chính (Main Content Area)
+   ========================================================================== */
+.main-content {
+    flex: 1;
+    height: 100%;
+    background-color: var(--bg-main);
+    padding: 1.75rem 2.25rem;
+    overflow-y: auto;
+}
+
+/* Header bar phía trên */
+.header-bar {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.icon-button {
+    background: #ffffff;
+    border: 1px solid var(--border-color);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--text-muted);
+    position: relative;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.2s ease;
+}
+
+.icon-button:hover {
+    color: var(--text-main);
+    border-color: var(--border-hover);
+}
+
+.notification-badge {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    width: 8px;
+    height: 8px;
+    background-color: #ef4444;
+    border-radius: 50%;
+    border: 1px solid #ffffff;
+}
+
+.user-dropdown-container {
+    position: relative;
+}
+
+.user-profile-menu {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    cursor: pointer;
+    padding: 0.35rem 0.75rem;
+    border-radius: 9999px;
+    background-color: #ffffff;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+    transition: all 0.2s ease;
+}
+
+.user-profile-menu:hover {
+    background-color: #f8fafc;
+    border-color: var(--border-hover);
+}
+
+.user-profile-menu.active {
+    background-color: #f1f5f9;
+}
+
+.user-small-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    object-fit: cover;
+    box-shadow: var(--shadow-sm);
+}
+
+.user-menu-name {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+.chevron-down {
+    color: var(--text-muted);
+    transition: transform 0.2s ease;
+}
+
+.user-profile-menu.active .chevron-down {
+    transform: rotate(180deg);
+}
+
+/* Menu thả xuống cực kỳ cao cấp */
+.dropdown-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    width: 150px;
+    background-color: #ffffff;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.08), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
+    padding: 0.4rem;
+    z-index: 100;
+    opacity: 0;
+    transform: translateY(-8px);
+    pointer-events: none;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dropdown-menu.show {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.65rem 0.75rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #ef4444; /* Màu đỏ nổi bật cho Đăng xuất */
+    text-decoration: none;
+    transition: all 0.15s ease;
+    cursor: pointer;
+}
+
+.dropdown-item:hover {
+    background-color: #fef2f2;
+}
+
+/* Nhóm nút Auth khi chưa đăng nhập */
+.auth-buttons {
+    display: none; /* Hide by default in static HTML */
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.auth-buttons.auth-show {
+    display: flex; /* Show only when rendered dynamically by Thymeleaf */
+}
+
+.btn-auth-login {
+    padding: 0.45rem 0.85rem;
+    background-color: transparent;
+    border: 1px solid var(--border-hover);
+    color: var(--text-muted);
+    border-radius: 10px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.btn-auth-login:hover {
+    color: var(--text-main);
+    background-color: #f8fafc;
+    border-color: var(--border-hover);
+}
+
+.btn-auth-register {
+    padding: 0.45rem 0.85rem;
+    background-color: var(--primary-color);
+    border: none;
+    color: #ffffff;
+    border-radius: 10px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-decoration: none;
+    box-shadow: 0 4px 6px -1px rgba(63, 47, 212, 0.12);
+    transition: all 0.2s ease;
+}
+
+.btn-auth-register:hover {
+    background-color: var(--primary-hover);
+    box-shadow: 0 6px 12px -2px rgba(63, 47, 212, 0.2);
+}
+
+/* ==========================================================================
+   Thẻ Header hồ sơ (Cover & Avatar Card)
+   ========================================================================== */
+.cover-card {
+    background-color: #ffffff;
+    border-radius: 20px;
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+    margin-bottom: 1.75rem;
+    border: 1px solid rgba(241, 245, 249, 0.8);
+}
+
+.cover-image {
+    height: 180px;
+    background-image: url('../images/profile_cover.png');
+    background-size: cover;
+    background-position: center;
+    position: relative;
+}
+
+/* Đè mờ chuyển tiếp cho cover */
+.cover-image::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 60px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.4) 100%);
+}
+
+.profile-header-details {
+    padding: 1.5rem 2.25rem 1.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+}
+
+/* Khung Avatar đè lên Cover */
+.avatar-container {
+    position: absolute;
+    left: 2.25rem;
+    top: -65px;
+    width: 130px;
+    height: 130px;
+    border-radius: 50%;
+    border: 5px solid #ffffff;
+    box-shadow: var(--shadow-lg);
+    background-color: #ffffff;
+}
+
+.avatar-image {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+/* Huy hiệu vương miện trên avatar ring */
+.avatar-crown {
+    position: absolute;
+    bottom: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, #fef08a 0%, #f59e0b 100%);
+    border: 2px solid #ffffff;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #78350f;
+    box-shadow: var(--shadow-sm);
+    font-size: 0.65rem;
+}
+
+/* Thông tin chữ bên cạnh Avatar */
+.user-meta {
+    margin-left: 145px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.user-name-group {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.user-fullname {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: var(--text-main);
+    letter-spacing: -0.75px;
+}
+
+.rank-badge {
+    background-color: rgba(245, 158, 11, 0.12);
+    border: 1px solid rgba(245, 158, 11, 0.2);
+    color: #d97706;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.koc-id-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.btn-copy {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    transition: color 0.2s ease;
+}
+
+.btn-copy:hover {
+    color: var(--primary-color);
+}
+
+/* Nút Chỉnh sửa Hồ sơ */
+.btn-primary {
+    padding: 0.7rem 1.25rem;
+    background-color: var(--primary-color);
+    color: #ffffff;
+    border: none;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    box-shadow: 0 4px 6px -1px rgba(63, 47, 212, 0.15);
+    transition: all 0.25s ease;
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-hover);
+    box-shadow: 0 6px 12px -2px rgba(63, 47, 212, 0.25);
+    transform: translateY(-0.5px);
+}
+
+/* ==========================================================================
+   Khung Lưới Thẻ bên dưới (2 Thẻ song song)
+   ========================================================================== */
+.cards-grid {
+    display: flex;
+    gap: 1.5rem;
+    margin-bottom: 1.75rem;
+}
+
+.card {
+    flex: 1;
+    background-color: #ffffff;
+    border-radius: 20px;
+    padding: 1.5rem;
+    box-shadow: var(--shadow-md);
+    border: 1px solid rgba(241, 245, 249, 0.8);
+}
+
+.card-title-group {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 1rem;
+}
+
+.card-title-icon {
+    width: 24px;
+    height: 24px;
+    color: var(--primary-color);
+}
+
+.card-title {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--text-main);
+    letter-spacing: -0.25px;
+}
+
+/* Bảng Thông tin cá nhân */
+.info-list {
+    list-style: none;
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 0.9rem;
+}
+
+.info-row:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.info-label {
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.info-value {
+    color: var(--text-main);
+    font-weight: 700;
+    text-align: right;
+}
+
+/* Thẻ liên kết mạng xã hội */
+.social-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.social-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0 0.85rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.social-row:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.social-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.social-icon-box {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    box-shadow: var(--shadow-sm);
+}
+
+.social-icon-box.tiktok {
+    background-color: #000000;
+}
+
+.social-icon-box.shopee {
+    background-color: #fe5722;
+}
+
+.social-meta {
+    display: flex;
+    flex-direction: column;
+}
+
+.social-name {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+.social-handle {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 0.1rem;
+    font-weight: 500;
+}
+
+.social-handle.shopee-active {
+    color: #10b981;
+    font-weight: 600;
+}
+
+.social-status-text {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+.social-check-circle {
+    width: 20px;
+    height: 20px;
+    background-color: #10b981;
+    color: #ffffff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Nút dashed thêm liên kết */
+.btn-dashed {
+    width: 100%;
+    padding: 0.7rem;
+    background-color: transparent;
+    border: 1.5px dashed rgba(63, 47, 212, 0.4);
+    border-radius: 12px;
+    color: var(--primary-color);
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: all 0.2s ease;
+}
+
+.btn-dashed:hover {
+    background-color: rgba(63, 47, 212, 0.03);
+    border-color: var(--primary-color);
+}
+
+/* ==========================================================================
+   Khung Thông tin Thanh toán ở dưới cùng
+   ========================================================================== */
+.payment-card {
+    background-color: #ffffff;
+    border-radius: 20px;
+    padding: 1.5rem;
+    box-shadow: var(--shadow-md);
+    border: 1px solid rgba(241, 245, 249, 0.8);
+}
+
+.payment-body {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.bank-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+/* Logo Vietcombank */
+.bank-logo-box {
+    width: 48px;
+    height: 48px;
+    background-color: #10b981;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    box-shadow: var(--shadow-sm);
+    font-size: 1.25rem;
+    font-weight: 800;
+}
+
+.bank-logo-svg {
+    width: 32px;
+    height: 32px;
+}
+
+.bank-meta {
+    display: flex;
+    flex-direction: column;
+}
+
+.bank-name {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+.bank-sub {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 0.1rem;
+    font-weight: 500;
+}
+
+/* Trường thông tin tài khoản */
+.bank-details {
+    display: flex;
+    gap: 4rem;
+}
+
+.bank-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+.field-label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.field-value {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text-main);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-toggle-view {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    padding: 0;
+    transition: color 0.2s ease;
+}
+
+.btn-toggle-view:hover {
+    color: var(--text-main);
+}
+
+/* Nút cập nhật tài khoản (Outlined) */
+.btn-outlined {
+    padding: 0.7rem 1.25rem;
+    background-color: transparent;
+    color: var(--primary-color);
+    border: 1.5px solid var(--primary-color);
+    border-radius: 12px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.25s ease;
+}
+
+.btn-outlined:hover {
+    background-color: var(--primary-light);
+}
+
+/* ==========================================================================
+   Tương thích thiết bị di động (Responsive Dashboard)
+   ========================================================================== */
+@media (max-width: 1200px) {
+    .bank-details {
+        gap: 2rem;
+    }
+}
+
+@media (max-width: 992px) {
+    .profile-container {
+        flex-direction: column;
+    }
+    
+    .sidebar {
+        width: 100%;
+        height: auto;
+        padding: 1.25rem;
+    }
+    
+    .sidebar-logo {
+        margin-bottom: 1.5rem;
+    }
+    
+    .menu-list {
+        flex-direction: row;
+        overflow-x: auto;
+        padding-bottom: 0.5rem;
+    }
+    
+    .menu-item {
+        white-space: nowrap;
+    }
+    
+    .gold-card {
+        display: none; /* Hide bottom card on small vertical space */
+    }
+    
+    .main-content {
+        padding: 1.25rem;
+    }
+    
+    .cards-grid {
+        flex-direction: column;
+    }
+    
+    .payment-body {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1.5rem;
+    }
+    
+    .btn-outlined {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 768px) {
+    .profile-header-details {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1.5rem;
+        padding-top: 5rem;
+    }
+    
+    .avatar-container {
+        top: -65px;
+        left: 2.25rem;
+    }
+    
+    .user-meta {
+        margin-left: 0;
+        margin-top: 1rem;
+    }
+    
+    .btn-primary {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .bank-details {
+        flex-direction: column;
+        gap: 1rem;
+    }
+}

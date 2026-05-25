@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nhật ký Hoạt động - Admin Portal</title>
+    
+    <!-- Meta SEO -->
+    <meta name="description" content="Nhật ký hoạt động hệ thống, truy vết kiểm toán và bảo mật kiểm soát dữ liệu.">
+    <meta name="robots" content="noindex, nofollow">
+    
+    <!-- CSS (overview.css chứa sidebar, logs.css chứa giao diện trang) -->
+    <link rel="stylesheet" href="../../static/css/admin/overview.css" th:href="@{/css/admin/overview.css}">
+    <link rel="stylesheet" href="../../static/css/admin/logs.css" th:href="@{/css/admin/logs.css}">
+</head>
+<body>
+
+    <div class="overview-container">
+        
+        <!-- Thanh Điều hướng Bên trái Admin -->
+        <aside th:replace="~{admin/nav :: sidebar('logs')}"></aside>
+        
+        <!-- Khung nội dung chính -->
+        <main class="main-content">
+            
+            <!-- Thanh tác vụ trên cùng -->
+            <header class="header-bar">
+                <div class="header-title-wrapper">
+                    <h1 class="welcome-heading">Nhật ký Hoạt động (Audit Trail)</h1>
+                    <p class="welcome-subtitle">Theo dõi và truy vết tất cả các hoạt động quan trọng trong hệ thống.</p>
+                </div>
+                
+                <div class="header-actions">
+                    <!-- Nút Xuất Log CSV giống ảnh -->
+                    <button type="button" class="btn-export-csv" id="btnExportCSV">
+                        <!-- Icon download -->
+                        <svg class="export-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        <span>Xuất Log (CSV)</span>
+                    </button>
+
+                    <!-- Dropdown Admin -->
+                    <div class="user-dropdown-container">
+                        <div class="user-profile-menu" id="userProfileMenu" aria-haspopup="true" aria-expanded="false">
+                            <img src="../../static/images/profile_avatar.png" th:src="@{/images/profile_avatar.png}" class="user-small-avatar" alt="Admin Avatar">
+                            <span class="user-menu-name">Admin System</span>
+                            <svg class="chevron-down" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+                        </div>
+                        
+                        <!-- Dropdown menu Đăng xuất -->
+                        <div class="dropdown-menu" id="userDropdownMenu" role="menu">
+                            <a href="../login.html" th:href="@{/login}" class="dropdown-item" role="menuitem">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                                    <polyline points="16 17 21 12 16 7"/>
+                                    <line x1="21" y1="12" x2="9" y2="12"/>
+                                </svg>
+                                <span>Đăng xuất</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- BẢNG NHẬT KÝ HỆ THỐNG VÀ BỘ LỌC KIỂM TOÁN -->
+            <section class="card logs-card">
+                <!-- Thanh bộ lọc cao cấp -->
+                <div class="filters-bar">
+                    <div class="search-wrapper">
+                        <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                        <input type="text" id="logSearchInput" class="filter-input-text" placeholder="Tìm kiếm theo Email/Tên...">
+                    </div>
+                    
+                    <div class="filter-select-group">
+                        <select class="filter-select" id="logActionFilter">
+                            <option value="">Loại hành động</option>
+                            <option value="Cập nhật">Cập nhật</option>
+                            <option value="Phê duyệt">Phê duyệt</option>
+                            <option value="Xóa">Xóa</option>
+                        </select>
+
+                        <input type="text" class="filter-input-date" value="24/05/2026 - 24/05/2026" readonly>
+
+                        <select class="filter-select" id="logModuleFilter">
+                            <option value="">Mô-đun/Đối tượng</option>
+                            <option value="CAMPAIGN">Chiến dịch (Campaign)</option>
+                            <option value="WITHDRAWAL">Rút tiền (Withdrawal)</option>
+                            <option value="KOC_PROFILE">Hồ sơ KOC</option>
+                            <option value="SYSTEM_SETTINGS">Cấu hình hệ thống</option>
+                        </select>
+
+                        <select class="filter-select" id="logResultFilter">
+                            <option value="">Kết quả</option>
+                            <option value="success">Thành công</option>
+                            <option value="failed">Thất bại</option>
+                        </select>
+                    </div>
+
+                    <button type="button" class="btn-filter-logs" id="btnFilterLogs">
+                        <svg class="filter-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
+                        <span>Lọc Dữ Liệu</span>
+                    </button>
+                </div>
+
+                <!-- Bảng nhật ký Audit Log -->
+                <div class="table-container">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Thời gian ↓</th>
+                                <th>Tài khoản Admin</th>
+                                <th>Hành động</th>
+                                <th>Mô-đun/Đối tượng</th>
+                                <th>Chi tiết Thay đổi</th>
+                                <th>Địa chỉ IP</th>
+                                <th style="width: 40px; text-align: center;"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="logsTableBody">
+                            <th:block th:each="log, iterStat : ${logsData?.auditLogs}">
+                                <!-- Dòng Log chính -->
+                                <tr class="log-row" th:classappend="${iterStat.first} ? 'expanded' : ''" th:data-id="${log.id}">
+                                    <td class="col-time" th:text="${log.timestamp}">24/05/2026 - 14:30:22</td>
+                                    <td class="col-user">
+                                        <div class="user-info-cell">
+                                            <img src="../../static/images/profile_avatar.png" th:src="@{/images/profile_avatar.png}" class="table-avatar" alt="Avatar">
+                                            <div class="user-names">
+                                                <span class="user-full-name" th:text="${log.adminName}">Nguyễn Văn A</span>
+                                                <span class="user-handle" th:text="${log.adminEmail}">nguyenvana@koc.vn</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="col-action-badge">
+                                        <span class="log-action-badge" th:classappend="${log.actionClass}" th:text="${log.action}">Cập nhật</span>
+                                    </td>
+                                    <td class="col-target-object">
+                                        <div class="object-cell">
+                                            <span class="object-name" th:text="${log.targetObject}">Chiến dịch BST LSOUL</span>
+                                            <span class="object-id" th:text="${'(ID: ' + log.targetObjectId + ')'}">(ID: CAM-2026-007)</span>
+                                        </div>
+                                    </td>
+                                    <td class="col-detail" th:text="${log.changeDetail}">Thay đổi Tỷ lệ hoa hồng từ [10%] thành [12%] Hạng: Hạng Vàng</td>
+                                    <td class="col-ip" th:text="${log.ipAddress}">113.190.***.***</td>
+                                    <td style="text-align: center;">
+                                        <button type="button" class="btn-expand-row" aria-label="Xem chi tiết log">
+                                            <svg class="chevron-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                                        </button>
+                                    </td>
+                                </tr>
+                                
+                                <!-- Dòng Mở rộng Chi tiết Log JSON (Mở mặc định cho dòng 1 giống hệt ảnh chụp thiết kế!) -->
+                                <tr class="log-expansion-row" th:style="${iterStat.first} ? 'display: table-row;' : 'display: none;'">
+                                    <td colspan="7" style="padding: 0;">
+                                        <div class="log-expansion-panel">
+                                            <h4 class="panel-section-title">Chi tiết bản ghi (Log Detail)</h4>
+                                            
+                                            <div class="copy-json-wrapper">
+                                                <button type="button" class="btn-copy-json" th:data-json="${log.jsonDetail}">Sao chép 📋</button>
+                                            </div>
+                                            
+                                            <div class="code-block-wrapper">
+                                                <pre><code class="language-json" th:text="${log.jsonDetail}">{
+  "log_id": "LOG-20260524-143022-7XK9L",
+  "timestamp": "2026-05-24T14:30:22+07:00",
+  "admin_id": "ADM-1001",
+  "admin_name": "Nguyễn Văn A"
+}</code></pre>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </th:block>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="pagination-container">
+                    <span class="pagination-info">Hiển thị 8 dòng trên tổng số 200 dòng</span>
+                    <div class="page-numbers">
+                        <button type="button" class="page-arrow" disabled>‹</button>
+                        <button type="button" class="page-num active">1</button>
+                        <button type="button" class="page-num">2</button>
+                        <button type="button" class="page-num">3</button>
+                        <button type="button" class="page-num">4</button>
+                        <button type="button" class="page-num">5</button>
+                        <span class="page-dots">...</span>
+                        <button type="button" class="page-num">25</button>
+                        <button type="button" class="page-arrow">›</button>
+                    </div>
+                </div>
+            </section>
+            
+        </main>
+    </div>
+
+    <!-- TOAST THÔNG BÁO CHO ADMIN -->
+    <div class="toast-notification" id="adminToast">
+        <span class="toast-icon">✓</span>
+        <span class="toast-message">Đã sao chép chi tiết log thành công!</span>
+    </div>
+
+    <script src="../../static/js/admin/logs.js" th:src="@{/js/admin/logs.js}"></script>
+</body>
+</html>

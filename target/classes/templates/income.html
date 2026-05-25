@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý Thu nhập & Rút tiền - Affiliate Network</title>
+    
+    <!-- Meta SEO tiêu chuẩn -->
+    <meta name="description" content="Quản lý thu nhập tiếp thị liên kết KOC/KOL, số dư khả dụng, hoa hồng đối soát và lịch sử giao dịch thanh toán ngân hàng đối tác.">
+    <meta name="robots" content="noindex, nofollow">
+    
+    <!-- Liên kết Tệp CSS thiết kế cao cấp (Có fallback href để mở trực tiếp trên trình duyệt) -->
+    <link rel="stylesheet" href="../static/css/income.css" th:href="@{/css/income.css}">
+</head>
+<body>
+
+    <div class="income-container">
+        
+        <!-- ==========================================================================
+           Thanh Điều hướng Bên trái (Left Sidebar) - Có Menu phụ mở rộng
+           ========================================================================== -->
+        <!-- ==========================================================================
+           Thanh Điều hướng Bên trái (Left Sidebar) - Nạp từ fragment nav.html
+           ========================================================================== -->
+        <aside th:replace="~{nav :: sidebar('income')}"></aside>
+        
+        <!-- ==========================================================================
+           Khung nội dung chính (Main Content Area)
+           ========================================================================== -->
+        <main class="main-content">
+            
+            <!-- Thanh tác vụ trên cùng (Header bar) -->
+            <header class="header-bar">
+                <div class="header-title-wrapper">
+                    <h1 class="welcome-heading">Quản lý Thu nhập & Rút tiền</h1>
+                    <p class="welcome-subtitle">Theo dõi thu nhập, hoa hồng và lịch sử giao dịch của bạn.</p>
+                </div>
+                
+                <div class="header-actions">
+                    <!-- Nút thông báo -->
+                    <button type="button" class="icon-button" id="bellNotificationBtn" aria-label="Thông báo hệ thống">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                        </svg>
+                        <span class="notification-badge"></span>
+                    </button>
+                    
+                    <!-- Thẻ chứa Avatar & Họ tên góc -->
+                    <div class="user-dropdown-container">
+                        <div class="user-profile-menu" id="userProfileMenu" aria-haspopup="true" aria-expanded="false">
+                            <img src="../static/images/profile_avatar.png" th:src="@{/images/profile_avatar.png}" class="user-small-avatar" alt="Avatar góc">
+                            <span class="user-menu-name" th:text="${profile?.fullName}">Mai Phương</span>
+                            <svg class="chevron-down" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+                        </div>
+                        
+                        <!-- Hộp thoại dropdown Đăng xuất -->
+                        <div class="dropdown-menu" id="userDropdownMenu" role="menu">
+                            <a href="login.html" th:href="@{/login}" class="dropdown-item" role="menuitem">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                                    <polyline points="16 17 21 12 16 7"/>
+                                    <line x1="21" y1="12" x2="9" y2="12"/>
+                                </svg>
+                                <span>Đăng xuất</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- LƯỚI 2 HỘP KPI THU NHẬP (65% / 35% Bố cục) -->
+            <div class="kpi-row">
+                <!-- HỘP TRÁI (65% width): Số dư khả dụng -->
+                <div class="kpi-balance-card">
+                    <div class="balance-card-left">
+                        <div class="kpi-header">
+                            <div class="kpi-icon-box green">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg>
+                            </div>
+                            <div class="kpi-title-group">
+                                <span class="kpi-title">Số dư khả dụng</span>
+                                <div class="kpi-info-icon" title="Số dư thực tế bạn có thể rút về tài khoản ngân hàng bất kỳ lúc nào">i</div>
+                            </div>
+                        </div>
+                        <div class="kpi-body">
+                            <!-- ID Số dư khả dụng động để JS trừ tiền thật -->
+                            <h2 class="kpi-value green-text" id="availableBalanceText" th:text="${availableBalance != null ? availableBalance : '15,500,000 VNĐ'}">15,500,000 VNĐ</h2>
+                        </div>
+                        <div class="kpi-footer-bank">
+                            <span class="bank-route-text">Rút về:</span>
+                            <div class="bank-vcb-badge">VCB</div>
+                            <span class="bank-details-text">Vietcombank ****1234</span>
+                            <button type="button" class="btn-change-bank" id="btnChangeBank">Thay đổi</button>
+                        </div>
+                    </div>
+                    <!-- Nút hành động yêu cầu rút tiền lớn -->
+                    <button type="button" class="btn-withdraw-action" id="btnWithdrawAction">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                        <span>YÊU CẦU RÚT TIỀN</span>
+                    </button>
+                </div>
+                
+                <!-- HỘP PHẢI (35% width): Hoa hồng chờ đối soát -->
+                <div class="kpi-pending-card">
+                    <!-- Nền ví chìm sang trọng -->
+                    <div class="wallet-background-svg">
+                        <svg width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M12 4v16M2 12h20"/></svg>
+                    </div>
+                    <div class="kpi-header">
+                        <div class="kpi-icon-box orange">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        </div>
+                        <div class="kpi-title-group">
+                            <span class="kpi-title">Hoa hồng chờ đối soát</span>
+                            <div class="kpi-info-icon" title="Số tiền hoa hồng tạm tính từ các đơn hàng mới phát sinh, đang được đối soát hợp lệ">i</div>
+                        </div>
+                    </div>
+                    <div class="kpi-body">
+                        <h2 class="kpi-value orange-text" th:text="${pendingBalance != null ? pendingBalance : '2,300,000 VNĐ'}">2,300,000 VNĐ</h2>
+                        <p class="pending-hint-text">Số tiền này sẽ được chuyển sang số dư khả dụng sau khi hoàn tất đối soát.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- BẢNG CHI TIẾT GIAO DỊCH VÀ ĐƠN HÀNG -->
+            <div class="card transactions-card">
+                
+                <!-- Thanh tác vụ và Lọc của Bảng -->
+                <div class="table-header-bar">
+                    <!-- Bộ chuyển Tab trái -->
+                    <div class="table-tabs">
+                        <button type="button" class="table-tab-btn active" id="tabOrders">Chi tiết Đơn hàng</button>
+                        <button type="button" class="table-tab-btn" id="tabWithdrawals">Lịch sử Rút tiền</button>
+                    </div>
+                    
+                    <!-- Hộp lọc ngày và nút Lọc bên phải -->
+                    <div class="table-filters">
+                        <div class="date-select-wrapper">
+                            <svg class="select-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                            <select class="filter-select">
+                                <option>01/05/2024 - 19/05/2024</option>
+                                <option>Tháng này</option>
+                                <option>Tháng trước</option>
+                            </select>
+                            <svg class="chevron-select" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                        </div>
+                        
+                        <button type="button" class="btn-filter" id="btnFilterTable">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+                            <span>Bộ lọc</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Khung Bảng giao dịch chính -->
+                <div class="table-container">
+                    <table class="campaign-table" id="transactionTable">
+                        <thead>
+                            <tr>
+                                <th>Mã Đơn</th>
+                                <th>Chiến dịch</th>
+                                <th>Tổng Tiền</th>
+                                <th>Hoa Hồng</th>
+                                <th>Ngày tạo</th>
+                                <th style="text-align: right;">Trạng Thái</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                            <!-- Loop qua danh sách giao dịch nạp từ Thymeleaf -->
+                            <tr th:each="tx : ${transactions}">
+                                <td class="col-ord-id" th:text="${tx.orderId}">#ORD12345678</td>
+                                <td>
+                                    <div class="campaign-cell">
+                                        <!-- Logo Mạng xã hội/Sàn Affiliate tương ứng -->
+                                        <div class="traffic-mini-badge" th:classappend="${tx.trafficSource}">
+                                            <span th:if="${tx.trafficSource == 'shopee'}" class="badge-s">S</span>
+                                            <svg th:if="${tx.trafficSource == 'tiktok'}" width="10" height="10" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.17-2.86-.74-3.94-1.74-.22-.2-.43-.4-.64-.62v7.14c.01 1.87-.5 3.79-1.75 5.17-1.42 1.58-3.67 2.45-5.79 2.14-2.45-.35-4.63-2.14-5.26-4.57-.75-2.9.75-6.09 3.52-7.14 1.13-.43 2.37-.53 3.55-.28V14c-1.39-.42-2.99-.08-4.04.91-1.17 1.1-1.49 2.94-.8 4.39.63 1.33 2.1 2.22 3.58 2.15 1.55.03 2.99-.95 3.42-2.43.14-.49.19-.99.18-1.5V.02h.02z"/>
+                                            </svg>
+                                        </div>
+                                        <span class="campaign-cell-name" th:text="${tx.campaignName}">BST LSOUL TikTok</span>
+                                    </div>
+                                </td>
+                                <td class="col-money" th:text="${tx.totalAmount}">1,250,000 VNĐ</td>
+                                <td class="col-commission green-text" th:text="${tx.commission}">187,500 VNĐ</td>
+                                <td class="col-date" th:text="${tx.createdDate}">19/05/2024 14:32</td>
+                                <td class="col-status">
+                                    <div class="status-badge" th:classappend="${tx.status}">
+                                        <span class="status-dot"></span>
+                                        <span th:text="${tx.statusText}">Thành công</span>
+                                    </div>
+                                </td>
+                            </tr>
+                            
+                            <!-- Static Fallback HTML rows for double clicking templates directly -->
+                            <tr th:remove="all">
+                                <td class="col-ord-id">#ORD12345677</td>
+                                <td>
+                                    <div class="campaign-cell">
+                                        <div class="traffic-mini-badge shopee"><span class="badge-s">S</span></div>
+                                        <span class="campaign-cell-name">Sale Sinh Nhật Shopee</span>
+                                    </div>
+                                </td>
+                                <td class="col-money">980,000 VNĐ</td>
+                                <td class="col-commission green-text">117,600 VNĐ</td>
+                                <td class="col-date">19/05/2024 11:15</td>
+                                <td class="col-status">
+                                    <div class="status-badge pending">
+                                        <span class="status-dot"></span>
+                                        <span>Chờ đối soát</span>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr th:remove="all">
+                                <td class="col-ord-id">#ORD12345676</td>
+                                <td>
+                                    <div class="campaign-cell">
+                                        <div class="traffic-mini-badge lazada"><span class="badge-s">S</span></div>
+                                        <span class="campaign-cell-name">Điện Tử - Công Nghệ</span>
+                                    </div>
+                                </td>
+                                <td class="col-money">2,450,000 VNĐ</td>
+                                <td class="col-commission green-text">245,000 VNĐ</td>
+                                <td class="col-date">18/05/2024 20:45</td>
+                                <td class="col-status">
+                                    <div class="status-badge success">
+                                        <span class="status-dot"></span>
+                                        <span>Thành công</span>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Phân trang ở chân bảng (Pagination controls) -->
+                <footer class="table-footer">
+                    <div class="footer-left">
+                        <span>Hiển thị</span>
+                        <div class="rows-select-wrapper">
+                            <select class="rows-select">
+                                <option>10</option>
+                                <option>20</option>
+                                <option>50</option>
+                            </select>
+                            <svg class="chevron-select-small" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                        </div>
+                        <span>trên mỗi trang</span>
+                    </div>
+                    
+                    <div class="footer-right">
+                        <ul class="pagination-list">
+                            <li class="page-item-btn"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></li>
+                            <li class="page-item active">1</li>
+                            <li class="page-item">2</li>
+                            <li class="page-item">3</li>
+                            <li class="page-item">4</li>
+                            <li class="page-item">5</li>
+                            <li class="page-dots">...</li>
+                            <li class="page-item">12</li>
+                            <li class="page-item-btn"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></li>
+                        </ul>
+                    </div>
+                </footer>
+                
+            </div>
+            
+        </main>
+        
+    </div>
+
+    <!-- ==========================================================================
+       SIDE DRAWER / SLIDE MODAL: YÊU CẦU RÚT TIỀN (Chỉ số mô phỏng tương tác đỉnh cao)
+       ========================================================================== -->
+    <div class="drawer-overlay" id="drawerOverlay"></div>
+    <div class="withdraw-drawer" id="withdrawDrawer">
+        <!-- Header của Drawer -->
+        <div class="drawer-header">
+            <h3 class="drawer-heading">Yêu cầu Rút tiền</h3>
+            <button type="button" class="btn-close-drawer" id="btnCloseDrawer" aria-label="Đóng biểu mẫu">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+        
+        <!-- Thân của Drawer chứa Form nhập liệu -->
+        <div class="drawer-body">
+            <!-- Form ban đầu -->
+            <form id="withdrawForm" class="drawer-form">
+                <!-- Hộp hiển thị số dư khả dụng thực tế -->
+                <div class="drawer-balance-info">
+                    <span class="drawer-balance-label">Số dư khả dụng thực tế</span>
+                    <span class="drawer-balance-value" id="drawerAvailableText">15,500,000 VNĐ</span>
+                </div>
+                
+                <!-- Trường nhập tiền rút -->
+                <div class="drawer-input-group">
+                    <label for="withdrawAmount" class="drawer-label">Nhập số tiền muốn rút (VNĐ)</label>
+                    <div class="drawer-input-wrapper">
+                        <input type="number" id="withdrawAmount" class="drawer-text-input" placeholder="Nhập số tiền muốn rút..." required>
+                        <span class="currency-label">VNĐ</span>
+                    </div>
+                    <!-- Thông báo lỗi nhập quá số dư khả dụng -->
+                    <span class="drawer-error-text" id="withdrawError">Số dư khả dụng không đủ để thực hiện yêu cầu này!</span>
+                </div>
+                
+                <!-- Thẻ thông tin tài khoản thụ hưởng cố định -->
+                <div class="drawer-bank-box">
+                    <span class="bank-box-title">Tài khoản thụ hưởng nhận tiền</span>
+                    <ul class="bank-box-details">
+                        <li class="bank-box-row">
+                            <span class="bank-box-label">Ngân hàng thụ hưởng</span>
+                            <span class="bank-box-value">Vietcombank</span>
+                        </li>
+                        <li class="bank-box-row">
+                            <span class="bank-box-label">Tên chủ tài khoản</span>
+                            <span class="bank-box-value">Mai Phương</span>
+                        </li>
+                        <li class="bank-box-row">
+                            <span class="bank-box-label">Số tài khoản nhận</span>
+                            <span class="bank-box-value">**** **** 1234</span>
+                        </li>
+                    </ul>
+                </div>
+                
+                <!-- Điều khoản rút tiền ngắn gọn -->
+                <div class="drawer-terms-box">
+                    <span class="terms-title">Lưu ý rút tiền:</span>
+                    <p class="terms-text">• Hạn mức rút tiền tối thiểu là 100,000 VNĐ một lần giao dịch.</p>
+                    <p class="terms-text">• Tiền rút sẽ được chuyển khoản tức thì 24/7 đến ngân hàng đối tác.</p>
+                </div>
+                
+                <!-- Nút xác nhận thanh toán -->
+                <button type="submit" class="btn-confirm-withdraw" id="btnConfirmWithdraw" disabled>Xác nhận rút tiền</button>
+            </form>
+            
+            <!-- Trạng thái Đang xử lý quay tròn (Loader) -->
+            <div class="drawer-loading-state" id="drawerLoading">
+                <div class="spinner"></div>
+                <p class="loading-text">Hệ thống đang kiểm tra bảo mật và thực hiện chuyển khoản thụ hưởng...</p>
+            </div>
+            
+            <!-- Trạng thái Thành công checkmark động -->
+            <div class="drawer-success-state" id="drawerSuccess">
+                <div class="success-icon-box">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                </div>
+                <h4 class="success-heading">Yêu cầu Rút tiền Thành công!</h4>
+                <p class="success-desc">Số tiền rút của bạn đã được chuyển khoản thành công vào tài khoản Vietcombank của đối tác Mai Phương.</p>
+                <button type="button" class="btn-success-close" id="btnSuccessClose">Đóng biểu mẫu</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Liên kết Tệp Javascript xử lý logic động (Có fallback src để mở trực tiếp trên trình duyệt) -->
+    <script src="../static/js/income.js" th:src="@{/js/income.js}"></script>
+</body>
+</html>
