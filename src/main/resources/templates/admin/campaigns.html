@@ -25,25 +25,13 @@
             
             <!-- Thanh tác vụ trên cùng (Header bar) -->
             <header class="header-bar">
-                <!-- Breadcrumbs & Tiêu đề -->
-                <div class="header-title-wrapper">
-                    <nav class="breadcrumb" aria-label="Breadcrumb">
-                        <span class="breadcrumb-item">Quản lý Chiến dịch</span>
-                        <span class="breadcrumb-separator">›</span>
-                        <span class="breadcrumb-item active">Khởi tạo Chiến dịch Mới</span>
-                    </nav>
-                    <h1 class="welcome-heading">Khởi tạo Chiến dịch Mới</h1>
+                <!-- Tabs Quản lý Chiến dịch -->
+                <div class="header-tabs-wrapper">
+                    <button type="button" class="tab-trigger active" id="tabFormBtn">✏️ Thiết lập Chiến dịch</button>
+                    <button type="button" class="tab-trigger" id="tabListBtn">📋 Danh sách Chiến dịch</button>
                 </div>
                 
                 <div class="header-actions">
-                    <!-- Dropdown trạng thái chiến dịch -->
-                    <div class="status-dropdown-container">
-                        <select class="campaign-status-select" id="campaignStatusSelect">
-                            <option value="active">🟢 Kích hoạt</option>
-                            <option value="draft">🟡 Lưu nháp</option>
-                        </select>
-                    </div>
-
                     <!-- Nút thông báo hệ thống (badge 5 chuẩn ảnh thiết kế) -->
                     <button type="button" class="icon-button" id="bellNotificationBtn" aria-label="Thông báo hệ thống">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -75,120 +63,175 @@
                     </div>
                 </div>
             </header>
-            
-            <form id="campaignForm">
-                
-                <!-- THẺ THÔNG TIN CƠ BẢN (Card 1) -->
-                <section class="card form-card">
-                    <h3 class="card-section-title">Thông tin cơ bản</h3>
+
+            <div id="campaignFormSection">
+                <form id="campaignForm">
+                    <!-- ID chiến dịch ẩn kết nối CSDL -->
+                    <input type="hidden" id="campaignId" th:value="${param.id != null ? campaign?.id : ''}">
                     
-                    <div class="form-grid-3">
-                        <!-- Tên chiến dịch -->
-                        <div class="form-group">
-                            <label for="campaignName" class="form-label">Tên chiến dịch <span class="required">*</span></label>
-                            <input type="text" id="campaignName" class="form-control-input" th:value="${campaign?.name}" placeholder="Nhập tên chiến dịch..." required>
+                    <!-- THẺ THÔNG TIN CƠ BẢN (Card 1) -->
+                    <section class="card form-card">
+                        <h3 class="card-section-title">Thông tin cơ bản</h3>
+                        
+                        <div class="form-grid-3">
+                            <!-- Tên chiến dịch -->
+                            <div class="form-group">
+                                <label for="campaignName" class="form-label">Tên chiến dịch <span class="required">*</span></label>
+                                <input type="text" id="campaignName" class="form-control-input" placeholder="Ví dụ: Chiến dịch Thu Đông LSOUL 2026" th:value="${param.id != null ? campaign?.name : ''}" required>
+                            </div>
+                            
+                            <!-- Thời gian diễn ra -->
+                            <div class="form-group">
+                                <label class="form-label">Thời gian diễn ra <span class="required">*</span></label>
+                                <div class="date-range-inputs" style="display: flex; gap: 0.5rem; align-items: center;">
+                                    <input type="date" id="campaignStartDate" class="form-control-input" required>
+                                    <span style="color: var(--text-muted); font-weight: bold; font-size: 0.8rem;">đến</span>
+                                    <input type="date" id="campaignEndDate" class="form-control-input" required>
+                                </div>
+                                <input type="hidden" id="campaignDurationRaw" th:value="${param.id != null ? campaign?.duration : ''}">
+                            </div>
+                            
+                            <!-- Tổng ngân sách -->
+                            <div class="form-group">
+                                <label for="campaignBudget" class="form-label">Tổng Ngân sách (VNĐ) <span class="required">*</span></label>
+                                <div class="input-suffix-wrapper">
+                                    <input type="text" id="campaignBudget" class="form-control-input has-suffix" placeholder="Ví dụ: 500.000.000" th:value="${param.id != null ? campaign?.budget : ''}" required>
+                                    <span class="input-suffix-text">VNĐ</span>
+                                </div>
                         </div>
                         
-                        <!-- Thời gian diễn ra -->
-                        <div class="form-group">
-                            <label for="campaignDuration" class="form-label">Thời gian diễn ra <span class="required">*</span></label>
-                            <div class="input-icon-wrapper">
-                                <svg class="input-icon-svg" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                                <input type="text" id="campaignDuration" class="form-control-input has-icon" th:value="${campaign?.duration}" placeholder="Ví dụ: 01/10/2026 - 31/12/2026" required>
+                        <div style="margin-top: 1.2rem; display: grid; grid-template-columns: 2fr 1fr; gap: 1.1rem;">
+                            <!-- Đường dẫn sản phẩm -->
+                            <div class="form-group">
+                                <label for="campaignProductLink" class="form-label">Đường dẫn sản phẩm / Gian hàng mục tiêu <span class="info-bubble" title="Đường dẫn gốc làm mẫu hoặc đích đến khi KOC nhấn tham gia tạo link tiếp thị">?</span></label>
+                                <input type="text" id="campaignProductLink" class="form-control-input" placeholder="Ví dụ: https://shopee.vn/ao-thun-nu-cotton-lsoul" th:value="${campaign?.productLink}">
+                            </div>
+                            
+                            <!-- Trạng thái chiến dịch -->
+                            <div class="form-group">
+                                <label for="campaignStatus" class="form-label">Trạng thái chiến dịch <span class="required">*</span></label>
+                                <div style="position: relative; display: flex; align-items: center; width: 100%;">
+                                    <select id="campaignStatus" class="form-control-input" style="width: 100%; height: 38px; padding: 0 0.8rem; border-radius: 8px; border: 1px solid var(--border-color); font-family: var(--font-family); font-size: 0.8rem; font-weight: 600; appearance: none; -webkit-appearance: none; background: #ffffff url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2216%22 height=%2216%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23475569%22 stroke-width=%222.5%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><polyline points=%226 9 12 15 18 9%22></polyline></svg>') no-repeat right 12px center;">
+                                        <option value="active" th:selected="${campaign?.status == 'active'}">🟢 Đang chạy</option>
+                                        <option value="paused" th:selected="${campaign?.status == 'paused'}">🟡 Tạm ngưng</option>
+                                        <option value="completed" th:selected="${campaign?.status == 'completed'}">⚪ Đã kết thúc</option>
+                                        <option value="draft" th:selected="${campaign?.status == 'draft'}">🟠 Bản nháp</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
+                    </section>
+                    
+                    <!-- THÈ CẤU HÌNH HOA HỒNG PHÂN TẦNG (Card 2) -->
+                    <section class="card form-card">
+                        <h3 class="card-section-title">Cấu hình Hoa hồng theo Hạng (Tiered Commission)</h3>
                         
-                        <!-- Tổng ngân sách -->
-                        <div class="form-group">
-                            <label for="campaignBudget" class="form-label">Tổng Ngân sách (VNĐ) <span class="required">*</span></label>
-                            <div class="input-suffix-wrapper">
-                                <input type="text" id="campaignBudget" class="form-control-input has-suffix" th:value="${campaign?.budget}" placeholder="Nhập ngân sách..." required>
-                                <span class="input-suffix-text">VNĐ</span>
+                        <div class="commission-tiers-wrapper">
+                            <!-- Tiêu đề các cột -->
+                            <div class="tiers-header-row">
+                                <div class="col-hdr-tier" style="flex: 3.5;">Hạng KOC</div>
+                                <div class="col-hdr-rate" style="flex: 1.5; text-align: center;">Tỷ lệ hoa hồng (%)</div>
+                            </div>
+                            
+                            <!-- Danh sách các dòng hạng (Commission Tiers Rows) -->
+                            <div class="tiers-list-container" id="tiersListContainer">
+                                <!-- Lặp dữ liệu từ Backend -->
+                                <div th:each="tier : ${campaign?.commissionTiers}" class="tier-row" th:data-id="${tier.id}">
+                                    <!-- Cột 1: Thông tin hạng -->
+                                    <div class="col-tier-info" style="flex: 3.5;">
+                                        <!-- Hiển thị Icon phù hợp -->
+                                        <div class="tier-icon-circle" th:classappend="${tier.icon}">
+                                            <span th:if="${tier.icon == 'diamond'}">💎</span>
+                                            <span th:if="${tier.icon == 'gold'}">🏆</span>
+                                            <span th:if="${tier.icon == 'silver'}">🥈</span>
+                                            <span th:if="${tier.icon == 'bronze'}">🥉</span>
+                                            <span th:if="${tier.icon == 'basic'}">😊</span>
+                                        </div>
+                                        <div class="tier-meta">
+                                            <span class="tier-name-text" th:text="${tier.rankName}">Hạng Kim Cương</span>
+                                            <span class="tier-requirement-text" th:text="${tier.requirement}">Doanh thu ≥ 100,000,000 VNĐ</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Cột 2: Tỷ lệ hoa hồng % -->
+                                    <div class="col-tier-rate" style="flex: 1.5; display: flex; justify-content: center;">
+                                        <div class="rate-input-wrapper">
+                                            <input type="number" class="rate-input-control" th:value="${tier.rate}" min="0" max="100">
+                                            <span class="rate-suffix">%</span>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
+                    </section>
+                    
+                    <!-- THANH HÀNH ĐỘNG DƯỚI CÙNG (Footer Actions) -->
+                    <div class="campaign-form-actions">
+                        <button type="button" class="btn-cancel-campaign" id="btnCancelCampaign">Hủy bỏ</button>
+                        
+                        <div class="right-actions-group">
+                            <button type="button" class="btn-draft-campaign" id="btnDraftCampaign">Lưu Nháp</button>
+                            <button type="submit" class="btn-submit-campaign" id="btnPublishCampaign">
+                                <!-- SVG máy bay giấy giống thiết kế -->
+                                <svg class="send-icon-svg" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                                <span>Xuất Bản Chiến dịch</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                </form>
+            </div>
+
+            <!-- DANH SÁCH CHIẾN DỊCH ĐÃ TẠO SECTION -->
+            <div id="campaignsListSection" style="display: none;">
+                <section class="card form-card" style="padding: 1.5rem;">
+                    <h3 class="card-section-title" style="margin-bottom: 1.25rem;">Danh sách Chiến dịch tiếp thị</h3>
+                    
+                    <div class="table-container" style="overflow-x: auto; width: 100%;">
+                        <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.82rem;">
+                            <thead>
+                                <tr style="border-bottom: 2px solid var(--border-color); background-color: #fafafa; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">
+                                    <th style="padding: 0.85rem 1.1rem; width: 15%;">Mã</th>
+                                    <th style="padding: 0.85rem 1.1rem; width: 35%;">Tên Chiến dịch</th>
+                                    <th style="padding: 0.85rem 1.1rem; width: 20%;">Thời gian</th>
+                                    <th style="padding: 0.85rem 1.1rem; width: 15%; text-align: right;">Ngân sách</th>
+                                    <th style="padding: 0.85rem 1.1rem; width: 10%; text-align: center;">Trạng thái</th>
+                                    <th style="padding: 0.85rem 1.1rem; width: 10%; text-align: center;">Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="camp : ${campaignsList}" th:data-id="${camp.id}" class="campaign-list-row" style="border-bottom: 1px solid var(--border-color); transition: all 0.2s;">
+                                    <td style="padding: 0.85rem 1.1rem; font-weight: 700; color: var(--primary-color);" th:text="${camp.id}">CAM-2026-007</td>
+                                    <td style="padding: 0.85rem 1.1rem; font-weight: 700;" th:text="${camp.name}">Chiến dịch Thu Đông LSOUL 2026</td>
+                                    <td style="padding: 0.85rem 1.1rem; color: var(--text-muted);" th:text="${camp.duration}">01/10/2026 - 31/12/2026</td>
+                                    <td style="padding: 0.85rem 1.1rem; font-weight: 700; text-align: right; color: var(--text-main);" th:text="${camp.budget + ' VNĐ'}">500.000.000 VNĐ</td>
+                                    <td style="padding: 0.85rem 1.1rem; text-align: center;">
+                                        <!-- Active pill -->
+                                        <span th:if="${camp.status == 'active'}" style="display: inline-block; padding: 0.25rem 0.65rem; border-radius: 20px; font-size: 0.72rem; font-weight: 800; background-color: rgba(34, 197, 94, 0.1); color: rgb(34, 197, 94); border: 1px solid rgba(34, 197, 94, 0.2);">🟢 Đang chạy</span>
+                                        <!-- Paused pill -->
+                                        <span th:if="${camp.status == 'paused'}" style="display: inline-block; padding: 0.25rem 0.65rem; border-radius: 20px; font-size: 0.72rem; font-weight: 800; background-color: rgba(234, 179, 8, 0.1); color: rgb(234, 179, 8); border: 1px solid rgba(234, 179, 8, 0.2);">🟡 Tạm ngưng</span>
+                                        <!-- Draft pill -->
+                                        <span th:if="${camp.status == 'draft'}" style="display: inline-block; padding: 0.25rem 0.65rem; border-radius: 20px; font-size: 0.72rem; font-weight: 800; background-color: rgba(249, 115, 22, 0.1); color: rgb(249, 115, 22); border: 1px solid rgba(249, 115, 22, 0.2);">🟠 Bản nháp</span>
+                                        <!-- Completed pill -->
+                                        <span th:if="${camp.status == 'completed'}" style="display: inline-block; padding: 0.25rem 0.65rem; border-radius: 20px; font-size: 0.72rem; font-weight: 800; background-color: rgba(148, 163, 184, 0.1); color: rgb(148, 163, 184); border: 1px solid rgba(148, 163, 184, 0.2);">⚪ Đã kết thúc</span>
+                                    </td>
+                                    <td style="padding: 0.85rem 1.1rem; text-align: center;">
+                                        <div style="display: flex; gap: 0.65rem; justify-content: center; align-items: center;">
+                                            <button type="button" class="btn-edit-campaign-row" th:data-id="${camp.id}" title="✏️ Sửa chiến dịch" style="background: transparent; border: none; cursor: pointer; color: var(--primary-color); font-size: 1.05rem; padding: 0.2rem; display: flex; align-items: center; justify-content: center; transition: transform 0.2s;">
+                                                ✏️
+                                            </button>
+                                            <button type="button" class="btn-delete-campaign-row" th:data-id="${camp.id}" title="🗑️ Xóa chiến dịch" style="background: transparent; border: none; cursor: pointer; color: #ef4444; font-size: 1.05rem; padding: 0.2rem; display: flex; align-items: center; justify-content: center; transition: transform 0.2s;">
+                                                🗑️
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </section>
-                
-                <!-- THÈ CẤU HÌNH HOA HỒNG PHÂN TẦNG (Card 2) -->
-                <section class="card form-card">
-                    <h3 class="card-section-title">Cấu hình Hoa hồng theo Hạng (Tiered Commission)</h3>
-                    
-                    <div class="commission-tiers-wrapper">
-                        <!-- Tiêu đề các cột -->
-                        <div class="tiers-header-row">
-                            <div class="col-hdr-tier">Hạng KOC</div>
-                            <div class="col-hdr-rate">Tỷ lệ hoa hồng (%)</div>
-                            <div class="col-hdr-status">Trạng thái</div>
-                            <div class="col-hdr-action"></div>
-                        </div>
-                        
-                        <!-- Danh sách các dòng hạng (Commission Tiers Rows) -->
-                        <div class="tiers-list-container" id="tiersListContainer">
-                            <!-- Lặp dữ liệu từ Backend -->
-                            <div th:each="tier : ${campaign?.commissionTiers}" class="tier-row" th:data-id="${tier.id}">
-                                <!-- Cột 1: Thông tin hạng -->
-                                <div class="col-tier-info">
-                                    <!-- Hiển thị Icon phù hợp -->
-                                    <div class="tier-icon-circle" th:classappend="${tier.icon}">
-                                        <span th:if="${tier.icon == 'diamond'}">💎</span>
-                                        <span th:if="${tier.icon == 'gold'}">🏆</span>
-                                        <span th:if="${tier.icon == 'silver'}">🥈</span>
-                                        <span th:if="${tier.icon == 'basic'}">😊</span>
-                                    </div>
-                                    <div class="tier-meta">
-                                        <span class="tier-name-text" th:text="${tier.rankName}">Hạng Kim Cương</span>
-                                        <span class="tier-requirement-text" th:text="${tier.requirement}">Doanh thu ≥ 100,000,000 VNĐ</span>
-                                    </div>
-                                </div>
-                                
-                                <!-- Cột 2: Tỷ lệ hoa hồng % -->
-                                <div class="col-tier-rate">
-                                    <div class="rate-input-wrapper">
-                                        <input type="number" class="rate-input-control" th:value="${tier.rate}" min="0" max="100">
-                                        <span class="rate-suffix">%</span>
-                                    </div>
-                                </div>
-                                
-                                <!-- Cột 3: Trạng thái công tắc bật/tắt -->
-                                <div class="col-tier-status">
-                                    <label class="toggle-switch">
-                                        <input type="checkbox" class="toggle-checkbox" th:checked="${tier.active}">
-                                        <span class="toggle-slider"></span>
-                                    </label>
-                                </div>
-                                
-                                <!-- Cột 4: Tay nắm kéo thả (drag handle) -->
-                                <div class="col-tier-action">
-                                    <div class="drag-handle-btn" title="Kéo thả sắp xếp">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="drag-icon"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Nút bấm viền nét đứt thêm hạng hoa hồng KOC động -->
-                        <button type="button" class="btn-add-tier-dashed" id="addTierBtn">
-                            <span class="plus-icon">+</span> Thêm hạng KOC
-                        </button>
-                    </div>
-                </section>
-                
-                <!-- THANH HÀNH ĐỘNG DƯỚI CÙNG (Footer Actions) -->
-                <div class="campaign-form-actions">
-                    <button type="button" class="btn-cancel-campaign" id="btnCancelCampaign">Hủy bỏ</button>
-                    
-                    <div class="right-actions-group">
-                        <button type="button" class="btn-draft-campaign" id="btnDraftCampaign">Lưu Nháp</button>
-                        <button type="submit" class="btn-submit-campaign" id="btnPublishCampaign">
-                            <!-- SVG máy bay giấy giống thiết kế -->
-                            <svg class="send-icon-svg" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-                            <span>Xuất Bản Chiến dịch</span>
-                        </button>
-                    </div>
-                </div>
-                
-            </form>
-            
+            </div>
+
         </main>
     </div>
 

@@ -6,11 +6,14 @@ com\affiliate\model\Campaign.class
 com\affiliate\model\ReferralData.class
 com\affiliate\model\AdminDisputesData$DisputeTicket.class
 com\affiliate\model\UserProfile.class
+com\affiliate\controller\ToolsController$ShortenResponse.class
 com\affiliate\model\DashboardStats.class
+com\affiliate\controller\ToolsController$JoinRequest.class
 com\affiliate\model\AdminTrackingData$FraudAlert.class
 com\affiliate\model\AdminTrackingData$SuspectTarget.class
 com\affiliate\model\LoginRequest.class
 com\affiliate\AffiliateApplication.class
+com\affiliate\controller\ToolsController$ShortenRequest.class
 com\affiliate\model\AdminCampaignData.class
 com\affiliate\model\AdminStats$TopKocItem.class
 com\affiliate\model\AdminFinanceData$PayoutRequest.class
@@ -40,5 +43,6 @@ com\affiliate\model\AdminDisputesData.class
 com\affiliate\model\AdminStats$ReconciliationItem.class
 com\affiliate\model\AdminFinanceData.class
 com\affiliate\model\DashboardStats$CampaignStat.class
+com\affiliate\controller\ToolsController$JoinResponse.class
 com\affiliate\model\AdminUsersData$JoinRequest.class
 com\affiliate\controller\ProfileController.class

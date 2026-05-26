@@ -88,7 +88,7 @@ CREATE TABLE campaigns (
     id VARCHAR(50) PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     duration VARCHAR(100) NOT NULL,
-    budget DECIMAL(15, 2) NOT NULL,
+    budget DECIMAL(25, 2) NOT NULL,
     status VARCHAR(50) DEFAULT 'active',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;

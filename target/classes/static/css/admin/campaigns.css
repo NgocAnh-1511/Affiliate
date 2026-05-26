@@ -271,6 +271,11 @@
     border-color: rgba(148, 163, 184, 0.18);
 }
 
+.tier-icon-circle.bronze {
+    background-color: rgba(180, 83, 9, 0.08);
+    border-color: rgba(180, 83, 9, 0.18);
+}
+
 .tier-icon-circle.basic {
     background-color: rgba(0, 0, 0, 0.03);
     border-color: rgba(0, 0, 0, 0.06);
@@ -660,3 +665,46 @@
         display: none; /* Ẩn trạng thái trên mobile để chống vỡ bảng */
     }
 }
+
+/* Tabs đầu trang */
+.header-tabs-wrapper {
+    display: flex;
+    gap: 1rem;
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: 0.15rem;
+    margin-right: auto;
+}
+
+.tab-trigger {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-family: var(--font-family);
+    font-size: 0.95rem;
+    font-weight: 700;
+    padding: 0.5rem 0.8rem;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    position: relative;
+}
+
+.tab-trigger:hover {
+    color: var(--primary-color);
+}
+
+.tab-trigger.active {
+    color: var(--primary-color);
+}
+
+.tab-trigger.active::after {
+    content: "";
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background-color: var(--primary-color);
+    border-radius: 20px;
+    box-shadow: 0 1px 4px rgba(168, 85, 247, 0.4);
+}
+

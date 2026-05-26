@@ -36,6 +36,25 @@ public class AdminController {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @jakarta.annotation.PostConstruct
+    public void initAdminCampaignsDatabase() {
+        try {
+            // Thử chạy ALTER TABLE để thêm cột product_link. Sẽ tự bỏ qua nếu cột đã tồn tại.
+            jdbcTemplate.execute("ALTER TABLE campaigns ADD COLUMN product_link TEXT DEFAULT NULL;");
+            System.out.println("Column product_link added to campaigns successfully.");
+        } catch (Exception e) {
+            System.out.println("Column product_link already exists or verified in campaigns.");
+        }
+
+        try {
+            // Nâng kích thước cột budget lên DECIMAL(25, 2) để tránh lỗi tràn dữ liệu (Data truncation) khi nhập số tiền siêu lớn
+            jdbcTemplate.execute("ALTER TABLE campaigns MODIFY COLUMN budget DECIMAL(25, 2) NOT NULL;");
+            System.out.println("Column budget modified to DECIMAL(25, 2) successfully.");
+        } catch (Exception e) {
+            System.err.println("Warning: Could not modify budget column size: " + e.getMessage());
+        }
+    }
+
     private boolean hasPermission(String permission) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || !auth.isAuthenticated()) {
@@ -498,29 +517,261 @@ public class AdminController {
     }
 
     @GetMapping("/admin/campaigns")
-    public String showAdminCampaigns(Model model) {
+    public String showAdminCampaigns(@RequestParam(value = "id", required = false) String campaignId, Model model) {
         if (!hasPermission("nav_campaigns")) {
             return "redirect:/403";
         }
-        // Khởi tạo các hạng hoa hồng mặc định
-        List<AdminCampaignData.CommissionTier> tiers = new ArrayList<>();
-        tiers.add(new AdminCampaignData.CommissionTier("tier_1", "Hạng Kim Cương", "diamond", "Doanh thu ≥ 100,000,000 VNĐ", 15, true));
-        tiers.add(new AdminCampaignData.CommissionTier("tier_2", "Hạng Vàng", "gold", "Doanh thu ≥ 20,000,000 VNĐ", 12, true));
-        tiers.add(new AdminCampaignData.CommissionTier("tier_3", "Hạng Bạc", "silver", "Doanh thu ≥ 5,000,000 VNĐ", 10, true));
-        tiers.add(new AdminCampaignData.CommissionTier("tier_4", "KOC Mới/Cơ bản", "basic", "Doanh thu < 5,000,000 VNĐ", 8, true));
-
-        AdminCampaignData campaign = new AdminCampaignData(
-            "Chiến dịch Thu Đông LSOUL 2026",
-            "01/10/2026 - 31/12/2026",
-            "500,000,000",
-            "active",
-            tiers
+        
+        // Tự động cấu hình charset CSDL sang utf8mb4 và sửa đổi các ký tự bị lỗi dấu hỏi chấm
+        try {
+            jdbcTemplate.execute("ALTER TABLE campaigns CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
+            jdbcTemplate.execute("ALTER TABLE commission_tiers CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
+            
+            // Khôi phục các chuỗi Tiếng Việt chuẩn hóa trực tiếp vào CSDL
+            jdbcTemplate.update(
+                "UPDATE campaigns SET name = ? WHERE id = 'CAM-2026-007'",
+                "Chiến dịch Thu Đông LSOUL 2026"
+            );
+            
+            // 1. Cập nhật các hạng tĩnh để sửa lỗi hiển thị tiếng Việt
+            jdbcTemplate.update(
+                "UPDATE commission_tiers SET tier_name = ?, requirement = ? WHERE campaign_id = 'CAM-2026-007' AND tier_key = 'diamond'",
+                "Hạng Kim Cương", "Doanh thu ≥ 100,000,000 VNĐ"
+            );
+            jdbcTemplate.update(
+                "UPDATE commission_tiers SET tier_name = ?, requirement = ? WHERE campaign_id = 'CAM-2026-007' AND tier_key = 'gold'",
+                "Hạng Vàng", "Doanh thu ≥ 20,000,000 VNĐ"
+            );
+            jdbcTemplate.update(
+                "UPDATE commission_tiers SET tier_name = ?, requirement = ? WHERE campaign_id = 'CAM-2026-007' AND tier_key = 'silver'",
+                "Hạng Bạc", "Doanh thu ≥ 5,000,000 VNĐ"
+            );
+            
+            // 2. Bảo đảm hạng Đồng (bronze) tồn tại trong CSDL
+            Integer bronzeCount = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM commission_tiers WHERE campaign_id = 'CAM-2026-007' AND tier_key = 'bronze'",
+                Integer.class
+            );
+            if (bronzeCount == null || bronzeCount == 0) {
+                jdbcTemplate.update(
+                    "INSERT INTO commission_tiers (id, campaign_id, tier_key, tier_name, requirement, rate_percent, is_active) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                    "T_BRONZE-CAM007", "CAM-2026-007", "bronze", "Hạng Đồng", "Doanh thu ≥ 1,000,000 VNĐ", 8, true
+                );
+            } else {
+                jdbcTemplate.update(
+                    "UPDATE commission_tiers SET tier_name = ?, requirement = ? WHERE campaign_id = 'CAM-2026-007' AND tier_key = 'bronze'",
+                    "Hạng Đồng", "Doanh thu ≥ 1,000,000 VNĐ"
+                );
+            }
+            
+            // 3. Cập nhật hạng basic thành "Người mới" và set hoa hồng là 5%
+            jdbcTemplate.update(
+                "UPDATE commission_tiers SET tier_name = ?, requirement = ?, rate_percent = ? WHERE campaign_id = 'CAM-2026-007' AND tier_key = 'basic'",
+                "Người mới", "Doanh thu < 1,000,000 VNĐ", 5
+            );
+        } catch (Exception e) {
+            System.err.println("Warning: Charset fix failed: " + e.getMessage());
+        }
+        
+        String finalCampaignId = (campaignId == null || campaignId.trim().isEmpty()) ? "CAM-2026-007" : campaignId.trim();
+        
+        List<Map<String, Object>> campaigns = jdbcTemplate.queryForList(
+            "SELECT * FROM campaigns WHERE id = ?", finalCampaignId
         );
+        
+        AdminCampaignData campaignData = null;
+        if (!campaigns.isEmpty()) {
+            Map<String, Object> camp = campaigns.get(0);
+            String name = (String) camp.get("name");
+            String duration = (String) camp.get("duration");
+            java.math.BigDecimal budgetDec = (java.math.BigDecimal) camp.get("budget");
+            String status = (String) camp.get("status");
+            String productLink = (String) camp.get("product_link");
+            
+            String budgetStr = "";
+            if (budgetDec != null) {
+                budgetStr = String.format("%,d", budgetDec.longValue()).replace(',', '.');
+            }
+            
+            List<Map<String, Object>> tierRows = jdbcTemplate.queryForList(
+                "SELECT * FROM commission_tiers WHERE campaign_id = ? ORDER BY rate_percent DESC", finalCampaignId
+            );
+            List<AdminCampaignData.CommissionTier> tiers = new ArrayList<>();
+            for (Map<String, Object> tRow : tierRows) {
+                String tId = (String) tRow.get("id");
+                String tKey = (String) tRow.get("tier_key");
+                String tName = (String) tRow.get("tier_name");
+                String tReq = (String) tRow.get("requirement");
+                int tRate = ((Number) tRow.get("rate_percent")).intValue();
+                boolean tActive = (Boolean) tRow.get("is_active");
+                
+                tiers.add(new AdminCampaignData.CommissionTier(tId, tName, tKey, tReq, tRate, tActive));
+            }
+            
+            campaignData = new AdminCampaignData(finalCampaignId, name, duration, budgetStr, status, productLink, tiers);
+        } else {
+            // Seed defaults into database if not found, to guarantee CSDL integration works seamlessly!
+            jdbcTemplate.update(
+                "INSERT INTO campaigns (id, name, duration, budget, status, product_link) VALUES (?, ?, ?, ?, ?, ?)",
+                finalCampaignId, "Chiến dịch BST LSOUL", "01/10/2026 - 31/12/2026", new java.math.BigDecimal("500000000.00"), "active", "https://shopee.vn/ao-thun-nu-cotton-lsoul"
+            );
+            jdbcTemplate.update("INSERT INTO commission_tiers (id, campaign_id, tier_key, tier_name, requirement, rate_percent, is_active) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                "T1-CAM007", finalCampaignId, "diamond", "Hạng Kim Cương", "Doanh thu ≥ 100,000,000 VNĐ", 15, true);
+            jdbcTemplate.update("INSERT INTO commission_tiers (id, campaign_id, tier_key, tier_name, requirement, rate_percent, is_active) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                "T2-CAM007", finalCampaignId, "gold", "Hạng Vàng", "Doanh thu ≥ 20,000,000 VNĐ", 12, true);
+            jdbcTemplate.update("INSERT INTO commission_tiers (id, campaign_id, tier_key, tier_name, requirement, rate_percent, is_active) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                "T3-CAM007", finalCampaignId, "silver", "Hạng Bạc", "Doanh thu ≥ 5,000,000 VNĐ", 10, true);
+            jdbcTemplate.update("INSERT INTO commission_tiers (id, campaign_id, tier_key, tier_name, requirement, rate_percent, is_active) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                "T4-CAM007", finalCampaignId, "bronze", "Hạng Đồng", "Doanh thu ≥ 1,000,000 VNĐ", 8, true);
+            jdbcTemplate.update("INSERT INTO commission_tiers (id, campaign_id, tier_key, tier_name, requirement, rate_percent, is_active) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                "T5-CAM007", finalCampaignId, "basic", "Người mới", "Doanh thu < 1,000,000 VNĐ", 5, true);
+
+            return showAdminCampaigns(finalCampaignId, model);
+        }
+
+        // Truy vấn toàn bộ danh sách chiến dịch để đưa vào tab quản trị danh sách
+        List<Map<String, Object>> campaignsListRaw = jdbcTemplate.queryForList(
+            "SELECT * FROM campaigns ORDER BY created_at DESC"
+        );
+        List<AdminCampaignData> campaignsList = new ArrayList<>();
+        for (Map<String, Object> cRow : campaignsListRaw) {
+            String cId = (String) cRow.get("id");
+            String cName = (String) cRow.get("name");
+            String cDuration = (String) cRow.get("duration");
+            java.math.BigDecimal cBudgetDec = (java.math.BigDecimal) cRow.get("budget");
+            String cStatus = (String) cRow.get("status");
+            String cProductLink = (String) cRow.get("product_link");
+            
+            String cBudgetStr = "";
+            if (cBudgetDec != null) {
+                cBudgetStr = String.format("%,d", cBudgetDec.longValue()).replace(',', '.');
+            }
+            
+            campaignsList.add(new AdminCampaignData(cId, cName, cDuration, cBudgetStr, cStatus, cProductLink, null));
+        }
+        model.addAttribute("campaignsList", campaignsList);
 
         model.addAttribute("title", "Khởi tạo Chiến dịch Mới");
         model.addAttribute("activePage", "campaigns");
-        model.addAttribute("campaign", campaign);
+        model.addAttribute("campaign", campaignData);
         return "admin/campaigns";
+    }
+
+    @PostMapping("/admin/campaigns/save")
+    @ResponseBody
+    public Map<String, Object> saveCampaign(@RequestBody AdminCampaignData campaignData) {
+        if (!hasPermission("nav_campaigns")) {
+            return Map.of("success", false, "message", "Bạn không có quyền quản lý chiến dịch!");
+        }
+
+        try {
+            String campaignId = campaignData.getId();
+            if (campaignId == null || campaignId.trim().isEmpty() || campaignId.startsWith("custom_")) {
+                campaignId = "CAM-2026-" + System.currentTimeMillis();
+            } else {
+                campaignId = campaignId.trim();
+            }
+
+            String name = campaignData.getName();
+            String duration = campaignData.getDuration();
+            String budgetStr = campaignData.getBudget();
+            String status = campaignData.getStatus();
+
+            if (name == null || name.trim().isEmpty()) {
+                return Map.of("success", false, "message", "Tên chiến dịch không được để trống!");
+            }
+            if (duration == null || duration.trim().isEmpty()) {
+                return Map.of("success", false, "message", "Thời gian diễn ra không được để trống!");
+            }
+            if (budgetStr == null || budgetStr.trim().isEmpty()) {
+                return Map.of("success", false, "message", "Ngân sách không được để trống!");
+            }
+
+            String cleanBudget = budgetStr.replaceAll("[^\\d]", "");
+            if (cleanBudget.isEmpty()) {
+                return Map.of("success", false, "message", "Ngân sách không đúng định dạng!");
+            }
+            java.math.BigDecimal budget = new java.math.BigDecimal(cleanBudget);
+
+            if (status == null || status.trim().isEmpty()) {
+                status = "active";
+            }
+
+            Integer count = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM campaigns WHERE id = ?", Integer.class, campaignId
+            );
+            String productLink = campaignData.getProductLink();
+
+            if (count != null && count > 0) {
+                jdbcTemplate.update(
+                    "UPDATE campaigns SET name = ?, duration = ?, budget = ?, status = ?, product_link = ? WHERE id = ?",
+                    name, duration, budget, status, productLink, campaignId
+                );
+            } else {
+                jdbcTemplate.update(
+                    "INSERT INTO campaigns (id, name, duration, budget, status, product_link) VALUES (?, ?, ?, ?, ?, ?)",
+                    campaignId, name, duration, budget, status, productLink
+                );
+            }
+
+            jdbcTemplate.update("DELETE FROM commission_tiers WHERE campaign_id = ?", campaignId);
+
+            List<AdminCampaignData.CommissionTier> tiers = campaignData.getCommissionTiers();
+            if (tiers != null) {
+                int index = 1;
+                for (AdminCampaignData.CommissionTier tier : tiers) {
+                    String tierId = "T" + index + "-" + campaignId;
+
+                    String tierKey = tier.getIcon();
+                    if (tierKey == null || tierKey.trim().isEmpty()) {
+                        tierKey = "basic";
+                    }
+
+                    String rankName = tier.getRankName();
+                    if (rankName == null || rankName.trim().isEmpty()) {
+                        rankName = "Hạng KOC " + index;
+                    }
+
+                    String requirement = tier.getRequirement();
+                    if (requirement == null || requirement.trim().isEmpty()) {
+                        requirement = "Tự định nghĩa điều kiện";
+                    }
+
+                    int rate = tier.getRate();
+                    boolean active = tier.isActive();
+
+                    jdbcTemplate.update(
+                        "INSERT INTO commission_tiers (id, campaign_id, tier_key, tier_name, requirement, rate_percent, is_active) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                        tierId, campaignId, tierKey, rankName, requirement, rate, active
+                    );
+                    index++;
+                }
+            }
+
+            return Map.of(
+                "success", true,
+                "message", "Lưu thông tin chiến dịch [" + name + "] thành công!",
+                "campaignId", campaignId
+            );
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Map.of("success", false, "message", "Lỗi hệ thống khi lưu chiến dịch: " + e.getMessage());
+        }
+    }
+
+    @PostMapping("/admin/campaigns/delete/{id}")
+    @ResponseBody
+    public Map<String, Object> deleteCampaign(@PathVariable String id) {
+        if (!hasPermission("nav_campaigns")) {
+            return Map.of("success", false, "message", "Bạn không có quyền xóa chiến dịch!");
+        }
+        try {
+            jdbcTemplate.update("DELETE FROM campaigns WHERE id = ?", id);
+            return Map.of("success", true, "message", "Đã xóa chiến dịch thành công!");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Map.of("success", false, "message", "Lỗi khi xóa chiến dịch: " + e.getMessage());
+        }
     }
 
     @GetMapping("/admin/tracking")

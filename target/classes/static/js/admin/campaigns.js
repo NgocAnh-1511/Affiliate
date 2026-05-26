@@ -10,6 +10,9 @@ document.addEventListener('DOMContentLoaded', function () {
     initAdminDropdown();
     initNotificationBell();
 
+    // --- 1b. PHÂN TÍCH VÀ ĐIỀN NGÀY THỜI GIAN DIỄN RA TỪ CSDL ---
+    initDateRangeLoader();
+
     // --- 2. ĐỊNH DẠNG SỐ TIỀN TỆ CHO NGÂN SÁCH THỜI GIAN THỰC ---
     initBudgetFormatter();
 
@@ -21,7 +24,37 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // --- 5. GỬI XUẤT BẢN & LƯU NHÁP CHIẾN DỊCH (PUBLISHER SIMULATOR) ---
     initFormPublisher();
+
+    // --- 6. KHỞI TẠO TABS VÀ CÁC NÚT SỬA/XÓA CHO DANH SÁCH CHIẾN DỊCH ---
+    initCampaignTabsAndActions();
 });
+
+/**
+ * Tự động phân tích chuỗi thời gian DD/MM/YYYY - DD/MM/YYYY từ CSDL và điền vào 2 ô lịch chọn ngày
+ */
+function initDateRangeLoader() {
+    const rawDurationEl = document.getElementById('campaignDurationRaw');
+    if (rawDurationEl && rawDurationEl.value) {
+        const parts = rawDurationEl.value.split(' - ');
+        if (parts.length === 2) {
+            function convertToYMD(dmy) {
+                const dmyParts = dmy.split('/');
+                if (dmyParts.length === 3) {
+                    return `${dmyParts[2]}-${dmyParts[1]}-${dmyParts[0]}`;
+                }
+                return '';
+            }
+            const startDate = convertToYMD(parts[0]);
+            const endDate = convertToYMD(parts[1]);
+            
+            const startInput = document.getElementById('campaignStartDate');
+            const endInput = document.getElementById('campaignEndDate');
+            
+            if (startInput) startInput.value = startDate;
+            if (endInput) endInput.value = endDate;
+        }
+    }
+}
 
 /**
  * Xử lý bật tắt Dropdown Menu Administrator
@@ -220,53 +253,162 @@ function initFormPublisher() {
     const btnDraft = document.getElementById('btnDraftCampaign');
     const btnCancel = document.getElementById('btnCancelCampaign');
 
-    if (!form || !btnPublish) return;
+    if (!form) return;
 
-    // Xử lý XUẤT BẢN CHIẾN DỊCH
-    form.addEventListener('submit', function (e) {
-        e.preventDefault();
-
+    // Hàm phụ thu thập dữ liệu và gọi AJAX lưu CSDL
+    function saveCampaignData(statusOverride, submitBtn) {
+        const campaignId = document.getElementById('campaignId') ? document.getElementById('campaignId').value.trim() : '';
         const name = document.getElementById('campaignName').value.trim();
-        const duration = document.getElementById('campaignDuration').value.trim();
+        
+        const startDateVal = document.getElementById('campaignStartDate').value;
+        const endDateVal = document.getElementById('campaignEndDate').value;
         const budget = document.getElementById('campaignBudget').value.trim();
-        const status = document.getElementById('campaignStatusSelect').value;
+        const productLinkEl = document.getElementById('campaignProductLink');
+        const productLink = productLinkEl ? productLinkEl.value.trim() : '';
+        const statusEl = document.getElementById('campaignStatus');
+        const status = statusOverride || (statusEl ? statusEl.value : 'active');
 
-        if (!name || !duration || !budget) {
+        if (!name || !startDateVal || !endDateVal || !budget) {
             alert('Vui lòng điền đầy đủ các thông tin bắt buộc (*)!');
             return;
         }
 
-        // Bật loading spinner
-        btnPublish.classList.add('loading');
+        // Định dạng YYYY-MM-DD -> DD/MM/YYYY
+        function formatToDMY(dateStr) {
+            const parts = dateStr.split('-');
+            return `${parts[2]}/${parts[1]}/${parts[0]}`;
+        }
+        const duration = `${formatToDMY(startDateVal)} - ${formatToDMY(endDateVal)}`;
 
-        // Mô phỏng đẩy dữ liệu cấu hình lên API hệ thống và TikTok/Shopee (1.2 giây)
-        setTimeout(() => {
-            btnPublish.classList.remove('loading');
+        // Thu thập các dòng hạng từ DOM
+        const tierRows = document.querySelectorAll('#tiersListContainer .tier-row');
+        const commissionTiers = [];
+        tierRows.forEach(row => {
+            const id = row.getAttribute('data-id');
+            
+            // Trích xuất icon / key class
+            let icon = 'basic';
+            const iconCircle = row.querySelector('.tier-icon-circle');
+            if (iconCircle) {
+                if (iconCircle.classList.contains('diamond')) icon = 'diamond';
+                else if (iconCircle.classList.contains('gold')) icon = 'gold';
+                else if (iconCircle.classList.contains('silver')) icon = 'silver';
+                else if (iconCircle.classList.contains('bronze')) icon = 'bronze';
+                else if (iconCircle.classList.contains('basic')) icon = 'basic';
+            }
 
-            const statusText = status === 'active' ? 'được KÍCH HOẠT' : 'được LƯU NHÁP';
-            showAdminToast(`Xuất bản Chiến dịch "${name}" với ngân sách ${budget} VNĐ thành công!`);
+            // Trích xuất rankName
+            let rankName = '';
+            const nameTextEl = row.querySelector('.tier-name-text');
+            if (nameTextEl) {
+                rankName = nameTextEl.textContent.trim();
+            } else {
+                const nameInputEl = row.querySelector('.tier-name-input');
+                if (nameInputEl) {
+                    rankName = nameInputEl.value.trim();
+                }
+            }
 
-            // Tự động chuyển hướng về trang Tổng quan sau 2 giây
-            setTimeout(() => {
-                window.location.href = 'overview.html';
-            }, 2000);
+            // Trích xuất requirement
+            let requirement = 'Tự định nghĩa điều kiện';
+            const reqEl = row.querySelector('.tier-requirement-text');
+            if (reqEl) {
+                requirement = reqEl.textContent.trim();
+            }
 
-        }, 1200);
+            // Trích xuất rate
+            let rate = 0;
+            const rateInput = row.querySelector('.rate-input-control');
+            if (rateInput) {
+                rate = parseInt(rateInput.value) || 0;
+            }
+
+            // Trích xuất active
+            let active = true;
+            const activeCheckbox = row.querySelector('.toggle-checkbox');
+            if (activeCheckbox) {
+                active = activeCheckbox.checked;
+            }
+
+            commissionTiers.push({
+                id: id,
+                rankName: rankName,
+                icon: icon,
+                requirement: requirement,
+                rate: rate,
+                active: active
+            });
+        });
+
+        // Bật trạng thái loading
+        if (submitBtn) submitBtn.classList.add('loading');
+
+        const payload = {
+            id: campaignId,
+            name: name,
+            duration: duration,
+            budget: budget,
+            productLink: productLink,
+            status: status,
+            commissionTiers: commissionTiers
+        };
+
+        // Gửi AJAX POST lưu trữ CSDL
+        fetch('/admin/campaigns/save', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (submitBtn) submitBtn.classList.remove('loading');
+
+            if (data.success) {
+                if (data.campaignId) {
+                    const idInput = document.getElementById('campaignId');
+                    if (idInput) idInput.value = data.campaignId;
+                }
+                const successMsg = status === 'active' 
+                    ? `Xuất bản Chiến dịch "${name}" thành công!` 
+                    : `Đã lưu nháp chiến dịch "${name}" thành công!`;
+                
+                showAdminToast(successMsg);
+
+                // Chuyển hướng mượt mà về trang danh sách chiến dịch sau 2 giây
+                setTimeout(() => {
+                    window.location.href = '/admin/campaigns?tab=list';
+                }, 2000);
+            } else {
+                alert(data.message || 'Lưu cấu hình chiến dịch thất bại.');
+            }
+        })
+        .catch(err => {
+            if (submitBtn) submitBtn.classList.remove('loading');
+            console.error('Lỗi khi lưu chiến dịch:', err);
+            alert('Có lỗi hệ thống xảy ra khi lưu cấu hình chiến dịch.');
+        });
+    }
+
+    // Xử lý XUẤT BẢN CHIẾN DỊCH
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        saveCampaignData(null, btnPublish);
     });
 
     // Xử lý LƯU NHÁP nhanh
     if (btnDraft) {
         btnDraft.addEventListener('click', function () {
-            const name = document.getElementById('campaignName').value.trim() || 'Chiến dịch mới';
-            showAdminToast(`Đã lưu nháp chiến dịch "${name}" thành công!`);
+            saveCampaignData('draft', btnDraft);
         });
     }
 
     // Xử lý HỦY BỎ
     if (btnCancel) {
         btnCancel.addEventListener('click', function () {
-            if (confirm('Bạn có chắc chắn muốn hủy bỏ toàn bộ thiết lập và quay lại trang chủ không?')) {
-                window.location.href = 'overview.html';
+            if (confirm('Bạn có chắc chắn muốn hủy bỏ toàn bộ thiết lập và quay lại trang danh sách không?')) {
+                window.location.href = '/admin/campaigns?tab=list';
             }
         });
     }
@@ -298,3 +440,103 @@ function showAdminToast(message) {
 
     toast.dataset.timerId = timerId.toString();
 }
+
+/**
+ * Quản lý chuyển đổi tab và các nút bấm Sửa/Xóa chiến dịch trong danh sách
+ */
+function initCampaignTabsAndActions() {
+    const tabFormBtn = document.getElementById('tabFormBtn');
+    const tabListBtn = document.getElementById('tabListBtn');
+    const formSection = document.getElementById('campaignFormSection');
+    const listSection = document.getElementById('campaignsListSection');
+
+    if (!tabFormBtn || !tabListBtn || !formSection || !listSection) return;
+
+    // Chuyển sang Tab biểu mẫu thiết lập
+    tabFormBtn.addEventListener('click', function () {
+        if (this.classList.contains('active')) return;
+        
+        tabFormBtn.classList.add('active');
+        tabListBtn.classList.remove('active');
+
+        formSection.style.display = 'block';
+        listSection.style.display = 'none';
+        
+        showAdminToast("Đã chuyển sang phân hệ: [Thiết lập Chiến dịch]");
+    });
+
+    // Chuyển sang Tab danh sách chiến dịch
+    tabListBtn.addEventListener('click', function () {
+        if (this.classList.contains('active')) return;
+        
+        tabListBtn.classList.add('active');
+        tabFormBtn.classList.remove('active');
+
+        formSection.style.display = 'none';
+        listSection.style.display = 'block';
+        
+        showAdminToast("Đã chuyển sang phân hệ: [Danh sách Chiến dịch]");
+    });
+
+    // Tự động kích hoạt tab Danh sách nếu URL có query param "tab=list"
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('tab') === 'list' || urlParams.has('id')) {
+        // Nếu có ID chiến dịch sửa thì vẫn ở tab form, nếu chỉ có tab=list thì hiển thị tab danh sách
+        if (urlParams.get('tab') === 'list') {
+            tabListBtn.click();
+        } else {
+            tabFormBtn.click();
+        }
+    }
+
+    // Xử lý nút Sửa chiến dịch từ bảng danh sách
+    const editBtns = document.querySelectorAll('.btn-edit-campaign-row');
+    editBtns.forEach(btn => {
+        btn.addEventListener('click', function () {
+            const id = this.getAttribute('data-id');
+            if (id) {
+                // Tải lại trang với tham số ID chiến dịch cần chỉnh sửa
+                window.location.href = `/admin/campaigns?id=${id}`;
+            }
+        });
+    });
+
+    // Xử lý nút Xóa chiến dịch từ bảng danh sách
+    const deleteBtns = document.querySelectorAll('.btn-delete-campaign-row');
+    deleteBtns.forEach(btn => {
+        btn.addEventListener('click', function () {
+            const id = this.getAttribute('data-id');
+            const row = this.closest('.campaign-list-row');
+            
+            if (!id || !row) return;
+
+            if (confirm('Bạn có chắc chắn muốn xóa chiến dịch này vĩnh viễn khỏi hệ thống không?')) {
+                // Gửi yêu cầu xóa AJAX POST lên backend
+                fetch(`/admin/campaigns/delete/${id}`, {
+                    method: 'POST'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showAdminToast('Đã xóa chiến dịch thành công!');
+                        
+                        // Hiệu ứng mờ và trượt dòng
+                        row.style.opacity = '0';
+                        row.style.transform = 'translateX(-10px)';
+                        
+                        setTimeout(() => {
+                            row.remove();
+                        }, 300);
+                    } else {
+                        alert(data.message || 'Xóa chiến dịch thất bại.');
+                    }
+                })
+                .catch(err => {
+                    console.error('Lỗi khi xóa chiến dịch:', err);
+                    alert('Có lỗi mạng xảy ra khi xóa chiến dịch.');
+                });
+            }
+        });
+    });
+}
+

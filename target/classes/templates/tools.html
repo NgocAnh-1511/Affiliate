@@ -87,6 +87,7 @@
                         <div class="filter-controls">
                             <div class="filter-tabs">
                                 <button type="button" class="tab-btn active" id="tabAll">Tất cả</button>
+                                <button type="button" class="tab-btn" id="tabMyCampaigns">Chiến dịch của tôi</button>
                                 <button type="button" class="tab-btn" id="tabHighComm">Hoa hồng cao</button>
                                 <button type="button" class="tab-btn" id="tabNewest">Mới nhất</button>
                             </div>
@@ -105,7 +106,7 @@
                     <!-- Lưới chiến dịch (Campaign Cards Grid - 2 columns) -->
                     <div class="campaign-grid" id="campaignGrid">
                         <!-- Mỗi Card đại diện cho một chiến dịch -->
-                        <div class="campaign-card" th:each="camp : ${campaigns}" th:data-name="${camp.name}" th:data-commission="${camp.commission}" th:data-featured="${camp.featured}" th:data-source="${camp.trafficSource}">
+                        <div class="campaign-card" th:each="camp : ${campaigns}" th:data-campaign-id="${camp.dbId}" th:data-name="${camp.name}" th:data-commission="${camp.commission}" th:data-featured="${camp.featured}" th:data-source="${camp.trafficSource}" th:data-joined="${camp.joined}" th:data-product-link="${camp.productLink}">
                             <!-- Banner đầu card có bo góc và text -->
                             <div class="camp-banner" th:classappend="${camp.bannerClass}">
                                 <div class="camp-banner-overlay"></div>
@@ -141,9 +142,8 @@
                                         <span class="camp-meta-text" th:text="${camp.joinedCount}">Đã tham gia: 1,245 KOC/KOL</span>
                                     </div>
                                 </div>
-                                
-                                <!-- Nút Tham gia hành động -->
-                                <button type="button" class="btn-join-camp" th:data-url="'https://' + ${camp.trafficSource} + '.vn/product-' + ${camp.bannerClass}">Tham gia</button>
+                                                                <!-- Nút Tham gia hành động -->
+                                 <button type="button" class="btn-join-camp" th:classappend="${camp.joined} ? 'joined' : ''" th:text="${camp.joined} ? 'Đã tham gia' : 'Tham gia'" th:data-joined="${camp.joined}" th:data-url="'https://' + ${camp.trafficSource} + '.vn/product-' + ${camp.bannerClass}">Tham gia</button>
                             </div>
                         </div>
                         
@@ -179,6 +179,10 @@
                 
                 <!-- CỘT PHẢI: CÔNG CỤ TẠO LINK NHANH (35% width) -->
                 <section class="right-section">
+                    <!-- Hidden input to store KOC username for generating unique short links -->
+                    <input type="hidden" id="kocUsername" th:value="${profile?.username}">
+                    <input type="hidden" id="activeCampaignId" value="">
+                    
                     <div class="card tools-card">
                         
                         <!-- Tiêu đề bộ tạo link -->
@@ -225,7 +229,7 @@
                             <div class="step-group">
                                 <span class="input-label">Link rút gọn (Short Link) <span class="info-bubble" title="Đường link rút gọn thẩm mỹ giúp tăng tỷ lệ click trên mạng xã hội">?</span></span>
                                 <div class="short-link-box">
-                                    <span class="short-link-text" id="shortLinkOutput">go.aff.vn/lsoul-koc</span>
+                                    <span class="short-link-text" id="shortLinkOutput">localhost:8080/go/lsoul-koc</span>
                                     
                                     <div class="short-link-actions">
                                         <button type="button" class="btn-copy-short" id="btnCopyShort">
@@ -249,12 +253,81 @@
                             
                         </div>
                     </div>
+
+                    <!-- CARD: DANH SÁCH LINK ĐÃ TẠO CHO CHIẾN DỊCH ĐANG CHỌN (Premium Glassmorphism) -->
+                    <div class="card links-list-card" id="linksListCard" style="margin-top: 1.5rem; display: none;">
+                        <div class="tools-card-header">
+                            <svg class="tools-header-icon" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                            <h3 class="tools-card-title" id="linksListTitle">Link Tiếp Thị Của Tôi</h3>
+                        </div>
+                        
+                        <!-- Đường dẫn gốc làm đích của Admin cho chiến dịch này -->
+                        <div class="campaign-admin-link-box" id="campaignAdminLinkBox" style="display: none;">
+                            <span class="step-label" style="font-size: 0.75rem;">Link gốc của Chiến dịch (Admin):</span>
+                            <div class="admin-link-wrapper">
+                                <a href="" id="campaignAdminLinkAnchor" target="_blank" class="admin-link-text">https://...</a>
+                                <button type="button" class="btn-copy-admin-link" id="btnCopyAdminLink" title="Sao chép link gốc">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Danh sách link rút gọn đã tạo của KOC -->
+                        <div class="koc-short-links-container">
+                            <span class="step-label" style="margin-bottom: 0.5rem; font-size: 0.75rem;">Danh sách link rút gọn đã tạo:</span>
+                            <div class="koc-links-table-wrapper" id="kocLinksTableWrapper" style="display: none;">
+                                <table class="koc-links-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Link rút gọn</th>
+                                            <th>Sản phẩm gốc</th>
+                                            <th style="width: 50px; text-align: center;">Chép</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="kocLinksTableBody">
+                                        <!-- Chèn động bằng Javascript -->
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="no-links-fallback" id="noLinksFallback">
+                                <p>Bạn chưa tạo đường link rút gọn nào cho chiến dịch này.</p>
+                            </div>
+                        </div>
+                    </div>
                 </section>
                 
             </div>
             
         </main>
         
+    </div>
+
+    <!-- MODAL HIỂN THỊ MÃ QR CODE TIẾP THỊ -->
+    <div class="qr-modal" id="qrModal" role="dialog" aria-modal="true" style="display: none;">
+        <div class="qr-modal-overlay" id="qrModalOverlay"></div>
+        <div class="qr-modal-content">
+            <button type="button" class="qr-modal-close" id="btnLocationClose" aria-label="Đóng">&times;</button>
+            <div class="qr-modal-icon-circle">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><line x1="7" y1="7" x2="7.01" y2="7"/><line x1="17" y1="7" x2="17.01" y2="7"/><line x1="7" y1="17" x2="7.01" y2="17"/><line x1="17" y1="17" x2="17.01" y2="17"/></svg>
+            </div>
+            <h4 class="qr-modal-title">Mã QR Code Tiếp Thị</h4>
+            <p class="qr-modal-subtitle">Quét mã bằng điện thoại để chia sẻ hoặc truy cập nhanh link rút gọn Affiliate.</p>
+            
+            <div class="qr-code-image-container">
+                <img id="qrCodeImg" src="" alt="Mã QR Tiếp thị" class="qr-code-img">
+            </div>
+            
+            <div class="qr-modal-link-box">
+                <span class="qr-modal-link-text" id="qrModalLink">localhost:8080/go/lsoul-koc</span>
+            </div>
+            
+            <div class="qr-modal-actions">
+                <a id="btnDownloadQr" href="" download="qr-code.png" class="btn-download-qr">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    <span>Tải ảnh QR</span>
+                </a>
+            </div>
+        </div>
     </div>
 
     <!-- Liên kết Tệp Javascript xử lý logic động (Có fallback src để mở trực tiếp trên trình duyệt) -->

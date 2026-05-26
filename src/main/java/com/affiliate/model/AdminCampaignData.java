@@ -9,10 +9,12 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class AdminCampaignData {
+    private String id;
     private String name;
     private String duration;
     private String budget;
     private String status; // "active", "draft"
+    private String productLink; // Đường dẫn sản phẩm/gian hàng mục tiêu
     private List<CommissionTier> commissionTiers;
 
     @Data

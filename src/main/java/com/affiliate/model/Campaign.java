@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class Campaign {
     private int id;
+    private String dbId;
     private String name;
     private String imageUrl;
     private String trafficSource; // "tiktok", "shopee", "lazada", "tiki"
@@ -18,4 +19,6 @@ public class Campaign {
     private boolean featured;     // true if "Nổi bật"
     private String tag;           // "NỔI BẬT", "NEW ARRIVAL", etc.
     private String bannerClass;   // "lsoul", "shopee-sale", "electronics", "beauty", "summer", "furniture"
+    private boolean joined;       // true nếu KOC đã đăng ký tham gia chiến dịch này
+    private String productLink;   // Đường dẫn sản phẩm gốc / gian hàng mục tiêu
 }
