@@ -28,7 +28,7 @@
                 <!-- Tabs Quản trị -->
                 <div class="header-tabs-wrapper">
                     <button type="button" class="tab-trigger active" id="tabKocBtn">Quản lý KOC/KOL</button>
-                    <button type="button" class="tab-trigger" id="tabStaffBtn">Nhân sự Nội bộ</button>
+                    <button th:if="${currentUser?.role == 'ADMIN'}" type="button" class="tab-trigger" id="tabStaffBtn">Nhân sự Nội bộ</button>
                 </div>
                 
                 <div class="header-actions">
@@ -139,10 +139,88 @@
                                 <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                                 <input type="text" id="searchKocInput" class="search-input" placeholder="Tìm kiếm KOC...">
                             </div>
-                            <button type="button" class="btn-filter-toggle">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
-                                <span>Bộ lọc</span>
-                            </button>
+                            <div class="filter-dropdown-container">
+                                <button type="button" class="btn-filter-toggle" id="filterToggleBtn">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
+                                    <span>Bộ lọc</span>
+                                </button>
+                                <div class="filter-panel-popup" id="filterPanel" style="display: none;">
+                                    <div class="filter-section">
+                                        <label class="filter-section-title">Kênh chính</label>
+                                        <div class="filter-options">
+                                            <label class="filter-option-label">
+                                                <input type="radio" name="filterPlatform" value="all" checked>
+                                                <span class="custom-radio"></span>
+                                                <span>Tất cả</span>
+                                            </label>
+                                            <label class="filter-option-label">
+                                                <input type="radio" name="filterPlatform" value="tiktok">
+                                                <span class="custom-radio"></span>
+                                                <span>TikTok</span>
+                                            </label>
+                                            <label class="filter-option-label">
+                                                <input type="radio" name="filterPlatform" value="shopee">
+                                                <span class="custom-radio"></span>
+                                                <span>Shopee</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="filter-section">
+                                        <label class="filter-section-title">Thứ bậc (Tier)</label>
+                                        <div class="filter-options">
+                                            <label class="filter-option-label">
+                                                <input type="radio" name="filterTier" value="all" checked>
+                                                <span class="custom-radio"></span>
+                                                <span>Tất cả</span>
+                                            </label>
+                                            <label class="filter-option-label">
+                                                <input type="radio" name="filterTier" value="diamond">
+                                                <span class="custom-radio"></span>
+                                                <span>💎 Kim Cương</span>
+                                            </label>
+                                            <label class="filter-option-label">
+                                                <input type="radio" name="filterTier" value="gold">
+                                                <span class="custom-radio"></span>
+                                                <span>🏆 Hạng Vàng</span>
+                                            </label>
+                                            <label class="filter-option-label">
+                                                <input type="radio" name="filterTier" value="silver">
+                                                <span class="custom-radio"></span>
+                                                <span>🥈 Hạng Bạc</span>
+                                            </label>
+                                            <label class="filter-option-label">
+                                                <input type="radio" name="filterTier" value="basic">
+                                                <span class="custom-radio"></span>
+                                                <span>😊 Cơ bản</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="filter-section">
+                                        <label class="filter-section-title">Trạng thái</label>
+                                        <div class="filter-options">
+                                            <label class="filter-option-label">
+                                                <input type="radio" name="filterStatus" value="all" checked>
+                                                <span class="custom-radio"></span>
+                                                <span>Tất cả</span>
+                                            </label>
+                                            <label class="filter-option-label">
+                                                <input type="radio" name="filterStatus" value="active">
+                                                <span class="custom-radio"></span>
+                                                <span>Hoạt động</span>
+                                            </label>
+                                            <label class="filter-option-label">
+                                                <input type="radio" name="filterStatus" value="suspended">
+                                                <span class="custom-radio"></span>
+                                                <span>Tạm khóa</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="filter-panel-actions">
+                                        <button type="button" class="btn-reset-filters" id="resetFiltersBtn">Đặt lại</button>
+                                        <button type="button" class="btn-apply-filters" id="applyFiltersBtn">Áp dụng</button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     
@@ -208,6 +286,8 @@
                                 <option value="50">50</option>
                             </select>
                             <span class="pagination-label">trên mỗi trang</span>
+                            <!-- Nhãn thống kê phân trang riêng biệt cho Active KOC -->
+                            <span class="active-koc-stats" style="margin-left: 1rem; font-size: 0.78rem; color: var(--text-muted); font-weight: 600;"></span>
                         </div>
                         
                         <div class="page-numbers">
@@ -225,7 +305,7 @@
                 </section>
                 
                 <!-- BẢNG PHÂN QUYỀN NHÂN VIÊN (40%) -->
-                <section class="card staff-card">
+                <section th:if="${currentUser?.role == 'ADMIN'}" class="card staff-card">
                     <div class="card-header-meta flex-header">
                         <h3 class="card-title">Vai trò Nhân viên (Roles)</h3>
                         <button type="button" class="btn-add-staff" id="addStaffBtn">
@@ -241,7 +321,9 @@
                              th:classappend="${iterStat.first} ? 'active' : ''" 
                              th:data-id="${staff.id}"
                              th:data-permissions="${#strings.listJoin(staff.permissions, ',')}"
-                             th:data-name="${staff.name}">
+                             th:data-name="${staff.name}"
+                             th:data-username="${staff.username}"
+                             th:data-phone="${staff.phone}">
                             
                             <img src="../../static/images/profile_avatar.png" th:src="@{/images/profile_avatar.png}" class="staff-avatar" alt="Avatar">
                             <div class="staff-meta">
@@ -250,9 +332,8 @@
                             </div>
                             <div class="staff-role-wrapper">
                                 <select class="role-select" th:data-id="${staff.id}">
-                                    <option value="accounting" th:selected="${staff.role == 'accounting'}">Nhân viên Kế toán</option>
-                                    <option value="cskh" th:selected="${staff.role == 'cskh'}">Nhân viên CSKH</option>
-                                    <option value="campaign_manager" th:selected="${staff.role == 'campaign_manager'}">Quản lý Chiến dịch</option>
+                                    <option value="STAFF" th:selected="${staff.role == 'STAFF'}">Staff</option>
+                                    <option value="ADMIN" th:selected="${staff.role == 'ADMIN'}">Admin</option>
                                 </select>
                             </div>
                             <button type="button" class="btn-more-options" aria-label="Lựa chọn">⋮</button>
@@ -266,39 +347,45 @@
                         
                         <div class="permissions-grid">
                             <label class="permission-checkbox-label">
-                                <input type="checkbox" class="permission-checkbox" value="view_balance">
+                                <input type="checkbox" class="permission-checkbox" value="nav_overview">
                                 <span class="custom-checkbox"></span>
-                                <span class="checkbox-text">Xem số dư</span>
+                                <span class="checkbox-text">Tổng quan</span>
                             </label>
                             
                             <label class="permission-checkbox-label">
-                                <input type="checkbox" class="permission-checkbox" value="approve_withdrawal">
+                                <input type="checkbox" class="permission-checkbox" value="nav_users">
                                 <span class="custom-checkbox"></span>
-                                <span class="checkbox-text">Phê duyệt rút tiền</span>
+                                <span class="checkbox-text">Tài khoản & Phân quyền</span>
                             </label>
                             
                             <label class="permission-checkbox-label">
-                                <input type="checkbox" class="permission-checkbox" value="manage_koc">
+                                <input type="checkbox" class="permission-checkbox" value="nav_campaigns">
                                 <span class="custom-checkbox"></span>
-                                <span class="checkbox-text">Quản lý KOC</span>
+                                <span class="checkbox-text">Quản lý dự án</span>
                             </label>
                             
                             <label class="permission-checkbox-label">
-                                <input type="checkbox" class="permission-checkbox" value="edit_campaign">
+                                <input type="checkbox" class="permission-checkbox" value="nav_tracking">
                                 <span class="custom-checkbox"></span>
-                                <span class="checkbox-text">Chỉnh sửa chiến dịch</span>
+                                <span class="checkbox-text">Tracking & Giám sát</span>
                             </label>
                             
                             <label class="permission-checkbox-label">
-                                <input type="checkbox" class="permission-checkbox" value="manage_users">
+                                <input type="checkbox" class="permission-checkbox" value="nav_finance">
                                 <span class="custom-checkbox"></span>
-                                <span class="checkbox-text">Quản lý người dùng</span>
+                                <span class="checkbox-text">Tài chính & Đối soát</span>
                             </label>
                             
                             <label class="permission-checkbox-label">
-                                <input type="checkbox" class="permission-checkbox" value="delete_data">
+                                <input type="checkbox" class="permission-checkbox" value="nav_disputes">
                                 <span class="custom-checkbox"></span>
-                                <span class="checkbox-text">Xóa dữ liệu</span>
+                                <span class="checkbox-text">Quản lý khiếu nại</span>
+                            </label>
+                            
+                            <label class="permission-checkbox-label">
+                                <input type="checkbox" class="permission-checkbox" value="nav_logs">
+                                <span class="custom-checkbox"></span>
+                                <span class="checkbox-text">Nhật ký hệ thống</span>
                             </label>
                         </div>
                         
@@ -313,6 +400,112 @@
             </div>
             
         </main>
+    </div>
+    <!-- MODAL THÊM NHÂN VIÊN MỚI (Premium Glassmorphism Backdrop) -->
+    <div class="add-staff-modal-backdrop" id="addStaffModal" style="display: none;">
+        <div class="add-staff-modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Thêm Nhân viên Mới</h3>
+                <button type="button" class="btn-close-modal" id="closeAddStaffModalBtn">&times;</button>
+            </div>
+            <form class="modal-form" id="addStaffForm">
+                <div class="form-group-row">
+                    <div class="form-group">
+                        <label for="staffFullName">Họ và tên</label>
+                        <input type="text" id="staffFullName" name="fullName" placeholder="Nhập họ và tên..." required>
+                    </div>
+                    <div class="form-group">
+                        <label for="staffUsername">Tên đăng nhập (Username)</label>
+                        <input type="text" id="staffUsername" name="username" placeholder="Nhập tên đăng nhập..." required>
+                    </div>
+                </div>
+                <div class="form-group-row">
+                    <div class="form-group">
+                        <label for="staffEmail">Địa chỉ Email</label>
+                        <input type="email" id="staffEmail" name="email" placeholder="example@koc.vn" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="staffPhone">Số điện thoại</label>
+                        <input type="tel" id="staffPhone" name="phone" placeholder="Nhập số điện thoại..." required>
+                    </div>
+                </div>
+                <div class="form-group-row">
+                    <div class="form-group">
+                        <label for="staffPassword">Mật khẩu ban đầu</label>
+                        <input type="password" id="staffPassword" name="password" placeholder="Nhập mật khẩu..." required>
+                    </div>
+                    <div class="form-group">
+                        <label for="staffRoleSelect">Vai trò nội bộ</label>
+                        <div class="select-wrapper-modal">
+                            <select id="staffRoleSelect" name="role" required>
+                                <option value="STAFF">Staff</option>
+                                <option value="ADMIN">Admin</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-error-message" id="addStaffError" style="display: none;"></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-cancel-modal" id="cancelAddStaffBtn">Hủy bỏ</button>
+                    <button type="submit" class="btn-submit-modal" id="submitAddStaffBtn">Thêm nhân viên</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL CHỈNH SỬA NHÂN VIÊN (Premium Glassmorphism Backdrop) -->
+    <div class="add-staff-modal-backdrop" id="editStaffModal" style="display: none;">
+        <div class="add-staff-modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Chỉnh sửa Nhân viên</h3>
+                <button type="button" class="btn-close-modal" id="closeEditStaffModalBtn">&times;</button>
+            </div>
+            <form class="modal-form" id="editStaffForm">
+                <!-- ID nhân viên ẩn -->
+                <input type="hidden" id="editStaffId" name="id">
+                
+                <div class="form-group-row">
+                    <div class="form-group">
+                        <label for="editStaffFullName">Họ và tên</label>
+                        <input type="text" id="editStaffFullName" name="fullName" placeholder="Nhập họ và tên..." required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editStaffUsername">Tên đăng nhập (Username)</label>
+                        <input type="text" id="editStaffUsername" name="username" placeholder="Nhập tên đăng nhập..." required>
+                    </div>
+                </div>
+                <div class="form-group-row">
+                    <div class="form-group">
+                        <label for="editStaffEmail">Địa chỉ Email</label>
+                        <input type="email" id="editStaffEmail" name="email" placeholder="example@koc.vn" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editStaffPhone">Số điện thoại</label>
+                        <input type="tel" id="editStaffPhone" name="phone" placeholder="Nhập số điện thoại..." required>
+                    </div>
+                </div>
+                <div class="form-group-row">
+                    <div class="form-group">
+                        <label for="editStaffPassword">Mật khẩu mới (Để trống nếu giữ nguyên)</label>
+                        <input type="password" id="editStaffPassword" name="password" placeholder="Nhập mật khẩu mới...">
+                    </div>
+                    <div class="form-group">
+                        <label for="editStaffRoleSelect">Vai trò nội bộ</label>
+                        <div class="select-wrapper-modal">
+                            <select id="editStaffRoleSelect" name="role" required>
+                                <option value="STAFF">Staff</option>
+                                <option value="ADMIN">Admin</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-error-message" id="editStaffError" style="display: none;"></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-cancel-modal" id="cancelEditStaffBtn">Hủy bỏ</button>
+                    <button type="submit" class="btn-submit-modal" id="submitEditStaffBtn">Lưu thay đổi</button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <!-- TOAST THÔNG BÁO CHO ADMIN -->

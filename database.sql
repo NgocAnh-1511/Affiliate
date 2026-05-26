@@ -243,9 +243,9 @@ INSERT INTO user_balances (koc_id, available_balance, pending_commission, referr
 
 -- --- C. NẠP PHÂN QUYỀN HẠN NHÂN VIÊN ---
 INSERT INTO staff_permissions (staff_id, permission) VALUES
-(1001, 'view_balance'), (1001, 'approve_withdrawal'), (1001, 'manage_koc'), (1001, 'edit_campaign'),
-(1002, 'view_balance'), (1002, 'manage_koc'),
-(1003, 'view_balance'), (1003, 'manage_koc'), (1003, 'edit_campaign');
+(1001, 'nav_overview'), (1001, 'nav_users'), (1001, 'nav_campaigns'), (1001, 'nav_tracking'), (1001, 'nav_finance'), (1001, 'nav_disputes'), (1001, 'nav_logs'),
+(1002, 'nav_overview'), (1002, 'nav_disputes'),
+(1003, 'nav_overview'), (1003, 'nav_campaigns'), (1003, 'nav_tracking');
 
 
 -- --- D. NẠP CHIẾN DỊCH CAMPAIGNS ---

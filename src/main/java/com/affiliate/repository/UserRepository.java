@@ -24,4 +24,10 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     List<User> findByReferredById(Integer referredById);
     
     Optional<User> findByReferralCode(String referralCode);
+
+    List<User> findByRoleAndStatus(String role, String status);
+
+    List<User> findByRoleAndStatusIn(String role, List<String> statuses);
+
+    List<User> findByRoleIn(List<String> roles);
 }

@@ -7,21 +7,96 @@ import com.affiliate.model.AdminTrackingData;
 import com.affiliate.model.AdminFinanceData;
 import com.affiliate.model.AdminDisputesData;
 import com.affiliate.model.AdminLogsData;
+import com.affiliate.model.User;
+import com.affiliate.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.time.format.DateTimeFormatter;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 @Controller
 public class AdminController {
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    private boolean hasPermission(String permission) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated()) {
+            return false;
+        }
+        String username = auth.getName();
+        Optional<User> userOpt = userRepository.findByUsername(username);
+        if (userOpt.isEmpty()) {
+            return false;
+        }
+        User user = userOpt.get();
+        if ("ADMIN".equals(user.getRole())) {
+            return true; // Admin has ALL permissions
+        }
+        if (!"STAFF".equals(user.getRole())) {
+            return false; // Non-staff (e.g. KOC) has no permissions in admin
+        }
+        // Check if permission exists for this staff member in CSDL
+        Integer count = jdbcTemplate.queryForObject(
+            "SELECT COUNT(*) FROM staff_permissions WHERE staff_id = ? AND permission = ?",
+            Integer.class,
+            user.getId(),
+            permission
+        );
+        return count != null && count > 0;
+    }
+
+
+    private String getFollowersStr(String username) {
+        int hash = Math.abs(username.hashCode());
+        return String.format("%,d", 50000 + (hash % 450000));
+    }
+
+    private String getKocPlatform(User user) {
+        if (user.getShopeeLink() != null && !user.getShopeeLink().trim().isEmpty()) {
+            return "shopee";
+        }
+        return "tiktok";
+    }
+
+    private String mapTierToStaffRole(User user) {
+        String tier = user.getTier();
+        if ("accounting".equals(tier) || "cskh".equals(tier) || "campaign_manager".equals(tier)) {
+            return tier;
+        }
+        if ("gold".equals(tier)) {
+            if ("tranthibich".equals(user.getUsername())) return "cskh";
+            return "accounting";
+        }
+        if ("silver".equals(tier)) return "cskh";
+        return "campaign_manager";
+    }
 
     /**
      * Hiển thị trang Tổng quan Admin (Admin Overview / Dashboard).
      */
     @GetMapping("/admin/overview")
     public String showAdminOverview(Model model) {
+        if (!hasPermission("nav_overview")) {
+            return "redirect:/403";
+        }
         // Khởi tạo danh sách yêu cầu đối soát chờ xử lý
         List<AdminStats.ReconciliationItem> pendingReconciliations = new ArrayList<>();
         pendingReconciliations.add(new AdminStats.ReconciliationItem("#RC-1092", "Phương Thảo", "12,500,000đ", "LSOUL TikTok Shop", "24/05/2026", "pending"));
@@ -60,27 +135,78 @@ public class AdminController {
 
     @GetMapping("/admin/users")
     public String showAdminUsers(Model model) {
-        // Khởi tạo 5 yêu cầu gia nhập chờ duyệt
+        if (!hasPermission("nav_users")) {
+            return "redirect:/403";
+        }
+        
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String username = auth.getName();
+        Optional<User> userOpt = userRepository.findByUsername(username);
+        if (userOpt.isEmpty()) {
+            return "redirect:/login";
+        }
+        User currentUser = userOpt.get();
+        model.addAttribute("currentUser", currentUser);
+
+        // Query pending requests from MySQL
+        List<User> pendingUsers = userRepository.findByRoleAndStatus("KOL/KOC", "pending");
         List<AdminUsersData.JoinRequest> pendingRequests = new ArrayList<>();
-        pendingRequests.add(new AdminUsersData.JoinRequest("#JR-101", "Trần Thu Hà", "@thuhahashion", "profile_avatar.png", "tiktok", "125,000", "19/05/2024 14:32"));
-        pendingRequests.add(new AdminUsersData.JoinRequest("#JR-102", "Lê Minh Quân", "@quanreview", "profile_avatar.png", "shopee", "87,500", "19/05/2024 11:15"));
-        pendingRequests.add(new AdminUsersData.JoinRequest("#JR-103", "Phạm Ngọc Anh", "@anhngoc.daily", "profile_avatar.png", "tiktok", "210,000", "18/05/2024 20:45"));
-        pendingRequests.add(new AdminUsersData.JoinRequest("#JR-104", "Hoàng Đức Duy", "@duy.unboxing", "profile_avatar.png", "tiktok", "65,200", "18/05/2024 16:20"));
-        pendingRequests.add(new AdminUsersData.JoinRequest("#JR-105", "Vũ Thảo Vy", "@vythao.beauty", "profile_avatar.png", "shopee", "93,000", "17/05/2024 09:35"));
+        for (User u : pendingUsers) {
+            String platform = getKocPlatform(u);
+            String followers = getFollowersStr(u.getUsername());
+            String date = u.getCreatedAt() != null ? u.getCreatedAt().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")) : "19/05/2026 14:32";
+            pendingRequests.add(new AdminUsersData.JoinRequest(
+                String.valueOf(u.getId()),
+                u.getFullName(),
+                "@" + u.getUsername(),
+                u.getAvatar() != null ? u.getAvatar() : "default_avatar.png",
+                platform,
+                followers,
+                date
+            ));
+        }
 
-        // Khởi tạo danh sách KOC hoạt động
+        // Query active and suspended KOCs from MySQL
+        List<User> activeAndSuspendedUsers = userRepository.findByRoleAndStatusIn("KOL/KOC", Arrays.asList("active", "suspended"));
         List<AdminUsersData.ActiveKoc> activeKocs = new ArrayList<>();
-        activeKocs.add(new AdminUsersData.ActiveKoc("#KC-201", "Mai Phương", "@maiphuong.official", "profile_avatar.png", "tiktok", "320,000", "diamond", "active"));
-        activeKocs.add(new AdminUsersData.ActiveKoc("#KC-202", "Đức Anh", "@ducanh.review", "profile_avatar.png", "shopee", "150,000", "gold", "active"));
-        activeKocs.add(new AdminUsersData.ActiveKoc("#KC-203", "Thảo Vy", "@vythao.beauty", "profile_avatar.png", "tiktok", "95,000", "silver", "active"));
-        activeKocs.add(new AdminUsersData.ActiveKoc("#KC-204", "Quang Huy", "@huy.fitlife", "profile_avatar.png", "tiktok", "78,000", "basic", "suspended"));
-        activeKocs.add(new AdminUsersData.ActiveKoc("#KC-205", "Linh Chi", "@linhchi.daily", "profile_avatar.png", "shopee", "60,000", "silver", "active"));
+        for (User u : activeAndSuspendedUsers) {
+            String platform = getKocPlatform(u);
+            String followers = getFollowersStr(u.getUsername());
+            activeKocs.add(new AdminUsersData.ActiveKoc(
+                String.valueOf(u.getId()),
+                u.getFullName(),
+                "@" + u.getUsername(),
+                u.getAvatar() != null ? u.getAvatar() : "default_avatar.png",
+                platform,
+                followers,
+                u.getTier() != null ? u.getTier() : "basic",
+                u.getStatus()
+            ));
+        }
 
-        // Khởi tạo danh sách nhân sự nội bộ (Staff Roles)
+        // Query staff members (ADMIN and STAFF) from MySQL ONLY if current user is ADMIN
         List<AdminUsersData.StaffMember> staffMembers = new ArrayList<>();
-        staffMembers.add(new AdminUsersData.StaffMember("#ST-01", "Nguyễn Văn A", "nguyenvana@koc.vn", "profile_avatar.png", "accounting", Arrays.asList("view_balance", "approve_withdrawal", "manage_koc")));
-        staffMembers.add(new AdminUsersData.StaffMember("#ST-02", "Trần Thị Bịch", "tranthibich@koc.vn", "profile_avatar.png", "cskh", Arrays.asList("view_balance", "manage_koc")));
-        staffMembers.add(new AdminUsersData.StaffMember("#ST-03", "Lê Hoàng Nam", "lehoangnam@koc.vn", "profile_avatar.png", "campaign_manager", Arrays.asList("view_balance", "manage_koc", "edit_campaign")));
+        if ("ADMIN".equals(currentUser.getRole())) {
+            List<User> staffUsers = userRepository.findByRoleIn(Arrays.asList("STAFF", "ADMIN"));
+            for (User u : staffUsers) {
+                // Read permissions from staff_permissions table using jdbcTemplate
+                List<String> permissions = jdbcTemplate.queryForList(
+                    "SELECT permission FROM staff_permissions WHERE staff_id = ?",
+                    String.class,
+                    u.getId()
+                );
+                staffMembers.add(new AdminUsersData.StaffMember(
+                    String.valueOf(u.getId()),
+                    u.getFullName(),
+                    u.getEmail(),
+                    u.getAvatar() != null ? u.getAvatar() : "default_avatar.png",
+                    u.getRole(),
+                    permissions,
+                    u.getUsername(),
+                    u.getPhone()
+                ));
+            }
+        }
 
         AdminUsersData usersData = new AdminUsersData(
             pendingRequests.size(),
@@ -95,8 +221,287 @@ public class AdminController {
         return "admin/users";
     }
 
+    @PostMapping("/admin/users/approve/{id}")
+    @ResponseBody
+    public Map<String, Object> approveUser(@PathVariable Integer id) {
+        if (!hasPermission("nav_users")) {
+            return Map.of("success", false, "message", "Bạn không có quyền phê duyệt đối tác!");
+        }
+        Optional<User> userOpt = userRepository.findById(id);
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            user.setStatus("active");
+            userRepository.save(user);
+            return Map.of("success", true, "message", "Đã phê duyệt đối tác [" + user.getFullName() + "] gia nhập hệ thống thành công!");
+        }
+        return Map.of("success", false, "message", "Không tìm thấy người dùng!");
+    }
+
+    @PostMapping("/admin/users/reject/{id}")
+    @ResponseBody
+    public Map<String, Object> rejectUser(@PathVariable Integer id) {
+        if (!hasPermission("nav_users")) {
+            return Map.of("success", false, "message", "Bạn không có quyền từ chối đối tác!");
+        }
+        Optional<User> userOpt = userRepository.findById(id);
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            String fullName = user.getFullName();
+            userRepository.delete(user);
+            return Map.of("success", true, "message", "Đã từ chối yêu cầu gia nhập của đối tác [" + fullName + "].");
+        }
+        return Map.of("success", false, "message", "Không tìm thấy người dùng!");
+    }
+
+    @PostMapping("/admin/users/update-tier")
+    @ResponseBody
+    public Map<String, Object> updateKocTier(@RequestParam Integer id, @RequestParam String tier) {
+        if (!hasPermission("nav_users")) {
+            return Map.of("success", false, "message", "Bạn không có quyền cập nhật cấp bậc KOC!");
+        }
+        Optional<User> userOpt = userRepository.findById(id);
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            user.setTier(tier);
+            userRepository.save(user);
+            String tierText = switch (tier) {
+                case "diamond" -> "Hạng Kim Cương";
+                case "gold" -> "Hạng Vàng";
+                case "silver" -> "Hạng Bạc";
+                default -> "Cơ bản";
+            };
+            return Map.of("success", true, "message", "Đã cập nhật cấp bậc của KOC [" + user.getFullName() + "] thành [" + tierText + "]!");
+        }
+        return Map.of("success", false, "message", "Không tìm thấy người dùng!");
+    }
+
+    @PostMapping("/admin/users/update-status")
+    @ResponseBody
+    public Map<String, Object> updateKocStatus(@RequestParam Integer id, @RequestParam String status) {
+        if (!hasPermission("nav_users")) {
+            return Map.of("success", false, "message", "Bạn không có quyền thay đổi trạng thái KOC!");
+        }
+        Optional<User> userOpt = userRepository.findById(id);
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            user.setStatus(status);
+            userRepository.save(user);
+            String statusText = "active".equals(status) ? "Hoạt động" : "Tạm khóa";
+            return Map.of(
+                "success", true, 
+                "message", "Đã cập nhật trạng thái hoạt động của KOC [" + user.getFullName() + "] thành [" + statusText + "]!",
+                "status", status
+            );
+        }
+        return Map.of("success", false, "message", "Không tìm thấy người dùng!");
+    }
+
+    @PostMapping("/admin/users/update-role")
+    @ResponseBody
+    public Map<String, Object> updateStaffRole(@RequestParam Integer id, @RequestParam String role) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String username = auth.getName();
+        Optional<User> adminOpt = userRepository.findByUsername(username);
+        if (adminOpt.isEmpty() || !"ADMIN".equals(adminOpt.get().getRole())) {
+            return Map.of("success", false, "message", "Chỉ Admin tối cao mới có quyền thay đổi vai trò nhân viên!");
+        }
+        Optional<User> userOpt = userRepository.findById(id);
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            user.setRole(role); // Update core role in database column
+            userRepository.save(user);
+            String roleText = "ADMIN".equals(role) ? "Admin" : "Staff";
+            return Map.of("success", true, "message", "Đã thay đổi vai trò của [" + user.getFullName() + "] thành [" + roleText + "] thành công!");
+        }
+        return Map.of("success", false, "message", "Không tìm thấy người dùng!");
+    }
+
+    @PostMapping("/admin/users/update-permissions")
+    @ResponseBody
+    public Map<String, Object> updateStaffPermissions(@RequestParam Integer id, @RequestParam(required = false) List<String> permissions) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String username = auth.getName();
+        Optional<User> adminOpt = userRepository.findByUsername(username);
+        if (adminOpt.isEmpty() || !"ADMIN".equals(adminOpt.get().getRole())) {
+            return Map.of("success", false, "message", "Chỉ Admin tối cao mới có quyền cập nhật quyền hạn nhân viên!");
+        }
+        Optional<User> userOpt = userRepository.findById(id);
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            // Clear old permissions
+            jdbcTemplate.update("DELETE FROM staff_permissions WHERE staff_id = ?", id);
+            
+            // Insert new permissions
+            if (permissions != null && !permissions.isEmpty()) {
+                for (String perm : permissions) {
+                    if (perm != null && !perm.trim().isEmpty()) {
+                        jdbcTemplate.update("INSERT INTO staff_permissions (staff_id, permission) VALUES (?, ?)", id, perm.trim());
+                    }
+                }
+            }
+            return Map.of("success", true, "message", "Đã cập nhật hệ thống quyền hạn mới cho nhân viên [" + user.getFullName() + "] thành công!");
+        }
+        return Map.of("success", false, "message", "Không tìm thấy người dùng!");
+    }
+
+    @PostMapping("/admin/users/add-staff")
+    @ResponseBody
+    public Map<String, Object> addStaff(
+            @RequestParam String fullName,
+            @RequestParam String username,
+            @RequestParam String email,
+            @RequestParam String phone,
+            @RequestParam String password,
+            @RequestParam String role) {
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String adminUsername = auth.getName();
+        Optional<User> adminOpt = userRepository.findByUsername(adminUsername);
+        if (adminOpt.isEmpty() || !"ADMIN".equals(adminOpt.get().getRole())) {
+            return Map.of("success", false, "message", "Chỉ Admin tối cao mới có quyền thêm nhân viên mới!");
+        }
+
+        // Validate uniqueness
+        if (userRepository.existsByUsername(username)) {
+            return Map.of("success", false, "message", "Tên đăng nhập đã tồn tại!");
+        }
+        if (userRepository.existsByEmail(email)) {
+            return Map.of("success", false, "message", "Địa chỉ Email đã tồn tại!");
+        }
+        if (userRepository.existsByPhone(phone)) {
+            return Map.of("success", false, "message", "Số điện thoại đã tồn tại!");
+        }
+
+        // Create new User
+        User user = new User();
+        user.setFullName(fullName);
+        user.setUsername(username);
+        user.setEmail(email);
+        user.setPhone(phone);
+        user.setPassword(passwordEncoder.encode(password));
+        user.setRole(role); // Set role: "STAFF" or "ADMIN"
+        user.setStatus("active");
+        user.setTier("basic"); // Default tier to basic
+        userRepository.save(user);
+
+        // Assign default permissions
+        List<String> defaultPermissions = "ADMIN".equals(role)
+            ? Arrays.asList("nav_overview", "nav_users", "nav_campaigns", "nav_tracking", "nav_finance", "nav_disputes", "nav_logs")
+            : Arrays.asList("nav_overview"); // Staff default only overview
+
+        for (String perm : defaultPermissions) {
+            jdbcTemplate.update("INSERT INTO staff_permissions (staff_id, permission) VALUES (?, ?)", user.getId(), perm);
+        }
+
+        // Return details
+        return Map.of(
+            "success", true,
+            "message", "Thêm nhân viên mới [" + fullName + "] thành công!",
+            "staff", Map.of(
+                "id", String.valueOf(user.getId()),
+                "name", user.getFullName(),
+                "email", user.getEmail(),
+                "avatar", user.getAvatar() != null ? user.getAvatar() : "default_avatar.png",
+                "role", role,
+                "permissions", defaultPermissions,
+                "username", user.getUsername(),
+                "phone", user.getPhone()
+            )
+        );
+    }
+
+    @PostMapping("/admin/users/edit-staff")
+    @ResponseBody
+    public Map<String, Object> editStaff(
+            @RequestParam Integer id,
+            @RequestParam String fullName,
+            @RequestParam String username,
+            @RequestParam String email,
+            @RequestParam String phone,
+            @RequestParam(required = false) String password,
+            @RequestParam String role) {
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String adminUsername = auth.getName();
+        Optional<User> adminOpt = userRepository.findByUsername(adminUsername);
+        if (adminOpt.isEmpty() || !"ADMIN".equals(adminOpt.get().getRole())) {
+            return Map.of("success", false, "message", "Chỉ Admin tối cao mới có quyền chỉnh sửa nhân viên!");
+        }
+
+        Optional<User> userOpt = userRepository.findById(id);
+        if (userOpt.isEmpty()) {
+            return Map.of("success", false, "message", "Không tìm thấy nhân viên cần chỉnh sửa!");
+        }
+
+        User user = userOpt.get();
+
+        // Kiểm tra trùng lặp thông tin với những người dùng khác
+        Optional<User> existingUserByUsername = userRepository.findByUsername(username);
+        if (existingUserByUsername.isPresent() && !existingUserByUsername.get().getId().equals(id)) {
+            return Map.of("success", false, "message", "Tên đăng nhập đã tồn tại!");
+        }
+
+        Optional<User> existingUserByEmail = userRepository.findByEmail(email);
+        if (existingUserByEmail.isPresent() && !existingUserByEmail.get().getId().equals(id)) {
+            return Map.of("success", false, "message", "Địa chỉ Email đã tồn tại!");
+        }
+
+        Optional<User> existingUserByPhone = userRepository.findByPhone(phone);
+        if (existingUserByPhone.isPresent() && !existingUserByPhone.get().getId().equals(id)) {
+            return Map.of("success", false, "message", "Số điện thoại đã tồn tại!");
+        }
+
+        // Cập nhật thông tin
+        user.setFullName(fullName);
+        user.setUsername(username);
+        user.setEmail(email);
+        user.setPhone(phone);
+        user.setRole(role);
+
+        if (password != null && !password.trim().isEmpty()) {
+            user.setPassword(passwordEncoder.encode(password.trim()));
+        }
+
+        userRepository.save(user);
+
+        return Map.of(
+            "success", true,
+            "message", "Chỉnh sửa thông tin nhân viên [" + fullName + "] thành công!",
+            "staff", Map.of(
+                "id", String.valueOf(user.getId()),
+                "name", user.getFullName(),
+                "email", user.getEmail(),
+                "avatar", user.getAvatar() != null ? user.getAvatar() : "default_avatar.png",
+                "role", role
+            )
+        );
+    }
+
+    @PostMapping("/admin/users/delete-staff/{id}")
+    @ResponseBody
+    public Map<String, Object> deleteStaff(@PathVariable Integer id) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String adminUsername = auth.getName();
+        Optional<User> adminOpt = userRepository.findByUsername(adminUsername);
+        if (adminOpt.isEmpty() || !"ADMIN".equals(adminOpt.get().getRole())) {
+            return Map.of("success", false, "message", "Chỉ Admin tối cao mới có quyền xóa nhân viên!");
+        }
+
+        Optional<User> userOpt = userRepository.findById(id);
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            String fullName = user.getFullName();
+            userRepository.delete(user);
+            return Map.of("success", true, "message", "Đã xóa vĩnh viễn tài khoản nhân viên [" + fullName + "] thành công!");
+        }
+        return Map.of("success", false, "message", "Không tìm thấy nhân viên cần xóa!");
+    }
+
     @GetMapping("/admin/campaigns")
     public String showAdminCampaigns(Model model) {
+        if (!hasPermission("nav_campaigns")) {
+            return "redirect:/403";
+        }
         // Khởi tạo các hạng hoa hồng mặc định
         List<AdminCampaignData.CommissionTier> tiers = new ArrayList<>();
         tiers.add(new AdminCampaignData.CommissionTier("tier_1", "Hạng Kim Cương", "diamond", "Doanh thu ≥ 100,000,000 VNĐ", 15, true));
@@ -120,6 +525,9 @@ public class AdminController {
 
     @GetMapping("/admin/tracking")
     public String showAdminTracking(Model model) {
+        if (!hasPermission("nav_tracking")) {
+            return "redirect:/403";
+        }
         // Cảnh báo gian lận
         List<AdminTrackingData.FraudAlert> alerts = new ArrayList<>();
         alerts.add(new AdminTrackingData.FraudAlert("10:24:31", "Cảnh báo Bot Click từ dải IP 192.168.x.x - Đã chặn", "Cao"));
@@ -154,6 +562,9 @@ public class AdminController {
 
     @GetMapping("/admin/finance")
     public String showAdminFinance(Model model) {
+        if (!hasPermission("nav_finance")) {
+            return "redirect:/403";
+        }
         List<AdminFinanceData.PayoutRequest> requests = new ArrayList<>();
         requests.add(new AdminFinanceData.PayoutRequest("#WD-8921", "Mai Phương", "@maiphuong.official", "profile_avatar.png", "5,000,000 VNĐ", "Vietcombank", "vietcombank", "**** **** **** 1234", "20/05/2024 14:32", "pending"));
         requests.add(new AdminFinanceData.PayoutRequest("#WD-8920", "Đức Anh", "@ducanh.review", "profile_avatar.png", "3,200,000 VNĐ", "MB Bank", "mbbank", "**** **** **** 5678", "20/05/2024 11:15", "pending"));
@@ -181,6 +592,9 @@ public class AdminController {
 
     @GetMapping("/admin/disputes")
     public String showAdminDisputes(Model model) {
+        if (!hasPermission("nav_disputes")) {
+            return "redirect:/403";
+        }
         List<AdminDisputesData.DisputeTicket> tickets = new ArrayList<>();
         
         tickets.add(new AdminDisputesData.DisputeTicket(
@@ -245,6 +659,9 @@ public class AdminController {
 
     @GetMapping("/admin/logs")
     public String showAdminLogs(Model model) {
+        if (!hasPermission("nav_logs")) {
+            return "redirect:/403";
+        }
         List<AdminLogsData.AuditLog> logs = new ArrayList<>();
         
         String json1 = "{\n  \"log_id\": \"LOG-20260524-143022-7XK9L\",\n  \"timestamp\": \"2026-05-24T14:30:22+07:00\",\n  \"admin_id\": \"ADM-1001\",\n  \"admin_name\": \"Nguyễn Văn A\",\n  \"action\": \"UPDATE_COMMISSION_RATE\",\n  \"module\": \"CAMPAIGN\",\n  \"object_id\": \"CAM-2026-007\",\n  \"changes\": {\n    \"old_value\": \"10%\",\n    \"new_value\": \"12%\",\n    \"field\": \"commission_rate\",\n    \"tier\": \"gold\"\n  },\n  \"ip_address\": \"113.190.***.***\",\n  \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/124.0.0.0 Safari/537.36\"\n}";

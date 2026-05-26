@@ -51,5 +51,7 @@ public class AdminUsersData {
         private String avatar;
         private String role; // "accounting" (Kế toán), "cskh" (CSKH), "campaign_manager" (Quản lý chiến dịch)
         private List<String> permissions; // e.g. ["view_balance", "approve_withdrawal", "manage_koc", "edit_campaign", "manage_users", "delete_data"]
+        private String username;
+        private String phone;
     }
 }
