@@ -28,6 +28,7 @@ com\affiliate\model\ReferralData$ReferredKoc.class
 com\affiliate\model\User.class
 com\affiliate\controller\LoginController.class
 com\affiliate\config\SecurityConfig.class
+com\affiliate\model\AdminFinanceData$OrderTransaction.class
 com\affiliate\repository\UserRepository.class
 com\affiliate\controller\IncomeController.class
 com\affiliate\repository\UserBalanceRepository.class

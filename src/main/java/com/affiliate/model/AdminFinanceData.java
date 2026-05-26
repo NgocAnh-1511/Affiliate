@@ -13,6 +13,7 @@ public class AdminFinanceData {
     private String pendingAmount;
     private String totalPaidThisMonth;
     private List<PayoutRequest> payoutRequests;
+    private List<OrderTransaction> orderTransactions;
 
     @Data
     @AllArgsConstructor
@@ -28,5 +29,22 @@ public class AdminFinanceData {
         private String bankCard;
         private String date;
         private String status; // "pending"
+    }
+
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class OrderTransaction {
+        private String id;
+        private String kocName;
+        private String username;
+        private String avatar;
+        private String campaignName;
+        private String platform;
+        private String orderAmount;
+        private String commissionAmount;
+        private java.math.BigDecimal commissionVal;
+        private String date;
+        private String status;
     }
 }

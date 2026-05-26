@@ -171,14 +171,24 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
     // ==========================================================================
-    // 5. Submit Form & Giảm trừ tiền ảo tức thì (Simulation)
+    // 5. Submit Form & Thực hiện gửi yêu cầu Rút tiền thực tế lên Server CSDL
     // ==========================================================================
-    // Khởi tạo Lịch sử rút tiền ảo để hiển thị khi chuyển tab
-    let withdrawalHistory = [
-        { id: "#WD12345672", campaign: "Vietcombank Rút tiền", source: "vcb", amount: "5,000,000 VNĐ", fee: "Miễn phí", date: "10/05/2024 14:15", status: "success", statusText: "Thành công" },
-        { id: "#WD12345671", campaign: "Vietcombank Rút tiền", source: "vcb", amount: "10,000,000 VNĐ", fee: "Miễn phí", date: "02/05/2024 09:10", status: "success", statusText: "Thành công" },
-        { id: "#WD12345670", campaign: "Vietcombank Rút tiền", source: "vcb", amount: "1,500,000 VNĐ", fee: "Miễn phí", date: "24/04/2024 16:45", status: "cancelled", statusText: "Hủy" }
-    ];
+    let withdrawalHistory = [];
+
+    function fetchWithdrawalHistory() {
+        fetch('/api/withdraw/history')
+            .then(res => res.json())
+            .then(data => {
+                withdrawalHistory = data;
+                if (tabWithdrawals && tabWithdrawals.classList.contains('active')) {
+                    renderWithdrawalsTable();
+                }
+            })
+            .catch(err => console.error('Error fetching withdrawal history:', err));
+    }
+
+    // Nạp lịch sử ban đầu từ database
+    fetchWithdrawalHistory();
 
     if (withdrawForm) {
         withdrawForm.addEventListener('submit', function(e) {
@@ -193,49 +203,43 @@ document.addEventListener('DOMContentLoaded', function() {
             withdrawForm.style.display = 'none';
             if (drawerLoading) drawerLoading.classList.add('active');
             
-            // Chạy thời gian ảo 1.5 giây mô phỏng chuyển tiền
-            setTimeout(function() {
-                // 1. Trừ tiền khả dụng
-                availableBalanceVal -= withdrawAmount;
-                
-                // 2. Cập nhật lại giao diện chính và drawer
-                if (balanceTextEl) balanceTextEl.textContent = formatVND(availableBalanceVal);
-                if (drawerBalanceEl) drawerBalanceEl.textContent = formatVND(availableBalanceVal);
-                
-                // 3. Thêm lịch sử rút tiền mới này vào đầu danh sách lịch sử rút tiền
-                const now = new Date();
-                const formattedDate = now.getDate().toString().padStart(2, '0') + '/' + 
-                                      (now.getMonth() + 1).toString().padStart(2, '0') + '/' + 
-                                      now.getFullYear() + ' ' + 
-                                      now.getHours().toString().padStart(2, '0') + ':' + 
-                                      now.getMinutes().toString().padStart(2, '0');
-                
-                withdrawalHistory.unshift({
-                    id: "#WD" + Math.floor(10000000 + Math.random() * 90000000),
-                    campaign: "Vietcombank Rút tiền",
-                    source: "vcb",
-                    amount: formatVND(withdrawAmount),
-                    fee: "Miễn phí",
-                    date: formattedDate,
-                    status: "success",
-                    statusText: "Thành công"
-                });
-                
-                // 4. Nếu đang ở tab rút tiền thì cập nhật lại bảng lập tức
-                if (tabWithdrawals && tabWithdrawals.classList.contains('active')) {
-                    renderWithdrawalsTable();
-                }
-                
-                // 5. Chuyển sang màn hình báo thành công
-                if (drawerLoading) drawerLoading.classList.remove('active');
-                if (drawerSuccess) {
-                    const desc = drawerSuccess.querySelector('.success-desc');
-                    if (desc) {
-                        desc.textContent = `Số tiền rút ${formatVND(withdrawAmount)} của bạn đã được chuyển khoản thành công vào tài khoản Vietcombank của đối tác Mai Phương.`;
+            fetch('/api/withdraw/create', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ amount: withdrawAmount.toString() })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    // 1. Trừ tiền khả dụng và cập nhật giao diện chính
+                    availableBalanceVal -= withdrawAmount;
+                    if (balanceTextEl) balanceTextEl.textContent = formatVND(availableBalanceVal);
+                    if (drawerBalanceEl) drawerBalanceEl.textContent = formatVND(availableBalanceVal);
+                    
+                    // 2. Nạp lại lịch sử rút tiền mới nhất từ database
+                    fetchWithdrawalHistory();
+                    
+                    // 3. Chuyển sang màn hình báo thành công
+                    if (drawerLoading) drawerLoading.classList.remove('active');
+                    if (drawerSuccess) {
+                        const desc = drawerSuccess.querySelector('.success-desc');
+                        if (desc) {
+                            desc.textContent = `Yêu cầu rút tiền ${data.amountFormatted} (Mã lệnh: ${data.requestId}) của bạn đã được tiếp nhận thành công và đang chờ đối soát.`;
+                        }
+                        drawerSuccess.classList.add('active');
                     }
-                    drawerSuccess.classList.add('active');
+                } else {
+                    alert('Lỗi: ' + (data.message || 'Không thể tạo yêu cầu rút tiền.'));
+                    if (drawerLoading) drawerLoading.classList.remove('active');
+                    withdrawForm.style.display = 'flex';
                 }
-            }, 1500);
+            })
+            .catch(err => {
+                console.error('Error creating withdrawal:', err);
+                alert('Lỗi kết nối khi gửi yêu cầu rút tiền.');
+                if (drawerLoading) drawerLoading.classList.remove('active');
+                withdrawForm.style.display = 'flex';
+            });
         });
     }
 
@@ -258,31 +262,46 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!tableBody) return;
         
         let html = "";
-        withdrawalHistory.forEach(function(wd) {
-            html += `
+        if (withdrawalHistory.length === 0) {
+            html = `
                 <tr>
-                    <td class="col-ord-id">${wd.id}</td>
-                    <td>
-                        <div class="campaign-cell">
-                            <!-- Huy hiệu ngân hàng nhỏ -->
-                            <div class="traffic-mini-badge shopee" style="background: linear-gradient(135deg, #10b981 0%, #047857 100%);">
-                                <span class="badge-s">V</span>
-                            </div>
-                            <span class="campaign-cell-name">${wd.campaign}</span>
-                        </div>
-                    </td>
-                    <td class="col-money">${wd.amount}</td>
-                    <td class="col-commission" style="color: #64748b;">${wd.fee}</td>
-                    <td class="col-date">${wd.date}</td>
-                    <td class="col-status">
-                        <div class="status-badge ${wd.status}">
-                            <span class="status-dot"></span>
-                            <span>${wd.statusText}</span>
+                    <td colspan="6" style="text-align: center; padding: 4rem 1rem; color: var(--text-muted);">
+                        <div class="empty-state-wrapper" style="display: flex; flex-direction: column; align-items: center; gap: 0.75rem;">
+                            <!-- Icon thông báo rỗng -->
+                            <svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color: var(--text-muted); opacity: 0.6;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                            <span style="font-size: 0.9rem; font-weight: 700; color: var(--text-main);">Chưa có lịch sử rút tiền</span>
+                            <span style="font-size: 0.76rem; opacity: 0.85; max-width: 320px; line-height: 1.4; margin: 0 auto;">Mọi yêu cầu rút tiền của bạn sau khi gửi duyệt sẽ hiển thị chi tiết tại đây.</span>
                         </div>
                     </td>
                 </tr>
             `;
-        });
+        } else {
+            withdrawalHistory.forEach(function(wd) {
+                html += `
+                    <tr>
+                        <td class="col-ord-id">${wd.id}</td>
+                        <td>
+                            <div class="campaign-cell">
+                                <!-- Huy hiệu ngân hàng nhỏ -->
+                                <div class="traffic-mini-badge shopee" style="background: linear-gradient(135deg, #10b981 0%, #047857 100%);">
+                                    <span class="badge-s">V</span>
+                                </div>
+                                <span class="campaign-cell-name">${wd.campaign}</span>
+                            </div>
+                        </td>
+                        <td class="col-money">${wd.amount}</td>
+                        <td class="col-commission" style="color: #64748b;">${wd.fee}</td>
+                        <td class="col-date">${wd.date}</td>
+                        <td class="col-status">
+                            <div class="status-badge ${wd.status}">
+                                <span class="status-dot"></span>
+                                <span>${wd.statusText}</span>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
         
         tableBody.innerHTML = html;
     }

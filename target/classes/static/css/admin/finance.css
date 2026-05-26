@@ -306,3 +306,239 @@
         justify-content: center;
     }
 }
+
+/* ==========================================================================
+   PHÂN TRANG (Pagination Styling)
+   ========================================================================== */
+.pagination-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1rem;
+    padding-top: 0.85rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.pagination-info {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+.page-numbers {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.page-num, .page-arrow {
+    background-color: #ffffff;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-family);
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    outline: none;
+}
+
+.page-num:hover:not(.active), .page-arrow:hover:not(:disabled) {
+    border-color: var(--border-hover);
+    color: var(--text-main);
+    background-color: #fafafa;
+}
+
+.page-num.active {
+    background: linear-gradient(135deg, var(--secondary-color) 0%, var(--primary-color) 100%);
+    border-color: var(--primary-color);
+    color: #ffffff;
+    box-shadow: 0 2px 6px rgba(168, 85, 247, 0.25);
+}
+
+.page-arrow:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+/* User Identity Cell in Table */
+.user-info-cell {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+}
+
+.table-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1.5px solid var(--border-color);
+    transition: border-color 0.2s ease;
+}
+
+.user-info-cell:hover .table-avatar {
+    border-color: var(--primary-color);
+}
+
+.user-names {
+    display: flex;
+    flex-direction: column;
+    gap: 0.05rem;
+}
+
+.user-full-name {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+.user-handle {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+}
+
+/* Table Optimization to prevent horizontal scrolling */
+.admin-table thead th {
+    padding: 0.65rem 0.85rem !important;
+    font-size: 0.78rem !important;
+}
+
+.admin-table tbody td {
+    padding: 0.65rem 0.85rem !important;
+    font-size: 0.82rem !important;
+}
+
+/* Narrow down bank logo and text gap */
+.bank-info-cell {
+    gap: 0.45rem !important;
+}
+
+.bank-logo-placeholder {
+    width: 28px !important;
+    height: 28px !important;
+    font-size: 0.58rem !important;
+}
+
+.bank-name-text {
+    font-size: 0.8rem !important;
+}
+
+.bank-card-text {
+    font-size: 0.68rem !important;
+}
+
+/* Tabs thiết kế chuyển đổi phân hệ đối soát */
+.finance-tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.25rem;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 0.5rem;
+}
+
+.finance-tab {
+    background: none;
+    border: none;
+    padding: 0.5rem 1rem;
+    font-family: var(--font-family);
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.finance-tab:hover {
+    color: var(--text-main);
+    background-color: var(--border-color);
+}
+
+.finance-tab.active {
+    color: #ffffff;
+    background: linear-gradient(135deg, var(--secondary-color) 0%, var(--primary-color) 100%);
+    box-shadow: 0 2px 6px rgba(168, 85, 247, 0.2);
+}
+
+/* Platform Badges */
+.platform-badge {
+    padding: 0.15rem 0.45rem;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    display: inline-block;
+}
+.platform-badge.tiktok {
+    background-color: rgba(0, 0, 0, 0.05);
+    color: #000000;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+}
+.platform-badge.shopee {
+    background-color: rgba(238, 77, 45, 0.08);
+    color: #ee4d2d;
+    border: 1px solid rgba(238, 77, 45, 0.2);
+}
+.platform-badge.lazada {
+    background-color: rgba(16, 20, 140, 0.08);
+    color: #10148c;
+    border: 1px solid rgba(16, 20, 140, 0.2);
+}
+.platform-badge.tiki {
+    background-color: rgba(0, 191, 255, 0.08);
+    color: #00bfff;
+    border: 1px solid rgba(0, 191, 255, 0.2);
+}
+
+/* Các nút Phê duyệt / Hủy đơn hàng đối soát */
+.btn-order-approve {
+    background-color: #ffffff;
+    border: 1.5px solid rgba(16, 185, 129, 0.38);
+    color: var(--emerald-color);
+    padding: 0.35rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-order-approve:hover {
+    background-color: var(--emerald-color);
+    color: #ffffff;
+    border-color: var(--emerald-color);
+    box-shadow: 0 2px 6px rgba(16, 185, 129, 0.25);
+    transform: translateY(-1px);
+}
+
+.btn-order-reject {
+    background-color: #ffffff;
+    border: 1.5px solid rgba(239, 68, 68, 0.38);
+    color: #ef4444;
+    padding: 0.35rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-left: 0.3rem;
+}
+
+.btn-order-reject:hover {
+    background-color: #ef4444;
+    color: #ffffff;
+    border-color: #ef4444;
+    box-shadow: 0 2px 6px rgba(239, 68, 68, 0.25);
+    transform: translateY(-1px);
+}
+
+

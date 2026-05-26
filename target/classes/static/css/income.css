@@ -550,6 +550,11 @@ nav::-webkit-scrollbar {
     box-shadow: 0 2px 4px rgba(16, 185, 129, 0.25);
 }
 
+.bank-vcb-badge.mbbank {
+    background-color: #1e3a8a;
+    box-shadow: 0 2px 4px rgba(30, 58, 138, 0.25);
+}
+
 .bank-details-text {
     color: var(--text-main);
     font-weight: 600;

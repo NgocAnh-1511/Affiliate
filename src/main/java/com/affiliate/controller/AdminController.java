@@ -42,6 +42,31 @@ public class AdminController {
     @jakarta.annotation.PostConstruct
     public void initAdminCampaignsDatabase() {
         try {
+            // Đồng bộ bảng audit_logs khớp 100% với cấu trúc mã nguồn Java đang sử dụng
+            jdbcTemplate.execute("SET FOREIGN_KEY_CHECKS = 0;");
+            jdbcTemplate.execute("DROP TABLE IF EXISTS audit_logs;");
+            jdbcTemplate.execute("CREATE TABLE audit_logs (" +
+                "    log_id VARCHAR(50) PRIMARY KEY," +
+                "    created_at VARCHAR(50) NOT NULL," +
+                "    admin_name VARCHAR(150) NOT NULL," +
+                "    email VARCHAR(100) NOT NULL," +
+                "    avatar VARCHAR(255) DEFAULT 'default_avatar.png'," +
+                "    action_type VARCHAR(50) NOT NULL," +
+                "    badge_class VARCHAR(50) NOT NULL," +
+                "    target_object VARCHAR(255) NOT NULL," +
+                "    object_id VARCHAR(50) NOT NULL," +
+                "    action_description TEXT NOT NULL," +
+                "    ip_address VARCHAR(50) NOT NULL," +
+                "    changes_json TEXT NOT NULL" +
+                ") ENGINE=InnoDB CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;"
+            );
+            jdbcTemplate.execute("SET FOREIGN_KEY_CHECKS = 1;");
+            System.out.println("Table audit_logs drop-and-recreated to match Java model successfully.");
+        } catch (Exception e) {
+            System.err.println("Warning: Could not recreate audit_logs table: " + e.getMessage());
+        }
+
+        try {
             // Thử chạy ALTER TABLE để thêm cột product_link. Sẽ tự bỏ qua nếu cột đã tồn tại.
             jdbcTemplate.execute("ALTER TABLE campaigns ADD COLUMN product_link TEXT DEFAULT NULL;");
             System.out.println("Column product_link added to campaigns successfully.");
@@ -88,6 +113,126 @@ public class AdminController {
             }
         } catch (Exception e) {
             System.err.println("Warning: Could not create or populate dispute_replies table: " + e.getMessage());
+        }
+
+        try {
+            // Chuyển đổi toàn bộ CSDL và các bảng liên quan sang charset utf8mb4 để hỗ trợ hiển thị Tiếng Việt và ký hiệu đặc biệt
+            jdbcTemplate.execute("ALTER DATABASE affiliate_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;");
+            jdbcTemplate.execute("ALTER TABLE users CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;");
+            jdbcTemplate.execute("ALTER TABLE user_balances CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;");
+            jdbcTemplate.execute("ALTER TABLE campaigns CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;");
+            jdbcTemplate.execute("ALTER TABLE commission_tiers CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;");
+            jdbcTemplate.execute("ALTER TABLE transactions CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;");
+            jdbcTemplate.execute("ALTER TABLE payout_requests CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;");
+            jdbcTemplate.execute("ALTER TABLE dispute_tickets CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;");
+            jdbcTemplate.execute("ALTER TABLE dispute_replies CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;");
+            System.out.println("All database tables converted to utf8mb4 successfully.");
+
+            // Cập nhật lại các chuỗi Tiếng Việt bị lỗi dấu hỏi chấm do import sai bảng mã cũ
+            jdbcTemplate.update("UPDATE users SET full_name = 'Mai Phương', bank_name = 'Vietcombank', bank_account_name = 'Mai Phương' WHERE id = 1");
+            jdbcTemplate.update("UPDATE users SET full_name = 'Đức Anh' WHERE id = 2");
+            jdbcTemplate.update("UPDATE users SET full_name = 'Thảo Vy' WHERE id = 3");
+            jdbcTemplate.update("UPDATE users SET full_name = 'Quang Huy' WHERE id = 4");
+            jdbcTemplate.update("UPDATE users SET full_name = 'Linh Chi' WHERE id = 5");
+            jdbcTemplate.update("UPDATE users SET full_name = 'Nguyễn Minh Đức' WHERE id = 6");
+            jdbcTemplate.update("UPDATE users SET full_name = 'Trần Quốc Bảo' WHERE id = 7");
+            jdbcTemplate.update("UPDATE users SET full_name = 'Phạm Thu Hương' WHERE id = 8");
+            jdbcTemplate.update("UPDATE users SET full_name = 'Lê Hoàng Nam KOC' WHERE id = 9");
+            jdbcTemplate.update("UPDATE users SET full_name = 'Vũ Thảo Vy' WHERE id = 10");
+            jdbcTemplate.update("UPDATE users SET full_name = 'Đỗ Anh Khoa' WHERE id = 11");
+            jdbcTemplate.update("UPDATE users SET full_name = 'Nguyễn Văn A' WHERE id = 1001");
+            jdbcTemplate.update("UPDATE users SET full_name = 'Trần Thị Bịch' WHERE id = 1002");
+            jdbcTemplate.update("UPDATE users SET full_name = 'Lê Hoàng Nam' WHERE id = 1003");
+            jdbcTemplate.update("UPDATE users SET full_name = 'Phạm Quốc Tùng' WHERE id = 1004");
+            
+            // Cập nhật các yêu cầu rút tiền
+            jdbcTemplate.update("UPDATE payout_requests SET amount_str = '5,000,000 VNĐ', bank_name = 'Vietcombank' WHERE id = '#WD-8921'");
+            jdbcTemplate.update("UPDATE payout_requests SET amount_str = '3,200,000 VNĐ', bank_name = 'MB Bank' WHERE id = '#WD-8920'");
+            jdbcTemplate.update("UPDATE payout_requests SET amount_str = '7,800,000 VNĐ', bank_name = 'Techcombank' WHERE id = '#WD-8919'");
+            System.out.println("Vietnamese encodings and values cleaned up perfectly.");
+        } catch (Exception e) {
+            System.err.println("Warning: Could not convert tables or clean encoding: " + e.getMessage());
+        }
+
+        try {
+            // Gieo mầm số dư, thông tin ngân hàng và giao dịch mẫu cho TẤT CẢ các tài khoản có vai trò KOL/KOC để phục vụ kiểm thử
+            List<Map<String, Object>> kocList = jdbcTemplate.queryForList(
+                "SELECT id, full_name, username FROM users WHERE role = 'KOL/KOC'"
+            );
+            for (Map<String, Object> koc : kocList) {
+                Integer kocId = (Integer) koc.get("id");
+                String kocName = (String) koc.get("full_name");
+                String username = (String) koc.get("username");
+
+                // Nạp/Cập nhật số dư mẫu lớn để test rút tiền thoải mái
+                jdbcTemplate.update(
+                    "INSERT INTO user_balances (koc_id, available_balance, pending_commission, referral_commission, total_withdrawn) " +
+                    "VALUES (?, 15500000.00, 2300000.00, 3200000.00, 25000000.00) " +
+                    "ON DUPLICATE KEY UPDATE available_balance = 15500000.00, pending_commission = 2300000.00",
+                    kocId
+                );
+
+                // Nạp/Cập nhật thông tin tài khoản ngân hàng mặc định nếu chưa có
+                jdbcTemplate.update(
+                    "UPDATE users SET bank_name = COALESCE(bank_name, 'Vietcombank'), " +
+                    "bank_account_name = COALESCE(bank_account_name, ?), " +
+                    "bank_account_number = COALESCE(bank_account_number, '**** **** 1234') " +
+                    "WHERE id = ?",
+                    kocName, kocId
+                );
+
+                // Gieo mầm dữ liệu giao dịch mẫu cho KOC nếu chưa có để hiển thị ở trang Income
+                Integer txCount = jdbcTemplate.queryForObject(
+                    "SELECT COUNT(*) FROM transactions WHERE koc_id = ?",
+                    Integer.class,
+                    kocId
+                );
+                if (txCount == null || txCount == 0) {
+                    jdbcTemplate.update("INSERT INTO transactions (id, koc_id, click_tracking_id, campaign_name, platform, order_amount, commission_rate, commission_amount, transaction_date, status) VALUES " +
+                        "(?, ?, NULL, 'BST LSOUL TikTok', 'tiktok', 1250000.00, 15.00, 187500.00, '19/05/2026 14:32', 'approved')," +
+                        "(?, ?, NULL, 'Sale Sinh Nhật Shopee', 'shopee', 980000.00, 12.00, 117600.00, '19/05/2026 11:15', 'pending')," +
+                        "(?, ?, NULL, 'Điện Tử - Công Nghệ', 'lazada', 2450000.00, 10.00, 245000.00, '18/05/2026 20:45', 'approved')," +
+                        "(?, ?, NULL, 'Combo Làm Đẹp Hè', 'tiktok', 650000.00, 15.00, 97500.00, '18/05/2026 16:20', 'pending')",
+                        "#ORD" + kocId + "04", kocId,
+                        "#ORD" + kocId + "03", kocId,
+                        "#ORD" + kocId + "02", kocId,
+                        "#ORD" + kocId + "01", kocId
+                    );
+                }
+            }
+            System.out.println("Seeded/updated user balances, default bank details, and sample transactions for all KOL/KOC users.");
+        } catch (Exception e) {
+            System.err.println("Warning: Could not seed KOC data: " + e.getMessage());
+        }
+
+        try {
+            // Nạp các yêu cầu rút tiền đang ở trạng thái 'pending' (chờ đối soát) nếu hiện tại không còn yêu cầu nào để test
+            Integer pendingCount = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM payout_requests WHERE status = 'pending'",
+                Integer.class
+            );
+            if (pendingCount == null || pendingCount == 0) {
+                String nowStr = LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")).format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
+                
+                // Gieo mầm lệnh rút tiền chờ duyệt cho KOC ID 1006 (anhnguyenngoc1511)
+                jdbcTemplate.update(
+                    "INSERT INTO payout_requests (id, koc_id, amount_str, amount, bank_name, bank_logo_class, account_number, request_date, status) " +
+                    "VALUES (?, 1006, '1,500,000 VNĐ', 1500000.00, 'MB Bank', 'mbbank', '0359269323', ?, 'pending') " +
+                    "ON DUPLICATE KEY UPDATE status = 'pending'",
+                    "#WD-9991", nowStr
+                );
+                
+                // Gieo mầm lệnh rút tiền chờ duyệt cho KOC ID 1007 (anhnguyenngoc)
+                jdbcTemplate.update(
+                    "INSERT INTO payout_requests (id, koc_id, amount_str, amount, bank_name, bank_logo_class, account_number, request_date, status) " +
+                    "VALUES (?, 1007, '3,500,000 VNĐ', 3500000.00, 'Vietcombank', 'vcb', '**** **** 1234', ?, 'pending') " +
+                    "ON DUPLICATE KEY UPDATE status = 'pending'",
+                    "#WD-9992", nowStr
+                );
+                System.out.println("Seeded 2 pending test payout requests successfully!");
+            }
+        } catch (Exception e) {
+            System.err.println("Warning: Could not seed pending payout requests: " + e.getMessage());
         }
     }
 
@@ -852,29 +997,340 @@ public class AdminController {
         if (!hasPermission("nav_finance")) {
             return "redirect:/403";
         }
+        
+        // Truy vấn tất cả yêu cầu rút tiền từ CSDL thực tế kết nối với thông tin KOC tương ứng
+        List<Map<String, Object>> rows = jdbcTemplate.queryForList(
+            "SELECT pr.*, u.full_name, u.username, u.avatar FROM payout_requests pr " +
+            "JOIN users u ON pr.koc_id = u.id " +
+            "ORDER BY pr.request_date DESC"
+        );
+
         List<AdminFinanceData.PayoutRequest> requests = new ArrayList<>();
-        requests.add(new AdminFinanceData.PayoutRequest("#WD-8921", "Mai Phương", "@maiphuong.official", "profile_avatar.png", "5,000,000 VNĐ", "Vietcombank", "vietcombank", "**** **** **** 1234", "20/05/2024 14:32", "pending"));
-        requests.add(new AdminFinanceData.PayoutRequest("#WD-8920", "Đức Anh", "@ducanh.review", "profile_avatar.png", "3,200,000 VNĐ", "MB Bank", "mbbank", "**** **** **** 5678", "20/05/2024 11:15", "pending"));
-        requests.add(new AdminFinanceData.PayoutRequest("#WD-8919", "Thảo Vy", "@vythao.beauty", "profile_avatar.png", "7,800,000 VNĐ", "Techcombank", "techcombank", "**** **** **** 2468", "20/05/2024 09:45", "pending"));
-        requests.add(new AdminFinanceData.PayoutRequest("#WD-8918", "Quang Huy", "@huy.fitlife", "profile_avatar.png", "2,500,000 VNĐ", "VietinBank", "vietinbank", "**** **** **** 1357", "19/05/2024 20:30", "pending"));
-        requests.add(new AdminFinanceData.PayoutRequest("#WD-8917", "Linh Chi", "@linhchi.daily", "profile_avatar.png", "4,600,000 VNĐ", "ACB", "acb", "**** **** **** 8899", "19/05/2024 16:20", "pending"));
-        requests.add(new AdminFinanceData.PayoutRequest("#WD-8916", "Hoàng Nam", "@nam.style", "profile_avatar.png", "6,300,000 VNĐ", "MB Bank", "mbbank", "**** **** **** 1122", "19/05/2024 10:05", "pending"));
-        requests.add(new AdminFinanceData.PayoutRequest("#WD-8915", "Phương Nhi", "@nhi.phuong", "profile_avatar.png", "1,900,000 VNĐ", "BIDV", "bidv", "**** **** **** 7788", "18/05/2024 21:50", "pending"));
-        requests.add(new AdminFinanceData.PayoutRequest("#WD-8914", "Trần Minh", "@minh.review", "profile_avatar.png", "5,500,000 VNĐ", "Vietcombank", "vietcombank", "**** **** **** 3344", "18/05/2024 15:10", "pending"));
-        requests.add(new AdminFinanceData.PayoutRequest("#WD-8913", "Bảo Ngọc", "@baongoc.makeup", "profile_avatar.png", "3,750,000 VNĐ", "Techcombank", "techcombank", "**** **** **** 5566", "18/05/2024 08:40", "pending"));
-        requests.add(new AdminFinanceData.PayoutRequest("#WD-8912", "Minh Khang", "@khang.tech", "profile_avatar.png", "8,900,000 VNĐ", "MSB", "msb", "**** **** **** 9988", "17/05/2024 23:05", "pending"));
+        int pendingCount = 0;
+        java.math.BigDecimal pendingAmountVal = java.math.BigDecimal.ZERO;
+        java.math.BigDecimal totalPaidThisMonthVal = new java.math.BigDecimal("850000000.00"); // Hoa hồng cơ bản tháng này
+
+        for (Map<String, Object> row : rows) {
+            String id = (String) row.get("id");
+            String kocName = (String) row.get("full_name");
+            String username = "@" + row.get("username");
+            String avatar = (String) row.get("avatar");
+            if (avatar == null || avatar.trim().isEmpty()) {
+                avatar = "default_avatar.png";
+            }
+            String amountStr = (String) row.get("amount_str");
+            java.math.BigDecimal amount = (java.math.BigDecimal) row.get("amount");
+            String bankName = (String) row.get("bank_name");
+            String bankLogoClass = (String) row.get("bank_logo_class");
+            String accountNumber = (String) row.get("account_number");
+            String date = (String) row.get("request_date");
+            String status = (String) row.get("status");
+
+            if ("pending".equalsIgnoreCase(status)) {
+                pendingCount++;
+                pendingAmountVal = pendingAmountVal.add(amount);
+            } else if ("approved".equalsIgnoreCase(status)) {
+                totalPaidThisMonthVal = totalPaidThisMonthVal.add(amount);
+            }
+
+            requests.add(new AdminFinanceData.PayoutRequest(
+                id, kocName, username, avatar, amountStr, bankName, bankLogoClass, accountNumber, date, status
+            ));
+        }
+
+        java.text.DecimalFormat df = new java.text.DecimalFormat("#,###");
+
+        // Truy vấn tất cả các giao dịch (đơn hàng) để đối soát
+        List<Map<String, Object>> txRows = jdbcTemplate.queryForList(
+            "SELECT t.*, u.full_name, u.username, u.avatar FROM transactions t " +
+            "JOIN users u ON t.koc_id = u.id " +
+            "ORDER BY t.transaction_date DESC"
+        );
+        List<AdminFinanceData.OrderTransaction> orderTransactions = new ArrayList<>();
+        for (Map<String, Object> txRow : txRows) {
+            String txId = (String) txRow.get("id");
+            String kocName = (String) txRow.get("full_name");
+            String username = "@" + txRow.get("username");
+            String avatar = (String) txRow.get("avatar");
+            if (avatar == null || avatar.trim().isEmpty()) {
+                avatar = "default_avatar.png";
+            }
+            String campaignName = (String) txRow.get("campaign_name");
+            String platform = (String) txRow.get("platform");
+            java.math.BigDecimal orderAmount = (java.math.BigDecimal) txRow.get("order_amount");
+            java.math.BigDecimal commissionAmount = (java.math.BigDecimal) txRow.get("commission_amount");
+            String date = (String) txRow.get("transaction_date");
+            String status = (String) txRow.get("status");
+
+            orderTransactions.add(new AdminFinanceData.OrderTransaction(
+                txId, kocName, username, avatar, campaignName, platform,
+                df.format(orderAmount) + " VNĐ",
+                df.format(commissionAmount) + " VNĐ",
+                commissionAmount,
+                date, status
+            ));
+        }
 
         AdminFinanceData finance = new AdminFinanceData(
-            24,
-            "125,500,000 VNĐ",
-            "850,000,000 VNĐ",
-            requests
+            pendingCount,
+            df.format(pendingAmountVal) + " VNĐ",
+            df.format(totalPaidThisMonthVal) + " VNĐ",
+            requests,
+            orderTransactions
         );
 
         model.addAttribute("title", "Đối soát & Thanh toán");
         model.addAttribute("activePage", "finance");
         model.addAttribute("finance", finance);
         return "admin/finance";
+    }
+
+    /**
+     * API phê duyệt 1 yêu cầu rút tiền đơn lẻ.
+     */
+    @PostMapping("/api/admin/finance/approve")
+    @ResponseBody
+    public ResponseEntity<?> approvePayoutRequest(@RequestBody Map<String, String> payload) {
+        if (!hasPermission("nav_finance")) {
+            return ResponseEntity.status(403).body(Map.of("status", "error", "message", "Không có quyền truy cập"));
+        }
+        
+        String requestId = payload.get("requestId");
+        if (requestId == null || requestId.trim().isEmpty()) {
+            return ResponseEntity.status(400).body(Map.of("status", "error", "message", "Mã yêu cầu không hợp lệ"));
+        }
+
+        List<Map<String, Object>> rows = jdbcTemplate.queryForList("SELECT * FROM payout_requests WHERE id = ?", requestId);
+        if (rows.isEmpty()) {
+            return ResponseEntity.status(404).body(Map.of("status", "error", "message", "Không tìm thấy yêu cầu đối soát"));
+        }
+        Map<String, Object> row = rows.get(0);
+        String status = (String) row.get("status");
+
+        if (!"pending".equalsIgnoreCase(status)) {
+            return ResponseEntity.status(400).body(Map.of("status", "error", "message", "Yêu cầu đã được xử lý từ trước!"));
+        }
+
+        // Cập nhật trạng thái thành approved
+        jdbcTemplate.update("UPDATE payout_requests SET status = 'approved' WHERE id = ?", requestId);
+
+        // Ghi nhật ký hoạt động
+        try {
+            LocalDateTime now = LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh"));
+            String logId = "LOG-" + now.format(DateTimeFormatter.ofPattern("yyyyMMdd")) + "-" + (int)(10000 + Math.random()*90000);
+            String changesJson = String.format("{\n  \"payout_id\": \"%s\",\n  \"status\": \"approved\"\n}", requestId);
+            
+            String adminUsername = SecurityContextHolder.getContext().getAuthentication().getName();
+            User adminUser = userRepository.findByUsername(adminUsername).orElse(null);
+            String adminName = adminUser != null ? adminUser.getFullName() : "Admin System";
+            String adminEmail = adminUser != null ? adminUser.getEmail() : "admin@koc.vn";
+            String adminAvatar = adminUser != null ? adminUser.getAvatar() : "profile_avatar.png";
+
+            jdbcTemplate.update(
+                "INSERT INTO audit_logs (log_id, created_at, admin_name, email, avatar, action_type, badge_class, target_object, object_id, action_description, ip_address, changes_json) VALUES " +
+                "(?, ?, ?, ?, ?, 'payout_approve', 'approve', ?, ?, ?, '127.0.0.1', ?)",
+                logId, now.format(DateTimeFormatter.ofPattern("dd/MM/yyyy - HH:mm:ss")), adminName, adminEmail, adminAvatar, "Phê duyệt #" + requestId, requestId, "Phê duyệt lệnh rút tiền #" + requestId + " số tiền " + row.get("amount_str"), changesJson
+            );
+        } catch (Exception e) {
+            System.err.println("Warning: Could not write payout log: " + e.getMessage());
+        }
+
+        return ResponseEntity.ok(Map.of("status", "success", "message", "Phê duyệt rút tiền thành công!"));
+    }
+
+    /**
+     * API từ chối 1 yêu cầu rút tiền đơn lẻ và HOÀN TIỀN lại cho KOC.
+     */
+    @PostMapping("/api/admin/finance/reject")
+    @ResponseBody
+    public ResponseEntity<?> rejectPayoutRequest(@RequestBody Map<String, String> payload) {
+        if (!hasPermission("nav_finance")) {
+            return ResponseEntity.status(403).body(Map.of("status", "error", "message", "Không có quyền truy cập"));
+        }
+        
+        String requestId = payload.get("requestId");
+        if (requestId == null || requestId.trim().isEmpty()) {
+            return ResponseEntity.status(400).body(Map.of("status", "error", "message", "Mã yêu cầu không hợp lệ"));
+        }
+
+        List<Map<String, Object>> rows = jdbcTemplate.queryForList("SELECT * FROM payout_requests WHERE id = ?", requestId);
+        if (rows.isEmpty()) {
+            return ResponseEntity.status(404).body(Map.of("status", "error", "message", "Không tìm thấy yêu cầu đối soát"));
+        }
+        Map<String, Object> row = rows.get(0);
+        String status = (String) row.get("status");
+
+        if (!"pending".equalsIgnoreCase(status)) {
+            return ResponseEntity.status(400).body(Map.of("status", "error", "message", "Yêu cầu đã được xử lý từ trước!"));
+        }
+
+        java.math.BigDecimal amount = (java.math.BigDecimal) row.get("amount");
+        Integer kocId = (Integer) row.get("koc_id");
+
+        // Cập nhật trạng thái thành rejected
+        jdbcTemplate.update("UPDATE payout_requests SET status = 'rejected' WHERE id = ?", requestId);
+
+        // HOÀN TIỀN lại cho KOC (Cộng lại ví số dư khả dụng và trừ tổng số đã rút)
+        jdbcTemplate.update(
+            "UPDATE user_balances SET available_balance = available_balance + ?, total_withdrawn = total_withdrawn - ? WHERE koc_id = ?",
+            amount, amount, kocId
+        );
+
+        // Ghi nhật ký hoạt động
+        try {
+            LocalDateTime now = LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh"));
+            String logId = "LOG-" + now.format(DateTimeFormatter.ofPattern("yyyyMMdd")) + "-" + (int)(10000 + Math.random()*90000);
+            String changesJson = String.format("{\n  \"payout_id\": \"%s\",\n  \"status\": \"rejected\"\n}", requestId);
+            
+            String adminUsername = SecurityContextHolder.getContext().getAuthentication().getName();
+            User adminUser = userRepository.findByUsername(adminUsername).orElse(null);
+            String adminName = adminUser != null ? adminUser.getFullName() : "Admin System";
+            String adminEmail = adminUser != null ? adminUser.getEmail() : "admin@koc.vn";
+            String adminAvatar = adminUser != null ? adminUser.getAvatar() : "profile_avatar.png";
+
+            jdbcTemplate.update(
+                "INSERT INTO audit_logs (log_id, created_at, admin_name, email, avatar, action_type, badge_class, target_object, object_id, action_description, ip_address, changes_json) VALUES " +
+                "(?, ?, ?, ?, ?, 'payout_reject', 'delete', ?, ?, ?, '127.0.0.1', ?)",
+                logId, now.format(DateTimeFormatter.ofPattern("dd/MM/yyyy - HH:mm:ss")), adminName, adminEmail, adminAvatar, "Từ chối #" + requestId, requestId, "Từ chối lệnh rút tiền #" + requestId + " số tiền " + row.get("amount_str") + " và hoàn trả lại số dư cho KOC", changesJson
+            );
+        } catch (Exception e) {
+            System.err.println("Warning: Could not write payout log: " + e.getMessage());
+        }
+
+        return ResponseEntity.ok(Map.of("status", "success", "message", "Từ chối và hoàn tiền thành công!"));
+    }
+
+    /**
+     * API phê duyệt HÀNG LOẠT yêu cầu rút tiền.
+     */
+    @PostMapping("/api/admin/finance/approve-bulk")
+    @ResponseBody
+    public ResponseEntity<?> approvePayoutRequestsBulk(@RequestBody Map<String, List<String>> payload) {
+        if (!hasPermission("nav_finance")) {
+            return ResponseEntity.status(403).body(Map.of("status", "error", "message", "Không có quyền truy cập"));
+        }
+        
+        List<String> requestIds = payload.get("requestIds");
+        if (requestIds == null || requestIds.isEmpty()) {
+            return ResponseEntity.status(400).body(Map.of("status", "error", "message", "Danh sách mã yêu cầu trống"));
+        }
+
+        int successCount = 0;
+        for (String id : requestIds) {
+            try {
+                String status = jdbcTemplate.queryForObject("SELECT status FROM payout_requests WHERE id = ?", String.class, id);
+                if ("pending".equalsIgnoreCase(status)) {
+                    jdbcTemplate.update("UPDATE payout_requests SET status = 'approved' WHERE id = ?", id);
+                    successCount++;
+                }
+            } catch (Exception e) {
+                System.err.println("Warning: Could not approve request during bulk: " + id);
+            }
+        }
+
+        // Ghi nhật ký phê duyệt hàng loạt
+        try {
+            LocalDateTime now = LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh"));
+            String logId = "LOG-" + now.format(DateTimeFormatter.ofPattern("yyyyMMdd")) + "-" + (int)(10000 + Math.random()*90000);
+            
+            String adminUsername = SecurityContextHolder.getContext().getAuthentication().getName();
+            User adminUser = userRepository.findByUsername(adminUsername).orElse(null);
+            String adminName = adminUser != null ? adminUser.getFullName() : "Admin System";
+            String adminEmail = adminUser != null ? adminUser.getEmail() : "admin@koc.vn";
+            String adminAvatar = adminUser != null ? adminUser.getAvatar() : "profile_avatar.png";
+
+            jdbcTemplate.update(
+                "INSERT INTO audit_logs (log_id, created_at, admin_name, email, avatar, action_type, badge_class, target_object, object_id, action_description, ip_address, changes_json) VALUES " +
+                "(?, ?, ?, ?, ?, 'payout_approve', 'approve', ?, 'BULK_APPROVE', ?, '127.0.0.1', '{}')",
+                logId, now.format(DateTimeFormatter.ofPattern("dd/MM/yyyy - HH:mm:ss")), adminName, adminEmail, adminAvatar, "Duyệt hàng loạt", "Phê duyệt hàng loạt thành công " + successCount + " lệnh rút tiền chờ thanh toán"
+            );
+        } catch (Exception e) {
+            System.err.println("Warning: Could not write payout bulk log: " + e.getMessage());
+        }
+
+        return ResponseEntity.ok(Map.of("status", "success", "message", "Phê duyệt hàng loạt thành công " + successCount + " lệnh rút tiền!"));
+    }
+
+    /**
+     * API phê duyệt 1 đơn hàng đối soát (chuyển tiền từ pending sang available).
+     */
+    @PostMapping("/api/admin/finance/order/approve")
+    @ResponseBody
+    public ResponseEntity<?> approveOrderTransaction(@RequestBody Map<String, String> payload) {
+        if (!hasPermission("nav_finance")) {
+            return ResponseEntity.status(403).body(Map.of("status", "error", "message", "Không có quyền truy cập"));
+        }
+        
+        String orderId = payload.get("orderId");
+        if (orderId == null || orderId.trim().isEmpty()) {
+            return ResponseEntity.status(400).body(Map.of("status", "error", "message", "Mã đơn hàng không hợp lệ"));
+        }
+
+        List<Map<String, Object>> rows = jdbcTemplate.queryForList("SELECT * FROM transactions WHERE id = ?", orderId);
+        if (rows.isEmpty()) {
+            return ResponseEntity.status(404).body(Map.of("status", "error", "message", "Không tìm thấy đơn hàng đối soát"));
+        }
+        Map<String, Object> row = rows.get(0);
+        String status = (String) row.get("status");
+
+        if (!"pending".equalsIgnoreCase(status)) {
+            return ResponseEntity.status(400).body(Map.of("status", "error", "message", "Đơn hàng đã được đối soát từ trước!"));
+        }
+
+        java.math.BigDecimal commissionAmount = (java.math.BigDecimal) row.get("commission_amount");
+        Integer kocId = (Integer) row.get("koc_id");
+
+        // Cập nhật trạng thái giao dịch thành approved
+        jdbcTemplate.update("UPDATE transactions SET status = 'approved' WHERE id = ?", orderId);
+
+        // Chuyển tiền từ pending_commission sang available_balance
+        jdbcTemplate.update(
+            "UPDATE user_balances SET available_balance = available_balance + ?, pending_commission = GREATEST(0.00, pending_commission - ?) WHERE koc_id = ?",
+            commissionAmount, commissionAmount, kocId
+        );
+
+        return ResponseEntity.ok(Map.of("status", "success", "message", "Đối soát và duyệt hoa hồng đơn hàng thành công!"));
+    }
+
+    /**
+     * API từ chối / hủy 1 đơn hàng đối soát (trừ pending của KOC).
+     */
+    @PostMapping("/api/admin/finance/order/reject")
+    @ResponseBody
+    public ResponseEntity<?> rejectOrderTransaction(@RequestBody Map<String, String> payload) {
+        if (!hasPermission("nav_finance")) {
+            return ResponseEntity.status(403).body(Map.of("status", "error", "message", "Không có quyền truy cập"));
+        }
+        
+        String orderId = payload.get("orderId");
+        if (orderId == null || orderId.trim().isEmpty()) {
+            return ResponseEntity.status(400).body(Map.of("status", "error", "message", "Mã đơn hàng không hợp lệ"));
+        }
+
+        List<Map<String, Object>> rows = jdbcTemplate.queryForList("SELECT * FROM transactions WHERE id = ?", orderId);
+        if (rows.isEmpty()) {
+            return ResponseEntity.status(404).body(Map.of("status", "error", "message", "Không tìm thấy đơn hàng đối soát"));
+        }
+        Map<String, Object> row = rows.get(0);
+        String status = (String) row.get("status");
+
+        if (!"pending".equalsIgnoreCase(status)) {
+            return ResponseEntity.status(400).body(Map.of("status", "error", "message", "Đơn hàng đã được đối soát từ trước!"));
+        }
+
+        java.math.BigDecimal commissionAmount = (java.math.BigDecimal) row.get("commission_amount");
+        Integer kocId = (Integer) row.get("koc_id");
+
+        // Cập nhật trạng thái giao dịch thành rejected
+        jdbcTemplate.update("UPDATE transactions SET status = 'rejected' WHERE id = ?", orderId);
+
+        // Trừ hoa hồng chờ đối soát
+        jdbcTemplate.update(
+            "UPDATE user_balances SET pending_commission = GREATEST(0.00, pending_commission - ?) WHERE koc_id = ?",
+            commissionAmount, kocId
+        );
+
+        return ResponseEntity.ok(Map.of("status", "success", "message", "Đã từ chối và hủy bỏ hoa hồng đơn hàng thành công!"));
     }
 
     @GetMapping("/admin/disputes")
