@@ -153,83 +153,34 @@
                             </tr>
                         </thead>
                         <tbody id="ticketsTableBody">
-                            <!-- Hàng 1 -->
-                            <tr>
-                                <td class="col-ticket-id">#TK-1042</td>
-                                <td class="col-ticket-subject">Sai lệch hoa hồng đơn hàng #ORD12345678</td>
-                                <td class="col-ticket-date">19/05/2024 14:32</td>
+                            <!-- Lặp qua danh sách ticket thực tế từ database -->
+                            <tr th:each="ticket : ${tickets}">
+                                <td class="col-ticket-id" th:text="${ticket.id}">#TK-1042</td>
+                                <td class="col-ticket-subject" th:text="${ticket.subject}">Sai lệch hoa hồng đơn hàng #ORD12345678</td>
+                                <td class="col-ticket-date" th:text="${ticket.request_date}">19/05/2024 14:32</td>
                                 <td class="col-ticket-status">
-                                    <div class="status-badge pending">
+                                    <div class="status-badge" th:classappend="${ticket.status == 'pending' ? 'pending' : (ticket.status == 'resolved' ? 'success' : 'closed')}">
                                         <span class="status-dot"></span>
-                                        <span>Đang xử lý</span>
+                                        <span th:text="${ticket.status == 'pending' ? 'Đang xử lý' : (ticket.status == 'resolved' ? 'Đã giải quyết' : 'Đã đóng')}">Đang xử lý</span>
                                     </div>
                                 </td>
                                 <td class="col-ticket-action">
-                                    <button type="button" class="btn-view-ticket" data-id="#TK-1042" data-subject="Sai lệch hoa hồng đơn hàng #ORD12345678" data-date="19/05/2024 14:32" data-status="pending" data-status-text="Đang xử lý" data-desc="Tôi đã bán được một đơn hàng trị giá 1,250,000đ từ chiến dịch LSOUL thông qua liên kết TikTok Shop, tuy nhiên hoa hồng thực tế ghi nhận trên dashboard chỉ đạt 100,000đ thay vì mức 187,500đ theo tỷ lệ 15% đã công bố. Tôi đã đính kèm hình ảnh đối soát đơn hàng giao thành công từ TikTok Shop. Mong Admin kiểm tra và hỗ trợ cộng bù phần thiếu hụt này giúp tôi. Xin cảm ơn!">Xem chi tiết</button>
+                                    <button type="button" class="btn-view-ticket" 
+                                            th:data-id="${ticket.id}" 
+                                            th:data-subject="${ticket.subject}" 
+                                            th:data-date="${ticket.request_date}" 
+                                            th:data-status="${ticket.status == 'pending' ? 'pending' : (ticket.status == 'resolved' ? 'success' : 'closed')}" 
+                                            th:data-status-text="${ticket.status == 'pending' ? 'Đang xử lý' : (ticket.status == 'resolved' ? 'Đã giải quyết' : 'Đã đóng')}" 
+                                            th:data-desc="${ticket.description}"
+                                            th:data-file-name="${ticket.attachments != null && !ticket.attachments.isEmpty() ? ticket.attachments[0] : ''}"
+                                            th:data-file-size="${ticket.attachments != null && !ticket.attachments.isEmpty() ? '1.2 MB' : ''}">Xem chi tiết</button>
                                 </td>
                             </tr>
                             
-                            <!-- Hàng 2 -->
-                            <tr>
-                                <td class="col-ticket-id">#TK-1037</td>
-                                <td class="col-ticket-subject">Mất đơn hàng từ chiến dịch BST LSOUL TikTok</td>
-                                <td class="col-ticket-date">16/05/2024 09:15</td>
-                                <td class="col-ticket-status">
-                                    <div class="status-badge success">
-                                        <span class="status-dot"></span>
-                                        <span>Đã giải quyết</span>
-                                    </div>
-                                </td>
-                                <td class="col-ticket-action">
-                                    <button type="button" class="btn-view-ticket" data-id="#TK-1037" data-subject="Mất đơn hàng từ chiến dịch BST LSOUL TikTok" data-date="16/05/2024 09:15" data-status="success" data-status-text="Đã giải quyết" data-desc="Người theo dõi của tôi phản hồi đã đặt mua Combo 2 đầm LSOUL thông qua link affiliate tôi gắn ở phần bình luận clip TikTok. Tuy nhiên, sau 2 ngày tôi vẫn chưa thấy đơn hàng này hiển thị trong mục đơn hàng tạm tính của Quản lý thu nhập. Đơn hàng có mã vận đơn là LH-7832-VCB. Mong hệ thống đối soát dữ liệu với nhà bán hàng giúp tôi.">Xem chi tiết</button>
-                                </td>
-                            </tr>
-                            
-                            <!-- Hàng 3 -->
-                            <tr>
-                                <td class="col-ticket-id">#TK-1031</td>
-                                <td class="col-ticket-subject">Yêu cầu đối soát nhanh</td>
-                                <td class="col-ticket-date">12/05/2024 16:20</td>
-                                <td class="col-ticket-status">
-                                    <div class="status-badge success">
-                                        <span class="status-dot"></span>
-                                        <span>Đã giải quyết</span>
-                                    </div>
-                                </td>
-                                <td class="col-ticket-action">
-                                    <button type="button" class="btn-view-ticket" data-id="#TK-1031" data-subject="Yêu cầu đối soát nhanh" data-date="12/05/2024 16:20" data-status="success" data-status-text="Đã giải quyết" data-desc="Tôi có một số đơn hàng phát sinh từ đầu tháng 4 đã giao hàng thành công từ lâu nhưng hiện tại trạng thái vẫn ghi là 'Chờ đối soát' thay vì hoàn thành. Nhóm đơn này có tổng giá trị hoa hồng tạm tính là 1,500,000 VNĐ. Vì tôi cần rút tiền xoay vòng vốn sản xuất video nên mong Admin hỗ trợ chạy đối soát thủ công nhanh riêng cho KOC Hạng Vàng giúp tôi. Cảm ơn admin nhiều!">Xem chi tiết</button>
-                                </td>
-                            </tr>
-                            
-                            <!-- Hàng 4 -->
-                            <tr>
-                                <td class="col-ticket-id">#TK-1028</td>
-                                <td class="col-ticket-subject">Sai thông tin đơn hàng Shopee</td>
-                                <td class="col-ticket-date">10/05/2024 11:05</td>
-                                <td class="col-ticket-status">
-                                    <div class="status-badge pending">
-                                        <span class="status-dot"></span>
-                                        <span>Đang xử lý</span>
-                                    </div>
-                                </td>
-                                <td class="col-ticket-action">
-                                    <button type="button" class="btn-view-ticket" data-id="#TK-1028" data-subject="Sai thông tin đơn hàng Shopee" data-date="10/05/2024 11:05" data-status="pending" data-status-text="Đang xử lý" data-desc="Đơn hàng Shopee mã #SHP-9908123 hiển thị sai tên sản phẩm. Đơn hàng khách mua là áo khoác phao trị giá 550k nhưng hệ thống ghi nhận là kẹp tóc trị giá 15k, dẫn đến hoa hồng bị chia sai lệch rất nhiều. Tôi đã đính kèm ảnh chụp màn hình bill thanh toán Shopee thực tế từ khách gửi.">Xem chi tiết</button>
-                                </td>
-                            </tr>
-                            
-                            <!-- Hàng 5 -->
-                            <tr>
-                                <td class="col-ticket-id">#TK-1020</td>
-                                <td class="col-ticket-subject">Hỏi về chính sách hoa hồng cấp 2</td>
-                                <td class="col-ticket-date">05/05/2024 10:45</td>
-                                <td class="col-ticket-status">
-                                    <div class="status-badge success">
-                                        <span class="status-dot"></span>
-                                        <span>Đã giải quyết</span>
-                                    </div>
-                                </td>
-                                <td class="col-ticket-action">
-                                    <button type="button" class="btn-view-ticket" data-id="#TK-1020" data-subject="Hỏi về chính sách hoa hồng cấp 2" data-date="05/05/2024 10:45" data-status="success" data-status-text="Đã giải quyết" data-desc="Tôi muốn tìm hiểu kỹ hơn về cơ chế thưởng giới thiệu KOC/KOL F1 tham gia mạng lưới. Có phải khi KOC F1 của tôi phát sinh đơn hàng thành công, tôi sẽ nhận thêm 2% hoa hồng gián tiếp trích từ ngân sách hệ thống mà không ảnh hưởng tới thu nhập của F1 không? Nhờ Admin gửi tài liệu hướng dẫn chính thức bằng tiếng Việt giúp tôi.">Xem chi tiết</button>
+                            <!-- Hiển thị khi chưa có ticket nào -->
+                            <tr th:if="${#lists.isEmpty(tickets)}">
+                                <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 2rem; font-weight: 500;">
+                                    Bạn chưa gửi yêu cầu hỗ trợ nào.
                                 </td>
                             </tr>
                         </tbody>
@@ -311,6 +262,25 @@
                         <a href="#" class="btn-download-attachment" onclick="alert('Đang tải hình ảnh đối soát gốc xuống thiết bị...'); return false;">Tải xuống</a>
                     </div>
                 </div>
+
+                <!-- Phần Trao Đổi & Phản Hồi Hai Chiều -->
+                <div class="modal-content-group border-top-chat" style="border-top: 1.5px solid #f1f5f9; padding-top: 1rem; margin-top: 0.5rem;">
+                    <h5 class="content-title">Trao đổi & Phản hồi:</h5>
+                    
+                    <!-- Khung hội thoại cuộc trò chuyện -->
+                    <div class="modal-chat-area" id="modalChatArea" style="max-height: 200px; overflow-y: auto; padding: 0.5rem; background-color: #f8fafc; border-radius: 12px; border: 1px solid #f1f5f9; margin-bottom: 0.75rem; display: flex; flex-direction: column; gap: 0.5rem;">
+                        <!-- Các tin nhắn chat sẽ được JS tự động chèn vào đây -->
+                    </div>
+                    
+                    <!-- Khung KOC soạn tin gửi Admin -->
+                    <div class="modal-chat-input-wrapper" id="modalChatInputWrapper" style="display: flex; gap: 0.5rem; align-items: stretch;">
+                        <textarea id="modalReplyText" style="flex: 1; min-height: 40px; max-height: 60px; border: 1.5px solid var(--border-hover); border-radius: 10px; padding: 0.5rem 0.75rem; font-family: var(--font-family); font-size: 0.82rem; outline: none; resize: none; transition: border-color 0.2s;" placeholder="Nhập câu trả lời của bạn gửi Admin..."></textarea>
+                        <button type="button" id="btnModalSendReply" class="btn-modal-send" style="background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%); color: #ffffff; border: none; border-radius: 10px; padding: 0 1.25rem; font-size: 0.82rem; font-weight: 700; cursor: pointer; box-shadow: var(--shadow-sm); display: flex; align-items: center; justify-content: center; gap: 0.25rem; transition: all 0.2s ease;">
+                            <svg class="send-icon-svg" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                            <span>Gửi</span>
+                        </button>
+                    </div>
+                </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn-modal-close-action" id="btnModalCloseAction">Đóng</button>
@@ -325,6 +295,6 @@
     </div>
 
     <!-- Liên kết Tệp Javascript xử lý logic động (Có fallback src để mở trực tiếp trên trình duyệt) -->
-    <script src="../static/js/report.js" th:src="@{/js/report.js}"></script>
+    <script src="../static/js/report.js" th:src="@{/js/report.js(v=${#dates.createNow().getTime()})}"></script>
 </body>
 </html>

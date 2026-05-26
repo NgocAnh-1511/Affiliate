@@ -772,6 +772,16 @@ nav::-webkit-scrollbar {
     box-shadow: 0 0 6px hsl(142, 76%, 35%);
 }
 
+.status-badge.closed {
+    background-color: hsl(0, 92%, 95%);
+    color: hsl(0, 76%, 35%);
+}
+
+.status-badge.closed .status-dot {
+    background-color: hsl(0, 76%, 40%);
+    box-shadow: 0 0 6px hsl(0, 76%, 40%);
+}
+
 .status-dot {
     width: 6px;
     height: 6px;
@@ -1151,4 +1161,64 @@ nav::-webkit-scrollbar {
 .toast-message {
     font-size: 0.82rem;
     font-weight: 700;
+}
+
+/* ==========================================================================
+   Khung Hội thoại & Chat trong Modal của KOC
+   ========================================================================== */
+.modal-admin-bubble {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    align-self: flex-start;
+    max-width: 80%;
+    margin-right: auto;
+    margin-top: 0.35rem;
+}
+
+.modal-admin-bubble .bubble-content {
+    background-color: #f1f5f9;
+    color: var(--text-main);
+    padding: 0.5rem 0.75rem;
+    border-radius: 14px 14px 14px 2px;
+    font-size: 0.8rem;
+    line-height: 1.4;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.modal-koc-bubble {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    align-self: flex-end;
+    max-width: 80%;
+    margin-left: auto;
+    margin-top: 0.35rem;
+}
+
+.modal-koc-bubble .bubble-content {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
+    color: #ffffff;
+    padding: 0.5rem 0.75rem;
+    border-radius: 14px 14px 2px 14px;
+    font-size: 0.8rem;
+    line-height: 1.4;
+    box-shadow: 0 2px 4px rgba(63, 47, 212, 0.15);
+}
+
+.modal-bubble-time {
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    margin-bottom: 0.15rem;
+    padding: 0 0.25rem;
+}
+
+/* Scrollbar đẹp cho khung chat modal */
+.modal-chat-area::-webkit-scrollbar {
+    width: 4px;
+}
+
+.modal-chat-area::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 2px;
 }

@@ -478,6 +478,33 @@
     margin-left: auto;
 }
 
+.koc-chat-bubble {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    align-self: flex-start;
+    max-width: 80%;
+    margin-right: auto;
+    margin-top: 0.5rem;
+}
+
+.koc-chat-bubble .bubble-time {
+    font-size: 0.68rem;
+    color: var(--text-muted);
+    margin-bottom: 0.2rem;
+    margin-left: 0.4rem;
+}
+
+.koc-chat-bubble .bubble-content {
+    background-color: #f1f5f9;
+    color: var(--text-main);
+    padding: 0.65rem 0.95rem;
+    border-radius: 16px 16px 16px 2px;
+    font-size: 0.85rem;
+    line-height: 1.45;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
 .bubble-time {
     font-size: 0.68rem;
     color: var(--text-muted);
@@ -651,4 +678,64 @@
         width: 100%;
         justify-content: center;
     }
+}
+
+/* ==========================================================================
+   PHÂN TRANG (Pagination Styling)
+   ========================================================================== */
+.pagination-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1rem;
+    padding-top: 0.85rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.pagination-info {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+.page-numbers {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.page-num, .page-arrow {
+    background-color: #ffffff;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-family);
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    outline: none;
+}
+
+.page-num:hover:not(.active), .page-arrow:hover:not(:disabled) {
+    border-color: var(--border-hover);
+    color: var(--text-main);
+    background-color: #fafafa;
+}
+
+.page-num.active {
+    background: linear-gradient(135deg, var(--secondary-color) 0%, var(--primary-color) 100%);
+    border-color: var(--primary-color);
+    color: #ffffff;
+    box-shadow: 0 2px 6px rgba(168, 85, 247, 0.25);
+}
+
+.page-arrow:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
 }

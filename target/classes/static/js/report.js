@@ -163,69 +163,45 @@ document.addEventListener('DOMContentLoaded', function() {
             const subjectText = disputeSubjectSelect.options[disputeSubjectSelect.selectedIndex].text;
             const subjectVal = disputeSubjectSelect.value;
 
-            // Tạo mã Ticket ngẫu nhiên #TK-XXXX
-            const randomId = Math.floor(1000 + Math.random() * 9000);
-            const ticketId = `#TK-${randomId}`;
+            // Lấy thông tin tệp đối soát đính kèm
+            const fileName = currentAttachedFile ? currentAttachedFile.name : "";
 
-            // Định dạng ngày hiện tại DD/MM/YYYY HH:mm
-            const now = new Date();
-            const formattedDate = padZero(now.getDate()) + '/' + 
-                                  padZero(now.getMonth() + 1) + '/' + 
-                                  now.getFullYear() + ' ' + 
-                                  padZero(now.getHours()) + ':' + 
-                                  padZero(now.getMinutes());
+            // Gọi API REST lưu trữ vào CSDL MySQL thực tế
+            fetch('/api/disputes/create', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    subjectType: subjectVal,
+                    subjectText: subjectText,
+                    relatedCode: disputeCode,
+                    description: disputeDesc,
+                    fileName: fileName
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    // Hiển thị Toast thông báo gửi thành công với mã ticket thực tế từ server
+                    showToastNotification(`Gửi yêu cầu hỗ trợ thành công! Mã ticket: ${data.ticketId}`, '✓');
 
-            // Chủ đề hiển thị đầy đủ
-            const displaySubject = `${subjectText} - Mã: ${disputeCode}`;
+                    // Reset biểu mẫu & tệp tải lên
+                    disputeForm.reset();
+                    clearSelectedFile();
 
-            // Tạo thẻ dòng TR mới
-            const newRow = document.createElement('tr');
-            
-            // Thiết lập thuộc tính dữ liệu cho nút xem chi tiết của dòng mới
-            let newButton = document.createElement('button');
-            newButton.type = 'button';
-            newButton.className = 'btn-view-ticket';
-            newButton.textContent = 'Xem chi tiết';
-            newButton.setAttribute('data-id', ticketId);
-            newButton.setAttribute('data-subject', displaySubject);
-            newButton.setAttribute('data-date', formattedDate);
-            newButton.setAttribute('data-status', 'pending');
-            newButton.setAttribute('data-status-text', 'Đang xử lý');
-            newButton.setAttribute('data-desc', disputeDesc);
-
-            if (currentAttachedFile) {
-                newButton.setAttribute('data-file-name', currentAttachedFile.name);
-                newButton.setAttribute('data-file-size', currentAttachedFile.sizeStr);
-            }
-
-            // Xây dựng cấu trúc HTML của dòng
-            newRow.innerHTML = `
-                <td class="col-ticket-id">${ticketId}</td>
-                <td class="col-ticket-subject">${displaySubject}</td>
-                <td class="col-ticket-date">${formattedDate}</td>
-                <td class="col-ticket-status">
-                    <div class="status-badge pending">
-                        <span class="status-dot"></span>
-                        <span>Đang xử lý</span>
-                    </div>
-                </td>
-                <td class="col-ticket-action"></td>
-            `;
-
-            // Đưa nút vào cột action
-            newRow.querySelector('.col-ticket-action').appendChild(newButton);
-
-            // Thêm dòng mới lên trên cùng của bảng
-            if (ticketsTableBody) {
-                ticketsTableBody.insertBefore(newRow, ticketsTableBody.firstChild);
-            }
-
-            // Hiển thị Toast thông báo gửi thành công
-            showToastNotification(`Gửi yêu cầu hỗ trợ thành công! Mã ticket: ${ticketId}`, '✓');
-
-            // Reset biểu mẫu & tệp tải lên
-            disputeForm.reset();
-            clearSelectedFile();
+                    // Tải lại trang sau 1.2 giây để đồng bộ hóa hoàn hảo với CSDL
+                    setTimeout(function() {
+                        window.location.reload();
+                    }, 1200);
+                } else {
+                    alert('Lỗi: ' + (data.message || 'Không thể gửi khiếu nại lúc này.'));
+                }
+            })
+            .catch(error => {
+                console.error('Error submitting dispute ticket:', error);
+                alert('Có lỗi xảy ra khi kết nối tới hệ thống hỗ trợ.');
+            });
         });
     }
 
@@ -321,6 +297,57 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
 
+            // --- TẢI TIN NHẮN TRÒ CHUYỆN THỰC TẾ TỪ CSDL ---
+            const chatArea = document.getElementById('modalChatArea');
+            if (chatArea) {
+                chatArea.innerHTML = '<p style="text-align: center; color: var(--text-muted); font-size: 0.78rem; padding: 0.5rem 0;">Đang tải hội thoại...</p>';
+                
+                fetch(`/api/disputes/${encodeURIComponent(id)}/replies`)
+                .then(res => res.json())
+                .then(replies => {
+                    chatArea.innerHTML = '';
+                    if (replies.length === 0) {
+                        chatArea.innerHTML = '<p style="text-align: center; color: var(--text-muted); font-size: 0.78rem; padding: 0.75rem 0; font-weight: 500;">Chưa có trao đổi nào với Admin.</p>';
+                    } else {
+                        replies.forEach(reply => {
+                            const bubble = document.createElement('div');
+                            if (reply.sender === 'admin') {
+                                // Admin gửi: căn lề trái (màu xám)
+                                bubble.className = 'modal-admin-bubble';
+                                bubble.innerHTML = `
+                                    <span class="modal-bubble-time">${reply.sender_name} - ${reply.created_at}</span>
+                                    <div class="bubble-content">${escapeHtml(reply.message)}</div>
+                                `;
+                            } else {
+                                // KOC gửi: căn lề phải (màu tím)
+                                bubble.className = 'modal-koc-bubble';
+                                bubble.innerHTML = `
+                                    <span class="modal-bubble-time">${reply.created_at}</span>
+                                    <div class="bubble-content">${escapeHtml(reply.message)}</div>
+                                `;
+                            }
+                            chatArea.appendChild(bubble);
+                        });
+                    }
+                    // Tự động cuộn xuống đáy khung chat modal
+                    chatArea.scrollTop = chatArea.scrollHeight;
+                })
+                .catch(err => {
+                    console.error('Error fetching ticket replies:', err);
+                    chatArea.innerHTML = '<p style="text-align: center; color: #ef4444; font-size: 0.78rem; padding: 0.5rem 0;">Không thể tải lịch sử chat.</p>';
+                });
+            }
+
+            // Ẩn/Hiện khung gửi phản hồi dựa trên trạng thái ticket (không cho chat khi ticket đã đóng)
+            const chatInputWrapper = document.getElementById('modalChatInputWrapper');
+            if (chatInputWrapper) {
+                if (status === 'closed') {
+                    chatInputWrapper.style.display = 'none';
+                } else {
+                    chatInputWrapper.style.display = 'flex';
+                }
+            }
+
             // Hiển thị modal
             if (ticketModalOverlay) {
                 ticketModalOverlay.classList.add('show');
@@ -345,6 +372,100 @@ document.addEventListener('DOMContentLoaded', function() {
                 closeModal();
             }
         });
+    }
+
+    // --- XỬ LÝ KOC GỬI PHẢN HỒI MỚI NGAY TRONG MODAL ---
+    const btnModalSendReply = document.getElementById('btnModalSendReply');
+    const modalReplyText = document.getElementById('modalReplyText');
+
+    if (btnModalSendReply && modalReplyText) {
+        btnModalSendReply.addEventListener('click', function() {
+            const text = modalReplyText.value.trim();
+            if (!text) {
+                alert('Vui lòng nhập nội dung câu trả lời của bạn!');
+                return;
+            }
+
+            // Lấy ID ticket đang xem từ tiêu đề modal
+            const modalTitleText = document.getElementById('modalTicketId').textContent;
+            const ticketIdMatch = modalTitleText.match(/#TK-\d+/);
+            if (!ticketIdMatch) {
+                alert('Không thể xác định mã Ticket hiện tại.');
+                return;
+            }
+            const ticketId = ticketIdMatch[0];
+
+            btnModalSendReply.disabled = true;
+
+            // Gọi API gửi câu trả lời
+            fetch(`/api/disputes/${encodeURIComponent(ticketId)}/reply`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    message: text
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                btnModalSendReply.disabled = false;
+                if (data.status === 'success') {
+                    const chatArea = document.getElementById('modalChatArea');
+                    if (chatArea) {
+                        // Xóa dòng thông báo "Chưa có phản hồi" nếu có
+                        const placeholder = chatArea.querySelector('p');
+                        if (placeholder) {
+                            chatArea.innerHTML = '';
+                        }
+
+                        // Vẽ bubble chat của KOC căn phải
+                        const bubble = document.createElement('div');
+                        bubble.className = 'modal-koc-bubble';
+                        bubble.innerHTML = `
+                            <span class="modal-bubble-time">${data.time}</span>
+                            <div class="bubble-content">${escapeHtml(text)}</div>
+                        `;
+                        chatArea.appendChild(bubble);
+
+                        // Reset ô nhập liệu
+                        modalReplyText.value = '';
+
+                        // Cuộn xuống đáy mượt mà
+                        chatArea.scrollTo({
+                            top: chatArea.scrollHeight,
+                            behavior: 'smooth'
+                        });
+                    }
+                } else {
+                    alert('Lỗi: ' + (data.message || 'Không thể gửi câu trả lời lúc này.'));
+                }
+            })
+            .catch(err => {
+                btnModalSendReply.disabled = false;
+                console.error('Error replying from KOC modal:', err);
+                alert('Có lỗi xảy ra khi kết nối để gửi tin nhắn.');
+            });
+        });
+
+        // Hỗ trợ gõ Enter gửi tin nhắn nhanh (Shift + Enter xuống dòng)
+        modalReplyText.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                btnModalSendReply.click();
+            }
+        });
+    }
+
+    // Helper ngăn chặn lỗi bảo mật XSS khi chèn text của người dùng
+    function escapeHtml(text) {
+        if (!text) return "";
+        return text
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
     }
 
 

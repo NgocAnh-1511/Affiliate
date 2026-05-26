@@ -14,12 +14,15 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.ResponseEntity;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.time.format.DateTimeFormatter;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -52,6 +55,39 @@ public class AdminController {
             System.out.println("Column budget modified to DECIMAL(25, 2) successfully.");
         } catch (Exception e) {
             System.err.println("Warning: Could not modify budget column size: " + e.getMessage());
+        }
+
+        try {
+            // Tạo bảng dispute_replies để lưu trữ thảo luận/tin nhắn phản hồi cho các ticket
+            jdbcTemplate.execute(
+                "CREATE TABLE IF NOT EXISTS dispute_replies (" +
+                "    id INT AUTO_INCREMENT PRIMARY KEY," +
+                "    ticket_id VARCHAR(50) NOT NULL," +
+                "    sender VARCHAR(50) NOT NULL," + // 'admin' hoặc 'koc'
+                "    sender_name VARCHAR(150) NOT NULL," +
+                "    message TEXT NOT NULL," +
+                "    created_at VARCHAR(50) NOT NULL," +
+                "    FOREIGN KEY (ticket_id) REFERENCES dispute_tickets(id) ON DELETE CASCADE" +
+                ") ENGINE=InnoDB CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;"
+            );
+            System.out.println("Table dispute_replies created or verified successfully.");
+
+            // Kiểm tra xem bảng có dữ liệu chưa, nếu chưa thì nạp dữ liệu mẫu
+            Integer count = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM dispute_replies", Integer.class);
+            if (count == null || count == 0) {
+                // Nạp tin nhắn mẫu cho #TK-1042
+                jdbcTemplate.execute("INSERT INTO dispute_replies (ticket_id, sender, sender_name, message, created_at) VALUES " +
+                    "('#TK-1042', 'admin', 'Admin System', 'Chào Mai Phương, bộ phận Kỹ thuật và Đối soát đã tiếp nhận yêu cầu khiếu nại của bạn và đang liên hệ đối soát chéo với bên TikTok Shop. Vui lòng đợi kết quả trong vòng 24-48 giờ làm việc nhé!', '20/05/2024 14:34')," +
+                    "('#TK-1042', 'koc', 'Mai Phương', 'Dạ vâng ạ, mong sớm nhận được phản hồi từ Admin để mình yên tâm lên video tiếp theo.', '20/05/2024 14:35')");
+
+                // Nạp tin nhắn mẫu cho #TK-1041
+                jdbcTemplate.execute("INSERT INTO dispute_replies (ticket_id, sender, sender_name, message, created_at) VALUES " +
+                    "('#TK-1041', 'admin', 'Admin System', 'Đã tiếp nhận yêu cầu mất đơn hàng TikTok mã #ORD-TK-7729. Chúng tôi đang kiểm tra lại click_tracking tương ứng để xác minh đơn hàng.', '20/05/2024 13:20')");
+                
+                System.out.println("Sample replies loaded successfully into dispute_replies.");
+            }
+        } catch (Exception e) {
+            System.err.println("Warning: Could not create or populate dispute_replies table: " + e.getMessage());
         }
     }
 
@@ -848,57 +884,61 @@ public class AdminController {
         }
         List<AdminDisputesData.DisputeTicket> tickets = new ArrayList<>();
         
-        tickets.add(new AdminDisputesData.DisputeTicket(
-            "#TK-1042", "Mai Phương", "@maiphuong.official", "profile_avatar.png", "Vàng",
-            "Sai lệch hoa hồng LSOUL", "20/05/2024 14:32", 2, "pending",
-            "Chào Admin, Đơn hàng ngày 15/10 của tôi (mã đơn #ORD-2024051500456) báo thành công trên TikTok Shop, nhưng hệ thống Affiliate của KOC vẫn chưa ghi nhận hoa hồng. Vui lòng kiểm tra và hỗ trợ giúp mình. Cảm ơn Admin!",
-            "20/05/2024 14:35",
-            Arrays.asList("don-hang-tiktok.jpg", "bao-cao-hoa-hong.png")
-        ));
-        
-        tickets.add(new AdminDisputesData.DisputeTicket(
-            "#TK-1041", "Đức Anh", "@ducanh.review", "profile_avatar.png", "Vàng",
-            "Mất đơn hàng TikTok", "20/05/2024 13:15", 1, "pending",
-            "Hệ thống không ghi nhận đơn hàng tôi tạo trong phiên live trưa nay. Đơn hàng trị giá 2.5 triệu đồng mã giao dịch #ORD-TK-7729.",
-            "20/05/2024 13:20",
-            new ArrayList<>()
-        ));
-        
-        tickets.add(new AdminDisputesData.DisputeTicket(
-            "#TK-1040", "Phạm Ngọc Anh", "@anhngoc.daily", "profile_avatar.png", "Bạc",
-            "Chưa nhận được mẫu sản phẩm", "19/05/2024 20:45", 3, "pending",
-            "Chiến dịch yêu cầu review đầm thu đông nhưng đã 5 ngày tôi chưa nhận được sản phẩm mẫu từ nhãn hàng LSOUL.",
-            "19/05/2024 21:00",
-            new ArrayList<>()
-        ));
-        
-        tickets.add(new AdminDisputesData.DisputeTicket(
-            "#TK-1039", "Vũ Thảo Vy", "@vythao.beauty", "profile_avatar.png", "Bạc",
-            "Link affiliate bị lỗi", "19/05/2024 16:20", 1, "pending",
-            "Đường link tiếp thị liên kết dẫn sang Shopee của chiến dịch Tech Campaign báo lỗi 404, khách hàng không mua được.",
-            "19/05/2024 16:22",
-            new ArrayList<>()
-        ));
-        
-        tickets.add(new AdminDisputesData.DisputeTicket(
-            "#TK-1038", "Hoàng Đức Duy", "@duy.unboxing", "profile_avatar.png", "Đồng",
-            "Không rút được tiền hoa hồng", "18/05/2024 10:35", 2, "pending",
-            "Tôi bấm nút rút tiền trên trang thu nhập hệ thống báo lỗi API Ngân hàng bị gián đoạn. Số tiền yêu cầu 1.5 triệu.",
-            "18/05/2024 11:00",
-            new ArrayList<>()
-        ));
-        
-        tickets.add(new AdminDisputesData.DisputeTicket(
-            "#TK-1037", "Lê Minh Quân", "@quanreview", "profile_avatar.png", "Vàng",
-            "Yêu cầu hỗ trợ chiến dịch mới", "18/05/2024 09:10", 1, "pending",
-            "Tôi muốn tham gia chiến dịch ra mắt sản phẩm của Dior nhưng chưa thấy hiển thị nút đăng ký tạo link rút gọn.",
-            "18/05/2024 09:15",
-            new ArrayList<>()
-        ));
+        // Truy vấn danh sách ticket khiếu nại thực tế từ CSDL
+        List<Map<String, Object>> rows = jdbcTemplate.queryForList(
+            "SELECT dt.*, u.full_name, u.username, u.avatar, u.tier FROM dispute_tickets dt " +
+            "JOIN users u ON dt.koc_id = u.id " +
+            "ORDER BY dt.created_at DESC"
+        );
+
+        int pendingCount = 0;
+        for (Map<String, Object> row : rows) {
+            String ticketId = (String) row.get("id");
+            String kocName = (String) row.get("full_name");
+            String username = "@" + row.get("username");
+            String avatar = (String) row.get("avatar");
+            if (avatar == null || avatar.trim().isEmpty()) {
+                avatar = "default_avatar.png";
+            }
+            
+            // Ánh xạ phân hạng KOC sang định dạng tiếng Việt
+            String rawTier = (String) row.get("tier");
+            String tier = "Đồng";
+            if ("gold".equalsIgnoreCase(rawTier) || "Vàng".equalsIgnoreCase(rawTier)) {
+                tier = "Vàng";
+            } else if ("silver".equalsIgnoreCase(rawTier) || "Bạc".equalsIgnoreCase(rawTier)) {
+                tier = "Bạc";
+            } else if ("diamond".equalsIgnoreCase(rawTier) || "Kim Cương".equalsIgnoreCase(rawTier)) {
+                tier = "Kim Cương";
+            }
+
+            String subject = (String) row.get("subject");
+            String date = (String) row.get("request_date");
+            int commentCount = row.get("replies_count") != null ? ((Number) row.get("replies_count")).intValue() : 0;
+            String status = (String) row.get("status");
+            if ("pending".equalsIgnoreCase(status)) {
+                pendingCount++;
+            }
+            String description = (String) row.get("description");
+            String updateTime = (String) row.get("created_at");
+
+            // Lấy tệp đính kèm tương ứng của ticket
+            List<String> attachments = jdbcTemplate.queryForList(
+                "SELECT file_path FROM dispute_attachments WHERE ticket_id = ?",
+                String.class,
+                ticketId
+            );
+
+            tickets.add(new AdminDisputesData.DisputeTicket(
+                ticketId, kocName, username, avatar, tier,
+                subject, date, commentCount, status, description,
+                updateTime, attachments
+            ));
+        }
 
         AdminDisputesData disputes = new AdminDisputesData(
-            12,
-            "2h",
+            pendingCount,
+            "2h", // Thời gian phản hồi trung bình
             tickets
         );
 
@@ -906,6 +946,145 @@ public class AdminController {
         model.addAttribute("activePage", "disputes");
         model.addAttribute("disputes", disputes);
         return "admin/disputes";
+    }
+
+    /**
+     * API tải danh sách câu trả lời/tin nhắn hội thoại của một ticket khiếu nại.
+     */
+    @GetMapping("/api/admin/disputes/{id}/replies")
+    @ResponseBody
+    public ResponseEntity<?> getTicketReplies(@PathVariable("id") String ticketId) {
+        if (!hasPermission("nav_disputes")) {
+            return ResponseEntity.status(403).body(Map.of("status", "error", "message", "Không có quyền truy cập"));
+        }
+        
+        List<Map<String, Object>> replies = jdbcTemplate.queryForList(
+            "SELECT * FROM dispute_replies WHERE ticket_id = ? ORDER BY id ASC",
+            ticketId
+        );
+        
+        return ResponseEntity.ok(replies);
+    }
+
+    /**
+     * API gửi phản hồi (tin nhắn chat) của Admin tới KOC cho ticket.
+     */
+    @PostMapping("/api/admin/disputes/reply")
+    @ResponseBody
+    public ResponseEntity<?> replyToTicket(@RequestBody Map<String, String> payload) {
+        if (!hasPermission("nav_disputes")) {
+            return ResponseEntity.status(403).body(Map.of("status", "error", "message", "Không có quyền truy cập"));
+        }
+        
+        String ticketId = payload.get("ticketId");
+        String message = payload.get("message");
+        
+        if (ticketId == null || ticketId.trim().isEmpty() || message == null || message.trim().isEmpty()) {
+            return ResponseEntity.status(400).body(Map.of("status", "error", "message", "Dữ liệu không hợp lệ"));
+        }
+
+        // Chặn gửi tin nhắn nếu ticket đã được giải quyết hoặc đóng
+        String currentStatus = null;
+        try {
+            currentStatus = jdbcTemplate.queryForObject("SELECT status FROM dispute_tickets WHERE id = ?", String.class, ticketId);
+        } catch (Exception e) {
+            return ResponseEntity.status(404).body(Map.of("status", "error", "message", "Không tìm thấy yêu cầu hỗ trợ tương ứng"));
+        }
+        if ("resolved".equalsIgnoreCase(currentStatus) || "closed".equalsIgnoreCase(currentStatus)) {
+            return ResponseEntity.status(400).body(Map.of("status", "error", "message", "Ticket đã đóng hoặc giải quyết, không thể phản hồi thêm!"));
+        }
+        
+        LocalDateTime now = LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh"));
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+        String formattedDate = now.format(formatter);
+        
+        // Thêm tin nhắn phản hồi của Admin vào bảng
+        jdbcTemplate.update(
+            "INSERT INTO dispute_replies (ticket_id, sender, sender_name, message, created_at) VALUES (?, 'admin', 'Admin System', ?, ?)",
+            ticketId,
+            message,
+            formattedDate
+        );
+        
+        // Cập nhật tăng số lượt phản hồi trong bảng ticket khiếu nại chính
+        jdbcTemplate.update(
+            "UPDATE dispute_tickets SET replies_count = replies_count + 1 WHERE id = ?",
+            ticketId
+        );
+        
+        return ResponseEntity.ok(Map.of(
+            "status", "success",
+            "message", "Gửi phản hồi thành công",
+            "time", "Hôm nay, " + now.format(DateTimeFormatter.ofPattern("HH:mm"))
+        ));
+    }
+
+    /**
+     * API đánh dấu ticket khiếu nại đã được GIẢI QUYẾT (resolved).
+     */
+    @PostMapping("/api/admin/disputes/resolve")
+    @ResponseBody
+    public ResponseEntity<?> resolveTicket(@RequestBody Map<String, String> payload) {
+        if (!hasPermission("nav_disputes")) {
+            return ResponseEntity.status(403).body(Map.of("status", "error", "message", "Không có quyền truy cập"));
+        }
+        
+        String ticketId = payload.get("ticketId");
+        if (ticketId == null || ticketId.trim().isEmpty()) {
+            return ResponseEntity.status(400).body(Map.of("status", "error", "message", "Dữ liệu không hợp lệ"));
+        }
+
+        // Kiểm tra xem trạng thái hiện tại có đã đóng hoặc đã giải quyết chưa để chặn thao tác thừa
+        String currentStatus = null;
+        try {
+            currentStatus = jdbcTemplate.queryForObject("SELECT status FROM dispute_tickets WHERE id = ?", String.class, ticketId);
+        } catch (Exception e) {
+            return ResponseEntity.status(404).body(Map.of("status", "error", "message", "Không tìm thấy yêu cầu hỗ trợ tương ứng"));
+        }
+        if ("resolved".equalsIgnoreCase(currentStatus) || "closed".equalsIgnoreCase(currentStatus)) {
+            return ResponseEntity.status(400).body(Map.of("status", "error", "message", "Ticket đã được giải quyết hoặc đóng, không thể thay đổi trạng thái nữa!"));
+        }
+        
+        jdbcTemplate.update(
+            "UPDATE dispute_tickets SET status = 'resolved' WHERE id = ?",
+            ticketId
+        );
+        
+        return ResponseEntity.ok(Map.of("status", "success", "message", "Đã đánh dấu giải quyết thành công"));
+    }
+
+    /**
+     * API TỪ CHỐI / ĐÓNG (closed) ticket khiếu nại.
+     */
+    @PostMapping("/api/admin/disputes/close")
+    @ResponseBody
+    public ResponseEntity<?> closeTicket(@RequestBody Map<String, String> payload) {
+        if (!hasPermission("nav_disputes")) {
+            return ResponseEntity.status(403).body(Map.of("status", "error", "message", "Không có quyền truy cập"));
+        }
+        
+        String ticketId = payload.get("ticketId");
+        if (ticketId == null || ticketId.trim().isEmpty()) {
+            return ResponseEntity.status(400).body(Map.of("status", "error", "message", "Dữ liệu không hợp lệ"));
+        }
+
+        // Kiểm tra xem trạng thái hiện tại có đã đóng hoặc đã giải quyết chưa để chặn thao tác thừa
+        String currentStatus = null;
+        try {
+            currentStatus = jdbcTemplate.queryForObject("SELECT status FROM dispute_tickets WHERE id = ?", String.class, ticketId);
+        } catch (Exception e) {
+            return ResponseEntity.status(404).body(Map.of("status", "error", "message", "Không tìm thấy yêu cầu hỗ trợ tương ứng"));
+        }
+        if ("resolved".equalsIgnoreCase(currentStatus) || "closed".equalsIgnoreCase(currentStatus)) {
+            return ResponseEntity.status(400).body(Map.of("status", "error", "message", "Ticket đã được giải quyết hoặc đóng, không thể thay đổi trạng thái nữa!"));
+        }
+        
+        jdbcTemplate.update(
+            "UPDATE dispute_tickets SET status = 'closed' WHERE id = ?",
+            ticketId
+        );
+        
+        return ResponseEntity.ok(Map.of("status", "success", "message", "Đã từ chối và đóng ticket thành công"));
     }
 
     @GetMapping("/admin/logs")
