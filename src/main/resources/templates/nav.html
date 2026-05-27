@@ -93,8 +93,8 @@
                     </svg>
                 </div>
                 <div class="gold-meta">
-                    <span class="gold-title" th:text="${profile != null ? (profile.getClass().getSimpleName() == 'User' ? (profile.tier == 'diamond' ? 'KOC Hạng Kim Cương' : (profile.tier == 'gold' ? 'KOC Hạng Vàng' : (profile.tier == 'silver' ? 'KOC Hạng Bạc' : 'KOC Mới/Cơ bản'))) : profile.rank) : 'KOC Mới/Cơ bản'}">KOC Hạng Vàng</span>
-                    <p class="gold-subtitle">Bạn đang ở hạng cao nhất</p>
+                    <span class="gold-title" th:text="${profile != null ? (profile.getClass().getSimpleName() == 'User' ? (profile.tier == 'vip' ? 'KOC Hạng VIP' : (profile.tier == 'diamond' ? 'KOC Hạng Kim Cương' : (profile.tier == 'gold' ? 'KOC Hạng Vàng' : (profile.tier == 'silver' ? 'KOC Hạng Bạc' : 'KOC Mới/Cơ bản')))) : profile.rank) : 'KOC Mới/Cơ bản'}">KOC Hạng Vàng</span>
+                    <p class="gold-subtitle" th:text="${profile != null ? (profile.tier == 'vip' ? 'Bạn đang ở hạng cao nhất' : (profile.tier == 'diamond' ? 'Tiến sát cấp VIP tối thượng' : (profile.tier == 'gold' ? 'Thăng hạng để tăng đặc quyền' : 'Xem lộ trình thăng hạng'))) : 'Xem lộ trình thăng hạng'}">Bạn đang ở hạng cao nhất</p>
                 </div>
                 <div class="gold-arrow">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>

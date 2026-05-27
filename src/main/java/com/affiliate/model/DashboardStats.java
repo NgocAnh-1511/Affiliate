@@ -18,6 +18,12 @@ public class DashboardStats {
     private String commission;
     private String commissionChange;
     private List<CampaignStat> topCampaigns;
+    
+    // Thống kê thiết bị động từ CSDL
+    private int mobileOrders;
+    private int desktopOrders;
+    private int mobilePercent;
+    private int desktopPercent;
 
     @Data
     @AllArgsConstructor

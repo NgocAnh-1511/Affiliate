@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Báo cáo hiệu suất Doanh thu - Admin Portal</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        
+        :root {
+            --primary: #3f2fd4;
+            --text: #0f172a;
+            --muted: #64748b;
+            --border: #e2e8f0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            color: var(--text);
+            background-color: #ffffff;
+            padding: 2rem;
+            line-height: 1.5;
+        }
+
+        .report-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .logo-text {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--primary);
+            letter-spacing: -0.5px;
+        }
+
+        .report-title-wrapper {
+            text-align: right;
+        }
+
+        .report-title {
+            font-size: 1.5rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: var(--text);
+        }
+
+        .report-meta {
+            font-size: 0.85rem;
+            color: var(--muted);
+            margin-top: 0.25rem;
+        }
+
+        .report-filter-badge {
+            display: inline-block;
+            background-color: #f1f5f9;
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 0.75rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            margin-top: 0.5rem;
+            text-transform: uppercase;
+        }
+
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .kpi-card {
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem;
+            background-color: #f8fafc;
+        }
+
+        .kpi-title {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--muted);
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+        }
+
+        .kpi-value {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: var(--text);
+        }
+
+        .report-section {
+            margin-bottom: 2.5rem;
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 800;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.5rem;
+            margin-bottom: 1rem;
+            color: var(--text);
+            text-transform: uppercase;
+        }
+
+        .report-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            margin-bottom: 1.5rem;
+        }
+
+        .report-table th {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--muted);
+            text-transform: uppercase;
+            padding: 0.75rem 1rem;
+            border-bottom: 2px solid var(--border);
+            background-color: #f8fafc;
+        }
+
+        .report-table td {
+            font-size: 0.85rem;
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .report-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .col-bold {
+            font-weight: 700;
+        }
+
+        .status-badge {
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 0.15rem 0.5rem;
+            border-radius: 4px;
+        }
+
+        .status-badge.approved {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-badge.pending {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-badge.rejected {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+
+        .print-actions {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            display: flex;
+            gap: 1rem;
+            z-index: 10000;
+        }
+
+        .btn-print {
+            background-color: var(--primary);
+            color: #ffffff;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            font-family: inherit;
+            font-size: 0.9rem;
+            font-weight: 700;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(63, 47, 212, 0.3);
+            transition: all 0.2s ease;
+        }
+
+        .btn-print:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(63, 47, 212, 0.4);
+        }
+
+        .btn-close {
+            background-color: #ffffff;
+            color: var(--text);
+            border: 1px solid var(--border);
+            padding: 0.75rem 1.5rem;
+            font-family: inherit;
+            font-size: 0.9rem;
+            font-weight: 700;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .btn-close:hover {
+            background-color: #f8fafc;
+        }
+
+        /* Ẩn các nút bấm khi in thực tế */
+        @media print {
+            .print-actions {
+                display: none !important;
+            }
+            body {
+                padding: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="report-header">
+        <div class="logo-text">ADMIN PORTAL - AFFILIATE</div>
+        <div class="report-title-wrapper">
+            <h1 class="report-title">Báo cáo hiệu suất Doanh thu</h1>
+            <div class="report-meta">
+                Ngày xuất: <span th:text="${exportDate}">27/05/2026 18:15:00</span>
+            </div>
+            <div class="report-filter-badge">
+                Bộ lọc: <span th:text="${period == 'week' ? 'Tuần này' : (period == 'month' ? 'Tháng này' : (period == 'year' ? 'Năm nay' : 'Tất cả thời gian'))}">Tất cả thời gian</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- KPI STATS -->
+    <div class="kpi-grid">
+        <div class="kpi-card">
+            <div class="kpi-title">Tổng doanh số (GMV)</div>
+            <div class="kpi-value" th:text="${stats.gmv}">12,450,000,000đ</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-title">Hoa hồng hệ thống (10%)</div>
+            <div class="kpi-value" th:text="${stats.systemCommission}">1,245,000,000đ</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-title">KOC Hoạt động</div>
+            <div class="kpi-value" th:text="${stats.activeKocCount}">1,250</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-title">Chiến dịch Active</div>
+            <div class="kpi-value" th:text="${stats.activeCampaigns}">45</div>
+        </div>
+    </div>
+
+    <!-- TOP KOCs RANKING -->
+    <section class="report-section">
+        <h2 class="section-title">Bảng xếp hạng Đối tác KOC xuất sắc nhất</h2>
+        <table class="report-table">
+            <thead>
+                <tr>
+                    <th style="width: 80px; text-align: center;">Hạng</th>
+                    <th>Tên KOC</th>
+                    <th>Cấp bậc</th>
+                    <th>Tổng doanh số GMV mang lại</th>
+                    <th style="text-align: right;">Hoa hồng chi trả</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="koc : ${stats.topKocs}">
+                    <td style="text-align: center; font-weight: 800; color: var(--primary);" th:text="${koc.rank}">1</td>
+                    <td class="col-bold" th:text="${koc.name}">Mai Phương</td>
+                    <td>
+                        <span th:text="${koc.rankLevel == 'diamond' ? 'Kim Cương' : (koc.rankLevel == 'gold' ? 'Vàng' : 'Bạc')}">Vàng</span>
+                    </td>
+                    <td th:text="${koc.sales}">1,850,000,000đ</td>
+                    <td style="text-align: right; font-weight: 700; color: var(--primary);" th:text="${koc.commission}">277,500,000đ</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- PENDING RECONCILIATIONS -->
+    <section class="report-section">
+        <h2 class="section-title">Hàng chờ đối soát & thanh toán rút tiền</h2>
+        <table class="report-table">
+            <thead>
+                <tr>
+                    <th>Mã đối soát</th>
+                    <th>Đối tác KOC</th>
+                    <th>Nội dung yêu cầu</th>
+                    <th>Số tiền rút</th>
+                    <th>Ngày yêu cầu</th>
+                    <th style="text-align: right;">Trạng thái</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="item : ${stats.pendingReconciliations}">
+                    <td class="col-bold" th:text="${item.id}">#RC-1092</td>
+                    <td th:text="${item.kocName}">Phương Thảo</td>
+                    <td th:text="${item.campaign}">LSOUL TikTok Shop</td>
+                    <td class="col-bold" th:text="${item.amount}">12,500,000đ</td>
+                    <td th:text="${item.date}">24/05/2026</td>
+                    <td style="text-align: right;">
+                        <span class="status-badge" th:classappend="${item.status}" 
+                              th:text="${item.status == 'pending' ? 'Chờ duyệt' : (item.status == 'approved' ? 'Đã duyệt' : 'Đã từ từ chối')}">Chờ duyệt</span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- NÚT ĐIỀU KHIỂN IN BÁO CÁO -->
+    <div class="print-actions">
+        <button class="btn-close" onclick="window.close()">Đóng cửa sổ</button>
+        <button class="btn-print" onclick="window.print()">In báo cáo (Lưu PDF)</button>
+    </div>
+
+    <script>
+        // Tự động mở hộp thoại in của trình duyệt sau khi tải trang 1 giây
+        window.onload = function() {
+            setTimeout(function() {
+                window.print();
+            }, 800);
+        }
+    </script>
+</body>
+</html>

@@ -3,12 +3,16 @@ document.addEventListener('DOMContentLoaded', function() {
     // ==========================================================================
     // 1. Hiệu ứng chạy thanh tiến trình & Tăng doanh thu tích lũy động (Count-up Animation)
     // ==========================================================================
+    const progressBarContainer = document.querySelector('.progress-bar-container');
     const progressBarFill = document.getElementById('progressBarFill');
     const currentRevenueVal = document.getElementById('currentRevenueVal');
     const midLabelPointer = document.getElementById('midLabelPointer');
 
-    const targetRevenue = 50000000; // Doanh thu tích lũy hiện tại (50M)
-    const maxRevenue = 100000000;   // Doanh thu mục tiêu (100M)
+    // Đọc động các thuộc tính từ container tiến trình (nếu không có, sử dụng giá trị mặc định)
+    const targetRevenue = progressBarContainer ? parseFloat(progressBarContainer.getAttribute('data-current')) || 0 : 50000000; 
+    const maxRevenue = progressBarContainer ? parseFloat(progressBarContainer.getAttribute('data-target')) || 100000000 : 100000000;   
+    const progressPercent = progressBarContainer ? parseFloat(progressBarContainer.getAttribute('data-percent')) || 0 : 50;
+    
     const duration = 1500;         // Thời gian chạy hiệu ứng (1.5 giây)
 
     if (progressBarFill && currentRevenueVal) {
@@ -36,10 +40,11 @@ document.addEventListener('DOMContentLoaded', function() {
             // Đồng bộ hoá pointer text nhãn ở giữa thanh progress nếu có
             if (midLabelPointer) {
                 midLabelPointer.textContent = currentVal.toLocaleString('vi-VN') + ' VNĐ';
+                midLabelPointer.style.left = currentPercent + '%';
             }
             
-            // Tính toán chiều rộng thanh tiến trình (Target 50% max)
-            const currentPercent = easeOutRatio * (targetRevenue / maxRevenue) * 100;
+            // Tính toán chiều rộng thanh tiến trình (Target percent max)
+            const currentPercent = easeOutRatio * progressPercent;
             progressBarFill.style.width = currentPercent + '%';
 
             if (progress < duration) {
@@ -49,8 +54,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 currentRevenueVal.textContent = targetRevenue.toLocaleString('vi-VN') + ' VNĐ';
                 if (midLabelPointer) {
                     midLabelPointer.textContent = targetRevenue.toLocaleString('vi-VN') + ' VNĐ';
+                    midLabelPointer.style.left = progressPercent + '%';
                 }
-                progressBarFill.style.width = ((targetRevenue / maxRevenue) * 100) + '%';
+                progressBarFill.style.width = progressPercent + '%';
             }
         }
 
@@ -89,7 +95,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 badge.style.opacity = '0';
                 badge.style.pointerEvents = 'none';
             }
-            alert('Thông báo: Chúc mừng bạn đã duy trì Hạng Vàng xuất sắc trong 2 tháng liên tiếp!');
+            // Đọc động tên phân hạng hiện tại từ DOM
+            const rankHeading = document.querySelector('.current-rank-heading');
+            const tierNameStr = rankHeading ? rankHeading.textContent.trim() : 'Hạng Vàng';
+            alert('Thông báo: Chúc mừng bạn đã duy trì ' + tierNameStr + ' xuất sắc trong 2 tháng liên tiếp!');
         });
     }
 });

@@ -52,7 +52,7 @@
                             <img src="../static/images/default_avatar.png" th:src="@{/images/{img}(img=${profile?.avatar != null ? profile.avatar : 'default_avatar.png'})}" class="user-small-avatar" alt="Avatar góc">
                             <div class="user-dropdown-meta">
                                 <span class="user-menu-name" th:text="${profile?.fullName}">Mai Phương</span>
-                                <span class="user-menu-rank"><span class="crown-icon-inline">👑</span> <span th:text="${profile != null ? (profile.tier == 'diamond' ? 'KOC Hạng Kim Cương' : (profile.tier == 'gold' ? 'KOC Hạng Vàng' : (profile.tier == 'silver' ? 'KOC Hạng Bạc' : 'KOC Mới/Cơ bản'))) : 'KOC Mới/Cơ bản'}">KOC Hạng Vàng</span></span>
+                                <span class="user-menu-rank"><span class="crown-icon-inline">👑</span> <span th:text="${profile != null ? (profile.tier == 'vip' ? 'KOC Hạng VIP' : (profile.tier == 'diamond' ? 'KOC Hạng Kim Cương' : (profile.tier == 'gold' ? 'KOC Hạng Vàng' : (profile.tier == 'silver' ? 'KOC Hạng Bạc' : 'KOC Mới/Cơ bản')))) : 'KOC Mới/Cơ bản'}">KOC Hạng Vàng</span></span>
                             </div>
                             <svg class="chevron-down" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
                         </div>
@@ -80,11 +80,11 @@
                 <!-- Cột trái: Tiến trình thăng hạng -->
                 <div class="banner-left">
                     <span class="status-label">TRẠNG THÁI HIỆN TẠI</span>
-                    <h2 class="current-rank-heading">HẠNG VÀNG</h2>
+                    <h2 class="current-rank-heading" th:text="${currentTierName}">HẠNG VÀNG</h2>
                     
                     <div class="badge-hint-group">
                         <div class="star-badge-icon">👑</div>
-                        <span class="badge-hint-text">Bạn đang ở Hạng Vàng</span>
+                        <span class="badge-hint-text" th:text="${'Bạn đang ở ' + (activeTier == 'vip' ? 'Hạng VIP tối cao' : (activeTier == 'diamond' ? 'Hạng Kim Cương cao cấp' : (activeTier == 'gold' ? 'Hạng Vàng tiêu chuẩn' : 'Hạng Bạc cơ bản')))}">Bạn đang ở Hạng Vàng</span>
                     </div>
                     
                     <!-- Lưới Progress Bar -->
@@ -92,35 +92,36 @@
                         <div class="progress-header">
                             <div class="revenue-display">
                                 <span class="rev-label">Doanh thu hiện tại</span>
-                                <span class="rev-value" id="currentRevenueVal">50,000,000 VNĐ</span>
+                                <span class="rev-value" id="currentRevenueVal" th:text="${currentRevenueStr}">50,000,000 VNĐ</span>
                             </div>
-                            <span class="goal-label">Mục tiêu: <span class="highlight-yellow">100,000,000 VNĐ</span> để lên Hạng Kim Cương</span>
+                            <span class="goal-label" th:if="${activeTier != 'vip'}">Mục tiêu: <span class="highlight-yellow" th:text="${nextTierGoalStr}">100,000,000 VNĐ</span> để lên <span th:text="${nextTierName}">Hạng Kim Cương</span></span>
+                            <span class="goal-label" th:if="${activeTier == 'vip'}"><span class="highlight-yellow">Đã đạt phân hạng cao nhất!</span></span>
                         </div>
                         
-                        <div class="progress-bar-container">
+                        <div class="progress-bar-container" th:data-current="${currentRevenueVal}" th:data-target="${nextTierGoalVal}" th:data-percent="${progressPercent}">
                             <div class="progress-bar-fill" id="progressBarFill">
                                 <div class="progress-glow-pointer"></div>
                             </div>
                         </div>
                         
                         <div class="progress-labels">
-                            <span>0 VNĐ</span>
-                            <span class="mid-label" id="midLabelPointer">50,000,000 VNĐ</span>
-                            <span>100,000,000 VNĐ</span>
+                            <span th:text="${currentTierMinStr}">0 VNĐ</span>
+                            <span class="mid-label" id="midLabelPointer" th:text="${currentRevenueStr}">50,000,000 VNĐ</span>
+                            <span th:text="${nextTierGoalStr}">100,000,000 VNĐ</span>
                         </div>
                     </div>
                 </div>
                 
                 <!-- Cột giữa: Huy hiệu Lá chắn Vàng khổng lồ -->
                 <div class="banner-center">
-                    <div class="shield-gold-wrapper">
+                    <div class="shield-gold-wrapper" th:classappend="${activeTier}">
                         <!-- Cánh nguyệt quế và vương miện chìm tỏa sáng -->
                         <div class="wing-left"></div>
-                        <div class="shield-gold">
+                        <div class="shield-gold" th:classappend="${activeTier}">
                             <div class="shield-inner">
-                                <span class="shield-crown">👑</span>
+                                <span class="shield-crown" th:text="${activeTier == 'vip' ? '🏆' : (activeTier == 'diamond' ? '💎' : (activeTier == 'gold' ? '👑' : '🛡️'))}">👑</span>
                                 <span class="shield-text-top">HẠNG</span>
-                                <span class="shield-text-bottom">VÀNG</span>
+                                <span class="shield-text-bottom" th:text="${activeTier == 'vip' ? 'VIP' : (activeTier == 'diamond' ? 'KIM CƯƠNG' : (activeTier == 'gold' ? 'VÀNG' : 'BẠC'))}">VÀNG</span>
                             </div>
                         </div>
                         <div class="wing-right"></div>
@@ -132,16 +133,17 @@
                     <div class="floating-tip-card">
                         <div class="trophy-box">🏆</div>
                         <div class="tip-meta">
-                            <h4 class="tip-title">Giữ vững phong độ!</h4>
-                            <p class="tip-desc">Bạn chỉ còn <span class="bold-highlight-purple">50,000,000 VNĐ</span> nữa để đạt hạng <span class="bold-highlight-purple">Kim Cương</span>.</p>
+                            <h4 class="tip-title" th:text="${activeTier == 'vip' ? 'Đỉnh cao vinh quang!' : 'Giữ vững phong độ!'}">Giữ vững phong độ!</h4>
+                            <p class="tip-desc" th:if="${activeTier != 'vip'}">Bạn chỉ còn <span class="bold-highlight-purple" th:text="${remainingAmountStr}">50,000,000 VNĐ</span> nữa để đạt hạng <span class="bold-highlight-purple" th:text="${nextTierName}">Kim Cương</span>.</p>
+                            <p class="tip-desc" th:if="${activeTier == 'vip'}">Chúc mừng bạn đã đạt cấp bậc <span class="bold-highlight-purple">VIP</span> danh giá với đầy đủ đặc quyền tối thượng!</p>
                         </div>
                     </div>
                 </div>
             </div>
             
-            <!-- PHẦN 2: LƯỚI ĐẶC QUYỀN HẠNG VÀNG -->
+            <!-- PHẦN 2: LƯỚI ĐẶC QUYỀN HẠNG CỦA BẠN -->
             <section class="privileges-section">
-                <h3 class="section-title">Đặc quyền Hạng Vàng của bạn</h3>
+                <h3 class="section-title" th:text="${'Đặc quyền ' + currentTierName + ' của bạn'}">Đặc quyền Hạng Vàng của bạn</h3>
                 <div class="privileges-grid">
                     <!-- Thẻ 1 -->
                     <div class="privilege-card">
@@ -149,8 +151,8 @@
                             <span class="priv-icon">%</span>
                         </div>
                         <div class="priv-meta">
-                            <h4 class="priv-card-title">Hoa hồng cơ bản + 2%</h4>
-                            <p class="priv-card-desc">Nhận thêm 2% trên tổng hoa hồng so với mức cơ bản.</p>
+                            <h4 class="priv-card-title" th:text="${activeTier == 'vip' ? 'Hoa hồng cơ bản + 8%' : (activeTier == 'diamond' ? 'Hoa hồng cơ bản + 5%' : (activeTier == 'gold' ? 'Hoa hồng cơ bản + 2%' : 'Hoa hồng cơ bản + 0%'))}">Hoa hồng cơ bản + 2%</h4>
+                            <p class="priv-card-desc" th:text="${activeTier == 'vip' ? 'Nhận thêm 8% trên tổng hoa hồng so với mức cơ bản.' : (activeTier == 'diamond' ? 'Nhận thêm 5% trên tổng hoa hồng so với mức cơ bản.' : (activeTier == 'gold' ? 'Nhận thêm 2% trên tổng hoa hồng so với mức cơ bản.' : 'Nhận hoa hồng ở mức cơ bản tiêu chuẩn.'))}">Nhận thêm 2% trên tổng hoa hồng so với mức cơ bản.</p>
                         </div>
                     </div>
                     
@@ -160,8 +162,8 @@
                             <span class="priv-icon">🎁</span>
                         </div>
                         <div class="priv-meta">
-                            <h4 class="priv-card-title">Nhận mẫu thử (Sample) LSOUL miễn phí</h4>
-                            <p class="priv-card-desc">Ưu tiên nhận các sản phẩm mẫu mới nhất từ LSOUL.</p>
+                            <h4 class="priv-card-title" th:text="${activeTier == 'vip' ? 'Quà tặng VIP & Du lịch' : (activeTier == 'diamond' ? 'Nhận mẫu thử (Sample) VIP miễn phí' : (activeTier == 'gold' ? 'Nhận mẫu thử (Sample) LSOUL miễn phí' : 'Quà tặng sinh nhật tiêu chuẩn'))}">Nhận mẫu thử (Sample) LSOUL miễn phí</h4>
+                            <p class="priv-card-desc" th:text="${activeTier == 'vip' ? 'Nhận các gói quà tặng độc quyền và du lịch VIP.' : (activeTier == 'diamond' ? 'Nhận sản phẩm mẫu từ tất cả các nhãn hiệu thời trang lớn.' : (activeTier == 'gold' ? 'Ưu tiên nhận các sản phẩm mẫu mới nhất từ LSOUL.' : 'Quà tặng nhỏ nhân dịp ngày sinh nhật hàng năm.'))}">Ưu tiên nhận các sản phẩm mẫu mới nhất từ LSOUL.</p>
                         </div>
                     </div>
                     
@@ -171,8 +173,8 @@
                             <span class="priv-icon">⚡</span>
                         </div>
                         <div class="priv-meta">
-                            <h4 class="priv-card-title">Ưu tiên đối soát nhanh</h4>
-                            <p class="priv-card-desc">Hồ sơ của bạn sẽ được ưu tiên xét duyệt và đối soát.</p>
+                            <h4 class="priv-card-title" th:text="${activeTier == 'vip' or activeTier == 'diamond' ? 'Duyệt rút tiền tức thì' : (activeTier == 'gold' ? 'Ưu tiên đối soát nhanh' : 'Đối soát định kỳ tiêu chuẩn')}">Ưu tiên đối soát nhanh</h4>
+                            <p class="priv-card-desc" th:text="${activeTier == 'vip' or activeTier == 'diamond' ? 'Các yêu cầu thanh toán rút tiền được duyệt tự động ngay lập tức.' : (activeTier == 'gold' ? 'Hồ sơ của bạn sẽ được ưu tiên xét duyệt và đối soát.' : 'Đối soát rút tiền định kỳ hàng tuần/tháng theo chính sách.'))}">Hồ sơ của bạn sẽ được ưu tiên xét duyệt và đối soát.</p>
                         </div>
                     </div>
                     
@@ -182,8 +184,8 @@
                             <span class="priv-icon">🎧</span>
                         </div>
                         <div class="priv-meta">
-                            <h4 class="priv-card-title">Hỗ trợ KOC 1-1</h4>
-                            <p class="priv-card-desc">Có riêng team hỗ trợ chuyên biệt dành cho bạn.</p>
+                            <h4 class="priv-card-title" th:text="${activeTier == 'vip' ? 'Account Manager riêng' : (activeTier == 'diamond' ? 'Hỗ trợ ưu tiên 24/7' : (activeTier == 'gold' ? 'Hỗ trợ KOC 1-1' : 'Hỗ trợ tiêu chuẩn'))}">Hỗ trợ KOC 1-1</h4>
+                            <p class="priv-card-desc" th:text="${activeTier == 'vip' ? 'Có người quản lý tài khoản riêng hỗ trợ chiến dịch & thương hiệu 24/7.' : (activeTier == 'diamond' ? 'Team hỗ trợ kỹ thuật và vận hành túc trực 24/7.' : (activeTier == 'gold' ? 'Có riêng team hỗ trợ chuyên biệt dành cho bạn.' : 'Giải quyết khiếu nại qua hệ thống vé hỗ trợ tiêu chuẩn.'))}">Có riêng team hỗ trợ chuyên biệt dành cho bạn.</p>
                         </div>
                     </div>
                 </div>
@@ -200,7 +202,8 @@
                                 <th class="col-criteria-header">Quyền lợi</th>
                                 
                                 <!-- Cấp 1 -->
-                                <th class="col-tier-header">
+                                <th class="col-tier-header" th:classappend="${activeTier == 'silver' or activeTier == 'basic' ? 'active' : ''}">
+                                    <div class="crown-floating" th:if="${activeTier == 'silver' or activeTier == 'basic'}">👑</div>
                                     <div class="tier-header-cell">
                                         <span class="tier-icon silver">🛡️</span>
                                         <span class="tier-name">HẠNG BẠC</span>
@@ -208,9 +211,9 @@
                                     </div>
                                 </th>
                                 
-                                <!-- Cấp 2: HẠNG VÀNG ACTIVE -->
-                                <th class="col-tier-header active">
-                                    <div class="crown-floating">👑</div>
+                                <!-- Cấp 2 -->
+                                <th class="col-tier-header" th:classappend="${activeTier == 'gold' ? 'active' : ''}">
+                                    <div class="crown-floating" th:if="${activeTier == 'gold'}">👑</div>
                                     <div class="tier-header-cell">
                                         <span class="tier-icon gold">👑</span>
                                         <span class="tier-name">HẠNG VÀNG</span>
@@ -219,7 +222,8 @@
                                 </th>
                                 
                                 <!-- Cấp 3 -->
-                                <th class="col-tier-header">
+                                <th class="col-tier-header" th:classappend="${activeTier == 'diamond' ? 'active' : ''}">
+                                    <div class="crown-floating" th:if="${activeTier == 'diamond'}">👑</div>
                                     <div class="tier-header-cell">
                                         <span class="tier-icon diamond">💎</span>
                                         <span class="tier-name">HẠNG KIM CƯƠNG</span>
@@ -228,7 +232,8 @@
                                 </th>
                                 
                                 <!-- Cấp 4 -->
-                                <th class="col-tier-header">
+                                <th class="col-tier-header" th:classappend="${activeTier == 'vip' ? 'active' : ''}">
+                                    <div class="crown-floating" th:if="${activeTier == 'vip'}">👑</div>
                                     <div class="tier-header-cell">
                                         <span class="tier-icon vip">🏆</span>
                                         <span class="tier-name">HẠNG VIP</span>
@@ -246,10 +251,10 @@
                                         <span>Tỷ lệ hoa hồng cơ bản</span>
                                     </div>
                                 </td>
-                                <td>+ 0%</td>
-                                <td class="active">+ 2%</td>
-                                <td>+ 5%</td>
-                                <td>+ 8%</td>
+                                <td th:classappend="${activeTier == 'silver' or activeTier == 'basic' ? 'active' : ''}">+ 0%</td>
+                                <td th:classappend="${activeTier == 'gold' ? 'active' : ''}">+ 2%</td>
+                                <td th:classappend="${activeTier == 'diamond' ? 'active' : ''}">+ 5%</td>
+                                <td th:classappend="${activeTier == 'vip' ? 'active' : ''}">+ 8%</td>
                             </tr>
                             
                             <!-- Hàng 2 -->
@@ -260,10 +265,10 @@
                                         <span>Thưởng doanh số tháng</span>
                                     </div>
                                 </td>
-                                <td class="dim-text">-</td>
-                                <td class="active font-gold-bold">1,000,000 VNĐ</td>
-                                <td class="font-bold">5,000,000 VNĐ</td>
-                                <td class="font-bold">10,000,000 VNĐ+</td>
+                                <td class="dim-text" th:classappend="${activeTier == 'silver' or activeTier == 'basic' ? 'active' : ''}">-</td>
+                                <td class="font-gold-bold" th:classappend="${activeTier == 'gold' ? 'active' : ''}">1,000,000 VNĐ</td>
+                                <td class="font-bold" th:classappend="${activeTier == 'diamond' ? 'active' : ''}">5,000,000 VNĐ</td>
+                                <td class="font-bold" th:classappend="${activeTier == 'vip' ? 'active' : ''}">10,000,000 VNĐ+</td>
                             </tr>
                             
                             <!-- Hàng 3 -->
@@ -274,10 +279,10 @@
                                         <span>Ưu tiên chiến dịch HOT</span>
                                     </div>
                                 </td>
-                                <td class="red-cross">✕</td>
-                                <td class="active green-check">✓</td>
-                                <td class="green-check">✓</td>
-                                <td class="green-check">✓</td>
+                                <td class="red-cross" th:classappend="${activeTier == 'silver' or activeTier == 'basic' ? 'active' : ''}">✕</td>
+                                <td class="green-check" th:classappend="${activeTier == 'gold' ? 'active' : ''}">✓</td>
+                                <td class="green-check" th:classappend="${activeTier == 'diamond' ? 'active' : ''}">✓</td>
+                                <td class="green-check" th:classappend="${activeTier == 'vip' ? 'active' : ''}">✓</td>
                             </tr>
                             
                             <!-- Hàng 4 -->
@@ -288,10 +293,10 @@
                                         <span>Hỗ trợ đặc biệt</span>
                                     </div>
                                 </td>
-                                <td class="text-muted">Hỗ trợ tiêu chuẩn</td>
-                                <td class="active font-gold-semibold">Hỗ trợ KOC 1-1</td>
-                                <td>Hỗ trợ ưu tiên 24/7</td>
-                                <td class="font-bold">Account Manager riêng</td>
+                                <td class="text-muted" th:classappend="${activeTier == 'silver' or activeTier == 'basic' ? 'active' : ''}">Hỗ trợ tiêu chuẩn</td>
+                                <td class="font-gold-semibold" th:classappend="${activeTier == 'gold' ? 'active' : ''}">Hỗ trợ KOC 1-1</td>
+                                <td th:classappend="${activeTier == 'diamond' ? 'active' : ''}">Hỗ trợ ưu tiên 24/7</td>
+                                <td class="font-bold" th:classappend="${activeTier == 'vip' ? 'active' : ''}">Account Manager riêng</td>
                             </tr>
                             
                             <!-- Hàng 5 -->
@@ -302,18 +307,18 @@
                                         <span>Quà tặng sinh nhật</span>
                                     </div>
                                 </td>
-                                <td class="red-cross">✕</td>
-                                <td class="active">
+                                <td class="red-cross" th:classappend="${activeTier == 'silver' or activeTier == 'basic' ? 'active' : ''}">✕</td>
+                                <td th:classappend="${activeTier == 'gold' ? 'active' : ''}">
                                     <div class="gift-cell">
                                         <span>🎁</span> Quà tặng giá trị
                                     </div>
                                 </td>
-                                <td>
+                                <td th:classappend="${activeTier == 'diamond' ? 'active' : ''}">
                                     <div class="gift-cell">
                                         <span>🎁</span> Quà tặng cao cấp
                                     </div>
                                 </td>
-                                <td>
+                                <td th:classappend="${activeTier == 'vip' ? 'active' : ''}">
                                     <div class="gift-cell">
                                         <span>✈️</span> Quà tặng VIP & Du lịch
                                     </div>

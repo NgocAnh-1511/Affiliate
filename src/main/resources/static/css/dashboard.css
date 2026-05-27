@@ -533,6 +533,14 @@ body {
     color: #10b981;
 }
 
+.kpi-change.red {
+    color: #ef4444;
+}
+
+.kpi-change.gray {
+    color: #64748b;
+}
+
 .kpi-change-sub {
     color: var(--text-muted);
     font-weight: 500;

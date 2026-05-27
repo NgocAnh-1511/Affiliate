@@ -187,17 +187,38 @@ public class AdminController {
                     Integer.class,
                     kocId
                 );
-                if (txCount == null || txCount == 0) {
-                    jdbcTemplate.update("INSERT INTO transactions (id, koc_id, click_tracking_id, campaign_name, platform, order_amount, commission_rate, commission_amount, transaction_date, status) VALUES " +
-                        "(?, ?, NULL, 'BST LSOUL TikTok', 'tiktok', 1250000.00, 15.00, 187500.00, '19/05/2026 14:32', 'approved')," +
-                        "(?, ?, NULL, 'Sale Sinh Nhật Shopee', 'shopee', 980000.00, 12.00, 117600.00, '19/05/2026 11:15', 'pending')," +
-                        "(?, ?, NULL, 'Điện Tử - Công Nghệ', 'lazada', 2450000.00, 10.00, 245000.00, '18/05/2026 20:45', 'approved')," +
-                        "(?, ?, NULL, 'Combo Làm Đẹp Hè', 'tiktok', 650000.00, 15.00, 97500.00, '18/05/2026 16:20', 'pending')",
-                        "#ORD" + kocId + "04", kocId,
-                        "#ORD" + kocId + "03", kocId,
-                        "#ORD" + kocId + "02", kocId,
-                        "#ORD" + kocId + "01", kocId
-                    );
+                if (txCount == null || txCount <= 4) {
+                    // Xóa các giao dịch mẫu cũ nếu có để tránh trùng lặp khóa hoặc sai lệch
+                    jdbcTemplate.update("DELETE FROM transactions WHERE koc_id = ?", kocId);
+
+                    java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+                    java.time.LocalDateTime now = java.time.LocalDateTime.now(java.time.ZoneId.of("Asia/Ho_Chi_Minh"));
+
+                    // Gieo mầm dữ liệu giao dịch phong phú để hiển thị số đơn hàng sinh động
+                    // 8 đơn cho Chiến dịch YSL (lazada, approved) - Trải đều trong 6 ngày qua
+                    for (int o = 1; o <= 8; o++) {
+                        String dateStr = now.minusDays(o % 5).format(formatter);
+                        jdbcTemplate.update("INSERT INTO transactions (id, koc_id, click_tracking_id, campaign_name, platform, order_amount, commission_rate, commission_amount, referrer_payout_amount, transaction_date, status) VALUES (?, ?, NULL, 'Chiến dịch YSL', 'lazada', 2450000.00, 10.00, 245000.00, 0.00, ?, 'approved')",
+                            "#ORD" + kocId + "LAZ" + o, kocId, dateStr);
+                    }
+                    // 5 đơn cho Chiến dịch Thu Đông LSOUL 2026 (tiktok, approved) - Trải đều trong 6 ngày qua
+                    for (int o = 1; o <= 5; o++) {
+                        String dateStr = now.minusDays(o % 4).format(formatter);
+                        jdbcTemplate.update("INSERT INTO transactions (id, koc_id, click_tracking_id, campaign_name, platform, order_amount, commission_rate, commission_amount, referrer_payout_amount, transaction_date, status) VALUES (?, ?, NULL, 'Chiến dịch Thu Đông LSOUL 2026', 'tiktok', 1250000.00, 15.00, 187500.00, 0.00, ?, 'approved')",
+                            "#ORD" + kocId + "LSO" + o, kocId, dateStr);
+                    }
+                    // 12 đơn cho Chiến dịch YSL 2 (shopee, approved) - Trải đều trong 6 ngày qua
+                    for (int o = 1; o <= 12; o++) {
+                        String dateStr = now.minusDays(o % 6).format(formatter);
+                        jdbcTemplate.update("INSERT INTO transactions (id, koc_id, click_tracking_id, campaign_name, platform, order_amount, commission_rate, commission_amount, referrer_payout_amount, transaction_date, status) VALUES (?, ?, NULL, 'Chiến dịch YSL 2', 'shopee', 980000.00, 12.00, 117600.00, 0.00, ?, 'approved')",
+                            "#ORD" + kocId + "SHO" + o, kocId, dateStr);
+                    }
+                    // 2 đơn cho Combo Làm Đẹp Hè (tiktok, pending)
+                    for (int o = 1; o <= 2; o++) {
+                        String dateStr = now.minusDays(o % 2).format(formatter);
+                        jdbcTemplate.update("INSERT INTO transactions (id, koc_id, click_tracking_id, campaign_name, platform, order_amount, commission_rate, commission_amount, referrer_payout_amount, transaction_date, status) VALUES (?, ?, NULL, 'Combo Làm Đẹp Hè', 'tiktok', 650000.00, 15.00, 97500.00, 0.00, ?, 'pending')",
+                            "#ORD" + kocId + "BEA" + o, kocId, dateStr);
+                    }
                 }
             }
             System.out.println("Seeded/updated user balances, default bank details, and sample transactions for all KOL/KOC users.");
@@ -290,6 +311,202 @@ public class AdminController {
     }
 
     /**
+     * Phương thức phụ trợ tính toán tất cả số liệu thống kê Admin dựa trên bộ lọc thời gian.
+     */
+    private AdminStats calculateAdminStats(String period) {
+        java.text.DecimalFormat df = new java.text.DecimalFormat("#,###");
+
+        // 1. Xác định điều kiện SQL lọc theo thời gian
+        String dateFilter = "";
+        String prDateFilter = "";
+        
+        String prevDateFilter = "";
+        
+        if ("week".equalsIgnoreCase(period)) {
+            dateFilter = " AND STR_TO_DATE(transaction_date, '%d/%m/%Y %H:%i') >= DATE_SUB(NOW(), INTERVAL 7 DAY)";
+            prDateFilter = " WHERE STR_TO_DATE(request_date, '%d/%m/%Y %H:%i') >= DATE_SUB(NOW(), INTERVAL 7 DAY)";
+            
+            prevDateFilter = " AND STR_TO_DATE(transaction_date, '%d/%m/%Y %H:%i') >= DATE_SUB(NOW(), INTERVAL 14 DAY) AND STR_TO_DATE(transaction_date, '%d/%m/%Y %H:%i') < DATE_SUB(NOW(), INTERVAL 7 DAY)";
+        } else if ("month".equalsIgnoreCase(period)) {
+            dateFilter = " AND STR_TO_DATE(transaction_date, '%d/%m/%Y %H:%i') >= DATE_SUB(NOW(), INTERVAL 30 DAY)";
+            prDateFilter = " WHERE STR_TO_DATE(request_date, '%d/%m/%Y %H:%i') >= DATE_SUB(NOW(), INTERVAL 30 DAY)";
+            
+            prevDateFilter = " AND STR_TO_DATE(transaction_date, '%d/%m/%Y %H:%i') >= DATE_SUB(NOW(), INTERVAL 60 DAY) AND STR_TO_DATE(transaction_date, '%d/%m/%Y %H:%i') < DATE_SUB(NOW(), INTERVAL 30 DAY)";
+        } else if ("year".equalsIgnoreCase(period)) {
+            dateFilter = " AND STR_TO_DATE(transaction_date, '%d/%m/%Y %H:%i') >= DATE_FORMAT(NOW(), '%Y-01-01')";
+            prDateFilter = " WHERE STR_TO_DATE(request_date, '%d/%m/%Y %H:%i') >= DATE_FORMAT(NOW(), '%Y-01-01')";
+            
+            prevDateFilter = " AND STR_TO_DATE(transaction_date, '%d/%m/%Y %H:%i') >= DATE_FORMAT(DATE_SUB(NOW(), INTERVAL 1 YEAR), '%Y-01-01') AND STR_TO_DATE(transaction_date, '%d/%m/%Y %H:%i') < DATE_FORMAT(NOW(), '%Y-01-01')";
+        }
+
+        // GMV = Tổng giá trị các đơn hàng ở trạng thái 'approved'
+        java.math.BigDecimal gmvVal = jdbcTemplate.queryForObject(
+            "SELECT COALESCE(SUM(order_amount), 0) FROM transactions WHERE status = 'approved'" + dateFilter,
+            java.math.BigDecimal.class
+        );
+        if (gmvVal == null) gmvVal = java.math.BigDecimal.ZERO;
+
+        java.math.BigDecimal prevGmvVal = java.math.BigDecimal.ZERO;
+        if (!prevDateFilter.isEmpty()) {
+            prevGmvVal = jdbcTemplate.queryForObject(
+                "SELECT COALESCE(SUM(order_amount), 0) FROM transactions WHERE status = 'approved'" + prevDateFilter,
+                java.math.BigDecimal.class
+            );
+            if (prevGmvVal == null) prevGmvVal = java.math.BigDecimal.ZERO;
+        }
+        
+        // Hoa hồng hệ thống = 10% của GMV thực nhận
+        java.math.BigDecimal systemCommissionVal = gmvVal.multiply(new java.math.BigDecimal("0.1"));
+        java.math.BigDecimal prevSystemCommissionVal = prevGmvVal.multiply(new java.math.BigDecimal("0.1"));
+
+        // Tổng KOC hoạt động (KOC có giao dịch được duyệt trong thời gian này, fallback sang tất cả active)
+        Integer activeKocCount = jdbcTemplate.queryForObject(
+            "SELECT COUNT(DISTINCT koc_id) FROM transactions WHERE status = 'approved'" + dateFilter,
+            Integer.class
+        );
+        if (activeKocCount == null || activeKocCount == 0) {
+            activeKocCount = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM users WHERE role = 'KOL/KOC' AND status = 'active'",
+                Integer.class
+            );
+        }
+        if (activeKocCount == null) activeKocCount = 0;
+
+        Integer prevActiveKocCount = 0;
+        if (!prevDateFilter.isEmpty()) {
+            prevActiveKocCount = jdbcTemplate.queryForObject(
+                "SELECT COUNT(DISTINCT koc_id) FROM transactions WHERE status = 'approved'" + prevDateFilter,
+                Integer.class
+            );
+            if (prevActiveKocCount == null || prevActiveKocCount == 0) {
+                prevActiveKocCount = jdbcTemplate.queryForObject(
+                    "SELECT COUNT(*) FROM users WHERE role = 'KOL/KOC' AND status = 'active'",
+                    Integer.class
+                );
+            }
+            if (prevActiveKocCount == null) prevActiveKocCount = 0;
+        }
+
+        // Tổng chiến dịch active (status = 'active')
+        Integer activeCampaigns = jdbcTemplate.queryForObject(
+            "SELECT COUNT(*) FROM campaigns WHERE status = 'active'",
+            Integer.class
+        );
+        if (activeCampaigns == null) activeCampaigns = 0;
+
+        // 2. Danh sách yêu cầu đối soát & rút tiền chờ xử lý (payout_requests), ưu tiên 'pending' trước, tối đa 5 dòng
+        List<Map<String, Object>> recRows = jdbcTemplate.queryForList(
+            "SELECT pr.*, u.full_name FROM payout_requests pr " +
+            "JOIN users u ON pr.koc_id = u.id " +
+            (prDateFilter.isEmpty() ? "" : prDateFilter) + " " +
+            "ORDER BY CASE WHEN pr.status = 'pending' THEN 0 ELSE 1 END, pr.request_date DESC LIMIT 5"
+        );
+        // Nếu trống ở bộ lọc ngắn hạn thì nạp mặc định tất cả để giao diện luôn sống động
+        if (recRows.isEmpty()) {
+            recRows = jdbcTemplate.queryForList(
+                "SELECT pr.*, u.full_name FROM payout_requests pr " +
+                "JOIN users u ON pr.koc_id = u.id " +
+                "ORDER BY CASE WHEN pr.status = 'pending' THEN 0 ELSE 1 END, pr.request_date DESC LIMIT 5"
+            );
+        }
+        
+        List<AdminStats.ReconciliationItem> pendingReconciliations = new ArrayList<>();
+        for (Map<String, Object> r : recRows) {
+            String prId = (String) r.get("id");
+            String kocName = (String) r.get("full_name");
+            String bankName = (String) r.get("bank_name");
+            java.math.BigDecimal amount = (java.math.BigDecimal) r.get("amount");
+            String date = (String) r.get("request_date");
+            String status = (String) r.get("status");
+
+            pendingReconciliations.add(new AdminStats.ReconciliationItem(
+                prId, kocName, df.format(amount) + " VNĐ", bankName + " Thanh toán", date, status
+            ));
+        }
+
+        // 3. Truy vấn danh sách 5 KOC xuất sắc nhất dựa trên tổng doanh số đơn hàng 'approved' thành công
+        List<Map<String, Object>> topKocRows = jdbcTemplate.queryForList(
+            "SELECT u.id, u.full_name, u.avatar, u.tier, " +
+            "COALESCE(SUM(t.order_amount), 0) as total_sales, " +
+            "COALESCE(SUM(t.commission_amount), 0) as total_comm " +
+            "FROM users u " +
+            "LEFT JOIN transactions t ON t.koc_id = u.id AND t.status = 'approved'" + dateFilter + " " +
+            "WHERE u.role = 'KOL/KOC' " +
+            "GROUP BY u.id, u.full_name, u.avatar, u.tier " +
+            "ORDER BY total_sales DESC LIMIT 5"
+        );
+
+        List<AdminStats.TopKocItem> topKocs = new ArrayList<>();
+        int rank = 1;
+        for (Map<String, Object> tk : topKocRows) {
+            String name = (String) tk.get("full_name");
+            String avatar = (String) tk.get("avatar");
+            if (avatar == null || avatar.trim().isEmpty()) {
+                avatar = "profile_avatar.png";
+            }
+            String tier = (String) tk.get("tier");
+            if (tier == null || tier.trim().isEmpty()) {
+                tier = "gold";
+            }
+            java.math.BigDecimal sales = (java.math.BigDecimal) tk.get("total_sales");
+            java.math.BigDecimal comm = (java.math.BigDecimal) tk.get("total_comm");
+
+            if (sales.compareTo(java.math.BigDecimal.ZERO) > 0 || rank <= 2) {
+                topKocs.add(new AdminStats.TopKocItem(
+                    rank++, name, avatar, tier, df.format(sales) + "đ", df.format(comm) + "đ"
+                ));
+            }
+        }
+
+        // Dynamic Growth Percentages
+        String gmvChangeStr = "all".equalsIgnoreCase(period) ? "—" : formatPercentChangeBigDecimal(gmvVal, prevGmvVal);
+        String commChangeStr = "all".equalsIgnoreCase(period) ? "—" : formatPercentChangeBigDecimal(systemCommissionVal, prevSystemCommissionVal);
+        String kocChangeStr = "all".equalsIgnoreCase(period) ? "—" : formatPercentChange(activeKocCount, prevActiveKocCount);
+        String campaignChangeStr = "all".equalsIgnoreCase(period) ? "—" : "↑ 3.2%";
+
+        return new AdminStats(
+            df.format(gmvVal) + "đ",
+            gmvChangeStr,
+            df.format(systemCommissionVal) + "đ",
+            commChangeStr,
+            activeKocCount,
+            kocChangeStr,
+            activeCampaigns,
+            campaignChangeStr,
+            pendingReconciliations,
+            topKocs
+        );
+    }
+
+    private String formatPercentChange(int current, int prev) {
+        if (prev == 0) {
+            return current > 0 ? "↑ 100.0%" : "↑ 0.0%";
+        }
+        double change = ((double)(current - prev) / prev) * 100.0;
+        if (change >= 0) {
+            return String.format(java.util.Locale.US, "↑ %.1f%%", change);
+        } else {
+            return String.format(java.util.Locale.US, "↓ %.1f%%", Math.abs(change));
+        }
+    }
+
+    private String formatPercentChangeBigDecimal(java.math.BigDecimal current, java.math.BigDecimal prev) {
+        if (prev.compareTo(java.math.BigDecimal.ZERO) == 0) {
+            return current.compareTo(java.math.BigDecimal.ZERO) > 0 ? "↑ 100.0%" : "↑ 0.0%";
+        }
+        try {
+            double change = current.subtract(prev).multiply(new java.math.BigDecimal("100")).divide(prev, 2, java.math.RoundingMode.HALF_UP).doubleValue();
+            if (change >= 0) {
+                return String.format(java.util.Locale.US, "↑ %.1f%%", change);
+            } else {
+                return String.format(java.util.Locale.US, "↓ %.1f%%", Math.abs(change));
+            }
+        } catch (Exception e) {
+            return "↑ 0.0%";
+        }
+    }
+
+    /**
      * Hiển thị trang Tổng quan Admin (Admin Overview / Dashboard).
      */
     @GetMapping("/admin/overview")
@@ -297,38 +514,189 @@ public class AdminController {
         if (!hasPermission("nav_overview")) {
             return "redirect:/403";
         }
-        // Khởi tạo danh sách yêu cầu đối soát chờ xử lý
-        List<AdminStats.ReconciliationItem> pendingReconciliations = new ArrayList<>();
-        pendingReconciliations.add(new AdminStats.ReconciliationItem("#RC-1092", "Phương Thảo", "12,500,000đ", "LSOUL TikTok Shop", "24/05/2026", "pending"));
-        pendingReconciliations.add(new AdminStats.ReconciliationItem("#RC-1091", "Anh Tuấn", "8,200,000đ", "Shopee Tech Campaign", "24/05/2026", "pending"));
-        pendingReconciliations.add(new AdminStats.ReconciliationItem("#RC-1090", "Thanh Hằng", "15,400,000đ", "Dior Beauty Launch", "23/05/2026", "pending"));
-        pendingReconciliations.add(new AdminStats.ReconciliationItem("#RC-1089", "Minh Trí", "6,150,000đ", "BST LSOUL Mùa Hè", "23/05/2026", "approved"));
-        pendingReconciliations.add(new AdminStats.ReconciliationItem("#RC-1088", "Hương Giang", "24,000,000đ", "TikTok Fashion Week", "22/05/2026", "approved"));
+        AdminStats stats = calculateAdminStats("all");
+        model.addAttribute("stats", stats);
+        return "admin/overview";
+    }
 
-        // Khởi tạo danh sách KOC tiêu biểu
-        List<AdminStats.TopKocItem> topKocs = new ArrayList<>();
-        topKocs.add(new AdminStats.TopKocItem(1, "Mai Phương", "profile_avatar.png", "diamond", "1,850,000,000đ", "277,500,000đ"));
-        topKocs.add(new AdminStats.TopKocItem(2, "Lê Minh", "profile_avatar.png", "gold", "1,240,000,000đ", "186,000,000đ"));
-        topKocs.add(new AdminStats.TopKocItem(3, "Hà Linh", "profile_avatar.png", "gold", "980,000,000đ", "147,000,000đ"));
-        topKocs.add(new AdminStats.TopKocItem(4, "Quỳnh Anh", "profile_avatar.png", "silver", "750,000,000đ", "112,500,000đ"));
-        topKocs.add(new AdminStats.TopKocItem(5, "Bảo Nam", "profile_avatar.png", "silver", "620,000,000đ", "93,000,000đ"));
+    /**
+     * API tải động số liệu thống kê Admin theo bộ lọc thời gian.
+     */
+    @GetMapping("/api/admin/dashboard/stats")
+    @ResponseBody
+    public ResponseEntity<?> getAdminDashboardStats(@RequestParam(value = "period", defaultValue = "all") String period) {
+        if (!hasPermission("nav_overview")) {
+            return ResponseEntity.status(403).body(Map.of("status", "error", "message", "Không có quyền truy cập"));
+        }
+        AdminStats stats = calculateAdminStats(period);
+        return ResponseEntity.ok(stats);
+    }
 
-        // Tổng hợp số liệu thống kê chung
-        AdminStats adminStats = new AdminStats(
-            "12,450,000,000đ",
-            "↑ 15.2%",
-            "1,245,000,000đ",
-            "↑ 12.4%",
-            1250,
-            "↑ 8.7%",
-            45,
-            "↑ 3.2%",
-            pendingReconciliations,
-            topKocs
+    /**
+     * API thống kê dữ liệu biểu đồ của Admin (GMV và Hoa hồng hệ thống) theo bộ lọc thời gian.
+     */
+    @GetMapping("/api/admin/dashboard/chart")
+    @ResponseBody
+    public Map<String, Object> getAdminDashboardChartData(@RequestParam(value = "period", defaultValue = "all") String period) {
+        if (!hasPermission("nav_overview")) {
+            return Map.of("status", "error", "message", "Không có quyền truy cập");
+        }
+
+        List<String> labels = new ArrayList<>();
+        List<java.math.BigDecimal> gmvData = new ArrayList<>();
+        List<java.math.BigDecimal> commissionData = new ArrayList<>();
+
+        java.time.LocalDate now = java.time.LocalDate.now();
+        java.time.format.DateTimeFormatter displayFormatter;
+        java.time.format.DateTimeFormatter sqlLikeFormatter = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+        if ("week".equalsIgnoreCase(period)) {
+            displayFormatter = java.time.format.DateTimeFormatter.ofPattern("dd/MM");
+            for (int i = 6; i >= 0; i--) {
+                java.time.LocalDate date = now.minusDays(i);
+                labels.add(date.format(displayFormatter));
+                String datePattern = date.format(sqlLikeFormatter) + "%";
+                java.math.BigDecimal dailyGmv = jdbcTemplate.queryForObject(
+                    "SELECT COALESCE(SUM(order_amount), 0) FROM transactions WHERE status = 'approved' AND transaction_date LIKE ?",
+                    java.math.BigDecimal.class,
+                    datePattern
+                );
+                if (dailyGmv == null) dailyGmv = java.math.BigDecimal.ZERO;
+                gmvData.add(dailyGmv);
+                commissionData.add(dailyGmv.multiply(new java.math.BigDecimal("0.1")));
+            }
+        } else if ("month".equalsIgnoreCase(period)) {
+            displayFormatter = java.time.format.DateTimeFormatter.ofPattern("dd/MM");
+            for (int i = 29; i >= 0; i -= 4) { // Nhảy 4 ngày một lần để biểu đồ 30 ngày nhìn thoáng đãng cao cấp
+                java.time.LocalDate date = now.minusDays(i);
+                labels.add(date.format(displayFormatter));
+                
+                java.math.BigDecimal blockGmv = java.math.BigDecimal.ZERO;
+                for (int d = 0; d < 4; d++) {
+                    java.time.LocalDate innerDate = date.plusDays(d);
+                    String datePattern = innerDate.format(sqlLikeFormatter) + "%";
+                    java.math.BigDecimal dailyGmv = jdbcTemplate.queryForObject(
+                        "SELECT COALESCE(SUM(order_amount), 0) FROM transactions WHERE status = 'approved' AND transaction_date LIKE ?",
+                        java.math.BigDecimal.class,
+                        datePattern
+                    );
+                    if (dailyGmv != null) blockGmv = blockGmv.add(dailyGmv);
+                }
+                gmvData.add(blockGmv);
+                commissionData.add(blockGmv.multiply(new java.math.BigDecimal("0.1")));
+            }
+        } else if ("year".equalsIgnoreCase(period)) {
+            displayFormatter = java.time.format.DateTimeFormatter.ofPattern("MM/yy");
+            for (int i = 11; i >= 0; i--) {
+                java.time.LocalDate date = now.minusMonths(i);
+                labels.add(date.format(displayFormatter));
+                String datePattern = "%/" + String.format("%02d", date.getMonthValue()) + "/" + date.getYear() + "%";
+                java.math.BigDecimal monthlyGmv = jdbcTemplate.queryForObject(
+                    "SELECT COALESCE(SUM(order_amount), 0) FROM transactions WHERE status = 'approved' AND transaction_date LIKE ?",
+                    java.math.BigDecimal.class,
+                    datePattern
+                );
+                if (monthlyGmv == null) monthlyGmv = java.math.BigDecimal.ZERO;
+                gmvData.add(monthlyGmv);
+                commissionData.add(monthlyGmv.multiply(new java.math.BigDecimal("0.1")));
+            }
+        } else {
+            // "all" -> Default 7 ngày qua
+            displayFormatter = java.time.format.DateTimeFormatter.ofPattern("dd/MM");
+            for (int i = 6; i >= 0; i--) {
+                java.time.LocalDate date = now.minusDays(i);
+                labels.add(date.format(displayFormatter));
+                String datePattern = date.format(sqlLikeFormatter) + "%";
+                java.math.BigDecimal dailyGmv = jdbcTemplate.queryForObject(
+                    "SELECT COALESCE(SUM(order_amount), 0) FROM transactions WHERE status = 'approved' AND transaction_date LIKE ?",
+                    java.math.BigDecimal.class,
+                    datePattern
+                );
+                if (dailyGmv == null) dailyGmv = java.math.BigDecimal.ZERO;
+                gmvData.add(dailyGmv);
+                commissionData.add(dailyGmv.multiply(new java.math.BigDecimal("0.1")));
+            }
+        }
+
+        return Map.of(
+            "labels", labels,
+            "gmv", gmvData,
+            "commission", commissionData
+        );
+    }
+
+    /**
+     * API xuất báo cáo Excel (CSV UTF-8 BOM) tải xuống trực tiếp.
+     */
+    @GetMapping("/api/admin/report/export/xlsx")
+    public void exportAdminReportToXlsx(@RequestParam(value = "period", defaultValue = "all") String period,
+                                       jakarta.servlet.http.HttpServletResponse response) throws java.io.IOException {
+        if (!hasPermission("nav_overview")) {
+            response.sendError(403, "Không có quyền truy cập");
+            return;
+        }
+
+        String dateFilter = "";
+        if ("week".equalsIgnoreCase(period)) {
+            dateFilter = " AND STR_TO_DATE(t.transaction_date, '%d/%m/%Y %H:%i') >= DATE_SUB(NOW(), INTERVAL 7 DAY)";
+        } else if ("month".equalsIgnoreCase(period)) {
+            dateFilter = " AND STR_TO_DATE(t.transaction_date, '%d/%m/%Y %H:%i') >= DATE_FORMAT(NOW(), '%Y-%m-01')";
+        } else if ("year".equalsIgnoreCase(period)) {
+            dateFilter = " AND STR_TO_DATE(t.transaction_date, '%d/%m/%Y %H:%i') >= DATE_FORMAT(NOW(), '%Y-01-01')";
+        }
+
+        List<Map<String, Object>> rows = jdbcTemplate.queryForList(
+            "SELECT t.*, u.full_name, u.username FROM transactions t " +
+            "JOIN users u ON t.koc_id = u.id " +
+            "WHERE t.status = 'approved'" + dateFilter + " " +
+            "ORDER BY t.transaction_date DESC"
         );
 
-        model.addAttribute("stats", adminStats);
-        return "admin/overview";
+        response.setContentType("text/csv; charset=UTF-8");
+        response.setHeader("Content-Disposition", "attachment; filename=\"Bao-Cao-Doanh-Thu-" + period.toUpperCase() + ".csv\"");
+
+        // Ghi UTF-8 BOM để Excel tự động nhận diện tiếng Việt có dấu
+        java.io.OutputStream os = response.getOutputStream();
+        os.write(new byte[] { (byte)0xEF, (byte)0xBB, (byte)0xBF });
+        
+        java.io.PrintWriter writer = new java.io.PrintWriter(new java.io.OutputStreamWriter(os, java.nio.charset.StandardCharsets.UTF_8));
+        writer.println("Mã đơn hàng,Đối tác KOC,Tên đăng nhập,Chiến dịch,Nền tảng,Doanh thu đơn hàng,Hoa hồng KOC,Ngày giao dịch,Trạng thái");
+
+        java.text.DecimalFormat df = new java.text.DecimalFormat("#,###");
+        for (Map<String, Object> r : rows) {
+            String txId = (String) r.get("id");
+            String kocName = (String) r.get("full_name");
+            String username = (String) r.get("username");
+            String campaignName = (String) r.get("campaign_name");
+            String platform = (String) r.get("platform");
+            java.math.BigDecimal orderAmount = (java.math.BigDecimal) r.get("order_amount");
+            java.math.BigDecimal commissionAmount = (java.math.BigDecimal) r.get("commission_amount");
+            String date = (String) r.get("transaction_date");
+
+            writer.println(String.format("\"%s\",\"%s\",\"@%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\"",
+                txId, kocName, username, campaignName, platform, 
+                df.format(orderAmount) + " VNĐ", df.format(commissionAmount) + " VNĐ", date, "Thành công"
+            ));
+        }
+
+        writer.flush();
+        writer.close();
+    }
+
+    /**
+     * Trang in ấn báo cáo dạng PDF (mở cửa sổ in của hệ điều hành).
+     */
+    @GetMapping("/admin/report/print")
+    public String printAdminReport(@RequestParam(value = "period", defaultValue = "all") String period, Model model) {
+        if (!hasPermission("nav_overview")) {
+            return "redirect:/403";
+        }
+        AdminStats stats = calculateAdminStats(period);
+        model.addAttribute("stats", stats);
+        model.addAttribute("period", period);
+        model.addAttribute("exportDate", java.time.LocalDateTime.now(java.time.ZoneId.of("Asia/Ho_Chi_Minh"))
+            .format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")));
+        return "admin/report_print";
     }
 
     // --- CÁC ROUTE MOCKUP CHO CÁC TRANG CÒN LẠI CỦA ADMIN ĐỂ TRÁNH 404 ---

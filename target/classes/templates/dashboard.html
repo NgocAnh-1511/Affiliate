@@ -68,10 +68,11 @@
                 <div class="filter-left">
                     <div class="select-wrapper">
                         <svg class="select-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                        <select class="filter-select">
-                            <option>7 ngày qua</option>
-                            <option>30 ngày qua</option>
-                            <option>Tháng này</option>
+                        <select class="filter-select" id="kocPeriodFilter">
+                            <option value="week" th:selected="${selectedPeriod == 'week'}">7 ngày qua</option>
+                            <option value="month" th:selected="${selectedPeriod == 'month'}">30 ngày qua</option>
+                            <option value="year" th:selected="${selectedPeriod == 'year'}">Năm nay</option>
+                            <option value="all" th:selected="${selectedPeriod == 'all' || selectedPeriod == null}">Tất cả thời gian</option>
                         </select>
                         <svg class="chevron-select" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
                     </div>
@@ -96,11 +97,11 @@
                         </div>
                     </div>
                     <div class="kpi-body">
-                        <h2 class="kpi-value" th:text="${stats != null ? stats.clicks : '12,450'}">12,450</h2>
-                        <span class="kpi-change green">
+                        <h2 class="kpi-value" id="kpiClicks" th:text="${stats != null ? stats.clicks : '0'}">0</h2>
+                        <span class="kpi-change green" id="kpiClicksChangeBox">
                             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
-                            <span th:text="${stats != null ? '↑ ' + stats.clickChange : '↑ 18.6%'}">↑ 18.6%</span>
-                            <span class="kpi-change-sub">so với 7 ngày trước</span>
+                            <span id="kpiClicksChange" th:text="${stats != null ? stats.clickChange : '↑ 0.0%'}">↑ 0.0%</span>
+                            <span class="kpi-change-sub" id="kpiClicksSub">so với giai đoạn trước</span>
                         </span>
                     </div>
                 </div>
@@ -117,11 +118,11 @@
                         </div>
                     </div>
                     <div class="kpi-body">
-                        <h2 class="kpi-value" th:text="${stats != null ? stats.orders : 342}">342</h2>
-                        <span class="kpi-change green">
+                        <h2 class="kpi-value" id="kpiOrders" th:text="${stats != null ? stats.orders : 0}">0</h2>
+                        <span class="kpi-change green" id="kpiOrdersChangeBox">
                             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
-                            <span th:text="${stats != null ? '↑ ' + stats.ordersChange : '↑ 22.4%'}">↑ 22.4%</span>
-                            <span class="kpi-change-sub">so với 7 ngày trước</span>
+                            <span id="kpiOrdersChange" th:text="${stats != null ? stats.ordersChange : '↑ 0.0%'}">↑ 0.0%</span>
+                            <span class="kpi-change-sub" id="kpiOrdersSub">so với giai đoạn trước</span>
                         </span>
                     </div>
                 </div>
@@ -138,11 +139,11 @@
                         </div>
                     </div>
                     <div class="kpi-body">
-                        <h2 class="kpi-value" th:text="${stats != null ? stats.cr : '2.75%'}">2.75%</h2>
-                        <span class="kpi-change green">
+                        <h2 class="kpi-value" id="kpiCR" th:text="${stats != null ? stats.cr : '0.00%'}">0.00%</h2>
+                        <span class="kpi-change green" id="kpiCRChangeBox">
                             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
-                            <span th:text="${stats != null ? '↑ ' + stats.crChange : '↑ 8.7%'}">↑ 8.7%</span>
-                            <span class="kpi-change-sub">so với 7 ngày trước</span>
+                            <span id="kpiCRChange" th:text="${stats != null ? stats.crChange : '↑ 0.0%'}">↑ 0.0%</span>
+                            <span class="kpi-change-sub" id="kpiCRSub">so với giai đoạn trước</span>
                         </span>
                     </div>
                 </div>
@@ -159,11 +160,11 @@
                         </div>
                     </div>
                     <div class="kpi-body">
-                        <h2 class="kpi-value" th:text="${stats != null ? stats.commission : '8,500,000 VNĐ'}">8,500,000 VNĐ</h2>
-                        <span class="kpi-change green">
+                        <h2 class="kpi-value" id="kpiCommission" th:text="${stats != null ? stats.commission : '0 VNĐ'}">0 VNĐ</h2>
+                        <span class="kpi-change green" id="kpiCommissionChangeBox">
                             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
-                            <span th:text="${stats != null ? '↑ ' + stats.commissionChange : '↑ 16.3%'}">↑ 16.3%</span>
-                            <span class="kpi-change-sub">so với 7 ngày trước</span>
+                            <span id="kpiCommissionChange" th:text="${stats != null ? stats.commissionChange : '↑ 0.0%'}">↑ 0.0%</span>
+                            <span class="kpi-change-sub" id="kpiCommissionSub">so với giai đoạn trước</span>
                         </span>
                     </div>
                 </div>
@@ -212,7 +213,7 @@
                                     <th style="text-align: right;">Hoa hồng</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody id="campaignsTableBody">
                                 <tr th:each="campaign : ${stats != null ? stats.topCampaigns : campaigns}">
                                     <td class="col-rank" th:text="${campaign.rank}">1</td>
                                     <td>
@@ -334,11 +335,13 @@
                     <div class="device-body">
                         <!-- Vòng Donut bên trái -->
                         <div class="donut-container">
-                            <canvas id="donutChart" width="180" height="180"></canvas>
+                            <canvas id="donutChart" width="180" height="180" 
+                                    th:data-mobile="${stats != null ? stats.mobilePercent : 78}" 
+                                    th:data-desktop="${stats != null ? stats.desktopPercent : 22}"></canvas>
                             <!-- Label căn giữa tuyệt đối trong vòng Donut -->
                             <div class="donut-center-label">
                                 <span class="donut-label-sub">Tổng</span>
-                                <span class="donut-label-val">342</span>
+                                <span class="donut-label-val" id="donutOrders" th:text="${stats != null ? stats.orders : 0}">0</span>
                                 <span class="donut-label-sub">Đơn hàng</span>
                             </div>
                         </div>
@@ -351,8 +354,8 @@
                                     <span class="legend-device-name">Mobile</span>
                                 </div>
                                 <div class="legend-stat-box">
-                                    <span class="legend-percent text-blue">78%</span>
-                                    <span class="legend-orders-count">(267 đơn)</span>
+                                    <span class="legend-percent text-blue" id="donutMobilePercent" th:text="${stats != null ? stats.mobilePercent + '%' : '0%'}">0%</span>
+                                    <span class="legend-orders-count" id="donutMobileOrders" th:text="${stats != null ? '(' + stats.mobileOrders + ' đơn)' : '(0 đơn)'}">(0 đơn)</span>
                                 </div>
                             </div>
                             
@@ -362,8 +365,8 @@
                                     <span class="legend-device-name">Desktop</span>
                                 </div>
                                 <div class="legend-stat-box">
-                                    <span class="legend-percent text-purple">22%</span>
-                                    <span class="legend-orders-count">(75 đơn)</span>
+                                    <span class="legend-percent text-purple" id="donutDesktopPercent" th:text="${stats != null ? stats.desktopPercent + '%' : '0%'}">0%</span>
+                                    <span class="legend-orders-count" id="donutDesktopOrders" th:text="${stats != null ? '(' + stats.desktopOrders + ' đơn)' : '(0 đơn)'}">(0 đơn)</span>
                                 </div>
                             </div>
                         </div>

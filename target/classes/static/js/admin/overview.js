@@ -17,164 +17,183 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // --- 4. XỬ LÝ DUYỆT ĐỐI SOÁT NHANH (RECONCILIATION APPROVER) ---
     initReconciliationApprover();
+
+    // --- 5. XỬ LÝ BỘ LỌC CHU KỲ THỜI GIAN (PERIOD FILTER) ---
+    initPeriodFilter();
+
+    // --- 6. XỬ LÝ XUẤT BÁO CÁO (EXPORTERS) ---
+    initExporters();
 });
 
 /**
  * Khởi tạo biểu đồ xu hướng bằng Chart.js
  */
-function initSalesTrendChart() {
+function initSalesTrendChart(period = 'all') {
     const ctx = document.getElementById('salesTrendChart');
     if (!ctx) return;
 
-    // Dữ liệu 7 ngày qua
-    const labels = ['18/05', '19/05', '20/05', '21/05', '22/05', '23/05', '24/05'];
-    
-    // Tạo gradient màu cho GMV (Pink/Rose) và Hoa hồng (Indigo/Violet)
-    const chartContext = ctx.getContext('2d');
-    
-    const gmvGradient = chartContext.createLinearGradient(0, 0, 0, 300);
-    gmvGradient.addColorStop(0, 'rgba(236, 72, 153, 0.25)');
-    gmvGradient.addColorStop(1, 'rgba(236, 72, 153, 0.00)');
+    // Hủy bỏ thực thể biểu đồ cũ nếu đã tồn tại để tránh xung đột render của Chart.js
+    if (window.salesTrendChart && typeof window.salesTrendChart.destroy === 'function') {
+        window.salesTrendChart.destroy();
+    }
 
-    const commissionGradient = chartContext.createLinearGradient(0, 0, 0, 300);
-    commissionGradient.addColorStop(0, 'rgba(99, 102, 241, 0.25)');
-    commissionGradient.addColorStop(1, 'rgba(99, 102, 241, 0.00)');
+    fetch(`/api/admin/dashboard/chart?period=${period}`)
+    .then(res => res.json())
+    .then(chartData => {
+        const chartContext = ctx.getContext('2d');
+        
+        const gmvGradient = chartContext.createLinearGradient(0, 0, 0, 300);
+        gmvGradient.addColorStop(0, 'rgba(236, 72, 153, 0.25)');
+        gmvGradient.addColorStop(1, 'rgba(236, 72, 153, 0.00)');
 
-    // Tạo biểu đồ
-    new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: labels,
-            datasets: [
-                {
-                    label: 'Tổng Doanh số (GMV)',
-                    data: [8200000000, 9400000000, 10100000000, 9800000000, 11200000000, 11800000000, 12450000000],
-                    borderColor: '#ec4899',
-                    backgroundColor: gmvGradient,
-                    borderWidth: 3,
-                    fill: true,
-                    tension: 0.38,
-                    pointBackgroundColor: '#ec4899',
-                    pointBorderColor: '#ffffff',
-                    pointBorderWidth: 2,
-                    pointRadius: 4,
-                    pointHoverRadius: 6,
-                    yAxisID: 'y'
-                },
-                {
-                    label: 'Hoa hồng Hệ thống',
-                    data: [820000000, 940000000, 1010000000, 980000000, 1120000000, 1180000000, 1245000000],
-                    borderColor: '#6366f1',
-                    backgroundColor: commissionGradient,
-                    borderWidth: 3,
-                    fill: true,
-                    tension: 0.38,
-                    pointBackgroundColor: '#6366f1',
-                    pointBorderColor: '#ffffff',
-                    pointBorderWidth: 2,
-                    pointRadius: 4,
-                    pointHoverRadius: 6,
-                    yAxisID: 'y1'
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'top',
-                    labels: {
-                        font: {
-                            family: 'Plus Jakarta Sans',
-                            size: 12,
-                            weight: '600'
-                        },
-                        color: '#64748b',
-                        usePointStyle: true,
-                        padding: 20
-                    }
-                },
-                tooltip: {
-                    backgroundColor: '#0f172a',
-                    titleFont: {
-                        family: 'Plus Jakarta Sans',
-                        size: 13,
-                        weight: '700'
+        const commissionGradient = chartContext.createLinearGradient(0, 0, 0, 300);
+        commissionGradient.addColorStop(0, 'rgba(99, 102, 241, 0.25)');
+        commissionGradient.addColorStop(1, 'rgba(99, 102, 241, 0.00)');
+
+        window.salesTrendChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: chartData.labels,
+                datasets: [
+                    {
+                        label: 'Tổng Doanh số (GMV)',
+                        data: chartData.gmv,
+                        borderColor: '#ec4899',
+                        backgroundColor: gmvGradient,
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.38,
+                        pointBackgroundColor: '#ec4899',
+                        pointBorderColor: '#ffffff',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
+                        yAxisID: 'y'
                     },
-                    bodyFont: {
-                        family: 'Plus Jakarta Sans',
-                        size: 12
-                    },
-                    padding: 12,
-                    cornerRadius: 8,
-                    callbacks: {
-                        label: function (context) {
-                            let label = context.dataset.label || '';
-                            if (label) {
-                                label += ': ';
-                            }
-                            if (context.parsed.y !== null) {
-                                label += new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 0 }).format(context.parsed.y);
-                            }
-                            return label;
-                        }
+                    {
+                        label: 'Hoa hồng Hệ thống',
+                        data: chartData.commission,
+                        borderColor: '#6366f1',
+                        backgroundColor: commissionGradient,
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.38,
+                        pointBackgroundColor: '#6366f1',
+                        pointBorderColor: '#ffffff',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
+                        yAxisID: 'y1'
                     }
-                }
+                ]
             },
-            scales: {
-                x: {
-                    grid: {
-                        display: false
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            font: {
+                                family: 'Plus Jakarta Sans',
+                                size: 12,
+                                weight: '600'
+                            },
+                            color: '#64748b',
+                            usePointStyle: true,
+                            padding: 20
+                        }
                     },
-                    ticks: {
-                        font: {
+                    tooltip: {
+                        backgroundColor: '#0f172a',
+                        titleFont: {
                             family: 'Plus Jakarta Sans',
-                            size: 11,
-                            weight: '600'
+                            size: 13,
+                            weight: '700'
                         },
-                        color: '#64748b'
-                    }
-                },
-                y: {
-                    type: 'linear',
-                    display: true,
-                    position: 'left',
-                    grid: {
-                        color: '#f1f5f9'
-                    },
-                    ticks: {
-                        font: {
+                        bodyFont: {
                             family: 'Plus Jakarta Sans',
-                            size: 11
+                            size: 12
                         },
-                        color: '#64748b',
-                        callback: function (value) {
-                            return (value / 1000000000).toFixed(1) + ' tỷđ';
+                        padding: 12,
+                        cornerRadius: 8,
+                        callbacks: {
+                            label: function (context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.parsed.y !== null) {
+                                    label += new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 0 }).format(context.parsed.y);
+                                }
+                                return label;
+                            }
                         }
                     }
                 },
-                y1: {
-                    type: 'linear',
-                    display: true,
-                    position: 'right',
-                    grid: {
-                        drawOnChartArea: false // Chỉ hiển thị lưới của trục trái
-                    },
-                    ticks: {
-                        font: {
-                            family: 'Plus Jakarta Sans',
-                            size: 11
+                scales: {
+                    x: {
+                        grid: {
+                            display: false
                         },
-                        color: '#64748b',
-                        callback: function (value) {
-                            return (value / 1000000).toFixed(0) + ' trđ';
+                        ticks: {
+                            font: {
+                                family: 'Plus Jakarta Sans',
+                                size: 11,
+                                weight: '600'
+                            },
+                            color: '#64748b'
+                        }
+                    },
+                    y: {
+                        type: 'linear',
+                        display: true,
+                        position: 'left',
+                        grid: {
+                            color: '#f1f5f9'
+                        },
+                        ticks: {
+                            font: {
+                                family: 'Plus Jakarta Sans',
+                                size: 11
+                            },
+                            color: '#64748b',
+                            callback: function (value) {
+                                if (value >= 1000000000) {
+                                    return (value / 1000000000).toFixed(1) + ' tỷ đ';
+                                } else if (value >= 1000000) {
+                                    return (value / 1000000).toFixed(0) + ' tr đ';
+                                }
+                                return value;
+                            }
+                        }
+                    },
+                    y1: {
+                        type: 'linear',
+                        display: true,
+                        position: 'right',
+                        grid: {
+                            drawOnChartArea: false // Chỉ hiển thị lưới của trục trái
+                        },
+                        ticks: {
+                            font: {
+                                family: 'Plus Jakarta Sans',
+                                size: 11
+                            },
+                            color: '#64748b',
+                            callback: function (value) {
+                                if (value >= 1000000) {
+                                    return (value / 1000000).toFixed(0) + ' tr đ';
+                                }
+                                return value;
+                            }
                         }
                     }
                 }
             }
-        }
-    });
+        });
+    })
+    .catch(err => console.error('Error fetching admin overview chart:', err));
 }
 
 /**
@@ -234,12 +253,13 @@ function initNotificationBell() {
  * Xử lý duyệt đối soát nhanh (Reconciliation Approver)
  */
 function initReconciliationApprover() {
-    const approveButtons = document.querySelectorAll('.btn-approve');
+    const approveButtons = document.querySelectorAll('.btn-approve:not([data-bound])');
     const toast = document.getElementById('adminToast');
     
     if (approveButtons.length === 0) return;
 
     approveButtons.forEach(button => {
+        button.setAttribute('data-bound', 'true');
         button.addEventListener('click', function (e) {
             e.stopPropagation();
             
@@ -251,35 +271,47 @@ function initReconciliationApprover() {
             // 1. Thêm trạng thái đang tải (Loading Spinner)
             btn.classList.add('loading');
             
-            // 2. Mô phỏng độ trễ truyền dữ liệu sang ngân hàng đối tác (1.2 giây)
-            setTimeout(function () {
-                // gỡ bỏ trạng thái loading
+            // 2. Gọi API duyệt đối soát rút tiền thực tế
+            fetch('/api/admin/finance/approve', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ requestId: itemId })
+            })
+            .then(res => res.json())
+            .then(data => {
                 btn.classList.remove('loading');
-                
-                // 3. Tìm dòng tr của nút này
-                const tr = btn.closest('tr');
-                if (!tr) return;
-                
-                // 4. Thay đổi trạng thái dòng thành "Đã duyệt"
-                const statusBadge = tr.querySelector('.status-badge');
-                if (statusBadge) {
-                    statusBadge.className = 'status-badge approved';
-                    const statusText = statusBadge.querySelector('span:not(.status-dot)');
-                    if (statusText) {
-                        statusText.textContent = 'Đã duyệt';
+                if (data.status === 'success') {
+                    // 3. Tìm dòng tr của nút này
+                    const tr = btn.closest('tr');
+                    if (tr) {
+                        // 4. Thay đổi trạng thái dòng thành "Đã duyệt"
+                        const statusBadge = tr.querySelector('.status-badge');
+                        if (statusBadge) {
+                            statusBadge.className = 'status-badge approved';
+                            const statusText = statusBadge.querySelector('span:not(.status-dot)');
+                            if (statusText) {
+                                statusText.textContent = 'Đã duyệt';
+                            }
+                        }
+                        
+                        // 5. Ẩn nút "Duyệt nhanh" khỏi ô hành động, chỉ giữ lại "Xem chi tiết"
+                        btn.style.display = 'none';
                     }
+                    
+                    // 6. Cập nhật lại số liệu KPI trên màn hình với hiệu ứng số chạy động
+                    updateKpiMetrics(amountStr);
+                    
+                    // 7. Hiển thị Toast thông báo thành công rực rỡ
+                    showAdminToast(`Đã duyệt đối soát và chi trả ${amountStr} thành công cho đối tác ${kocName}!`);
+                } else {
+                    alert('Lỗi: ' + (data.message || 'Không thể phê duyệt yêu cầu.'));
                 }
-                
-                // 5. Ẩn nút "Duyệt nhanh" khỏi ô hành động, chỉ giữ lại "Xem chi tiết"
-                btn.style.display = 'none';
-                
-                // 6. Cập nhật lại số liệu KPI trên màn hình với hiệu ứng số chạy động
-                updateKpiMetrics(amountStr);
-                
-                // 7. Hiển thị Toast thông báo thành công rực rỡ
-                showAdminToast(`Đã duyệt đối soát và chi trả ${amountStr} cho đối tác ${kocName}!`);
-                
-            }, 1200);
+            })
+            .catch(err => {
+                btn.classList.remove('loading');
+                console.error('Error in quick approval:', err);
+                alert('Lỗi kết nối khi duyệt đối soát nhanh.');
+            });
         });
     });
 }
@@ -378,4 +410,249 @@ function showAdminToast(message) {
 
     // Lưu timerId để tránh chồng chéo nếu click liên tiếp
     toast.dataset.timerId = timerId;
+}
+
+/**
+ * Khởi tạo bộ lọc thời gian và cập nhật UI động khi thay đổi chu kỳ
+ */
+function initPeriodFilter() {
+    const periodSelect = document.getElementById('adminPeriodFilter');
+    if (!periodSelect) return;
+
+    periodSelect.addEventListener('change', function () {
+        const period = this.value;
+        
+        // 1. Cập nhật Biểu đồ doanh số và hoa hồng
+        initSalesTrendChart(period);
+        
+        // 2. Tải số liệu thống kê tổng quan động qua AJAX
+        fetch(`/api/admin/dashboard/stats?period=${period}`)
+        .then(res => {
+            if (!res.ok) throw new Error('Không thể tải số liệu thống kê mới');
+            return res.json();
+        })
+        .then(stats => {
+            // Cập nhật các KPI lớn với hiệu ứng chạy số đếm
+            updateKpis(stats, period);
+            
+            // Cập nhật danh sách Top KOC
+            updateTopKocList(stats.topKocs);
+            
+            // Cập nhật bảng đối soát thanh toán
+            updateReconciliationsTable(stats.pendingReconciliations);
+            
+            showAdminToast(`Đã đồng bộ và cập nhật dữ liệu báo cáo thành công!`);
+        })
+        .catch(err => {
+            console.error('Lỗi khi cập nhật thống kê chu kỳ:', err);
+            showAdminToast('Lỗi kết nối khi cập nhật dữ liệu bộ lọc!');
+        });
+    });
+}
+
+/**
+ * Cập nhật các KPI với hiệu ứng chạy số mượt mà
+ */
+function updateKpis(stats, period) {
+    const kpiGmvEl = document.getElementById('kpiGMV');
+    const kpiCommissionEl = document.getElementById('kpiCommission');
+    const kpiKocCountEl = document.getElementById('kpiKocCount');
+    const kpiCampaignCountEl = document.getElementById('kpiCampaignCount');
+    
+    // Parse các giá trị đích sang số nguyên để chạy hiệu ứng
+    const targetGmv = parseCurrency(stats.gmv);
+    const targetCommission = parseCurrency(stats.systemCommission);
+    const targetKocCount = stats.activeKocCount;
+    const targetCampaignCount = stats.activeCampaigns;
+    
+    // Lấy các giá trị hiện tại trên giao diện
+    const currentGmv = kpiGmvEl ? parseCurrency(kpiGmvEl.textContent) : 0;
+    const currentCommission = kpiCommissionEl ? parseCurrency(kpiCommissionEl.textContent) : 0;
+    const currentKocCount = kpiKocCountEl ? parseInt(kpiKocCountEl.textContent.replace(/[^\d]/g, '')) || 0 : 0;
+    const currentCampaignCount = kpiCampaignCountEl ? parseInt(kpiCampaignCountEl.textContent.replace(/[^\d]/g, '')) || 0 : 0;
+    
+    // Thực hiện hiệu ứng đếm số chạy Ease-out Quad
+    if (kpiGmvEl) animateNumber(kpiGmvEl, currentGmv, targetGmv, 800, true);
+    if (kpiCommissionEl) animateNumber(kpiCommissionEl, currentCommission, targetCommission, 800, true);
+    if (kpiKocCountEl) animateNumber(kpiKocCountEl, currentKocCount, targetKocCount, 800, false);
+    if (kpiCampaignCountEl) animateNumber(kpiCampaignCountEl, currentCampaignCount, targetCampaignCount, 800, false);
+    
+    // Cập nhật nhãn và lớp màu sắc tăng trưởng phần trăm
+    updateKpiChange('kpiGMVChange', stats.gmvChange);
+    updateKpiChange('kpiCommissionChange', stats.commissionChange);
+    updateKpiChange('kpiKocChange', stats.kocChange);
+    updateKpiChange('kpiCampaignChange', stats.campaignChange);
+    
+    // Đồng bộ nhãn mô tả chu kỳ thời gian
+    let subtext = 'so với chu kỳ trước';
+    if (period === 'week') subtext = 'so với tuần trước';
+    else if (period === 'month') subtext = 'so với tháng trước';
+    else if (period === 'year') subtext = 'so với năm trước';
+    else if (period === 'all') subtext = 'toàn bộ thời gian';
+    
+    document.querySelectorAll('.kpi-change-sub').forEach(el => {
+        el.textContent = subtext;
+    });
+}
+
+/**
+ * Cập nhật nhãn % tăng trưởng và định hướng mũi tên SVG tăng/giảm động
+ */
+function updateKpiChange(elementId, changeStr) {
+    const el = document.getElementById(elementId);
+    if (!el) return;
+    
+    el.textContent = changeStr;
+    
+    const parent = el.closest('.kpi-change');
+    if (!parent) return;
+    
+    const svg = parent.querySelector('svg');
+    
+    // Kiểm tra xem là tăng, giảm hay trung hòa (không áp dụng)
+    if (changeStr.includes('↑')) {
+        parent.className = 'kpi-change green';
+        if (svg) svg.style.display = 'inline-block';
+        const polyline = parent.querySelector('polyline');
+        if (polyline) {
+            polyline.setAttribute('points', '18 15 12 9 6 15');
+        }
+    } else if (changeStr.includes('↓')) {
+        parent.className = 'kpi-change red';
+        if (svg) svg.style.display = 'inline-block';
+        const polyline = parent.querySelector('polyline');
+        if (polyline) {
+            polyline.setAttribute('points', '6 9 12 15 18 9');
+        }
+    } else {
+        parent.className = 'kpi-change gray';
+        if (svg) svg.style.display = 'none';
+    }
+}
+
+/**
+ * Cập nhật danh sách Top KOC xuất sắc nhất
+ */
+function updateTopKocList(topKocs) {
+    const listContainer = document.querySelector('.top-kocs-list');
+    if (!listContainer) return;
+    
+    if (!topKocs || topKocs.length === 0) {
+        listContainer.innerHTML = `
+            <div style="text-align: center; padding: 40px 20px; color: #64748b; font-weight: 500; font-family: 'Plus Jakarta Sans'; font-size: 13px;">
+                Không có dữ liệu đối tác trong chu kỳ này
+            </div>`;
+        return;
+    }
+    
+    let html = '';
+    topKocs.forEach(koc => {
+        let tierText = 'Bạc';
+        if (koc.rankLevel === 'diamond') tierText = 'Kim Cương';
+        else if (koc.rankLevel === 'gold') tierText = 'Vàng';
+        
+        const avatarUrl = koc.avatar.startsWith('http') ? koc.avatar : `/images/${koc.avatar}`;
+        
+        html += `
+            <div class="top-koc-item">
+                <div class="koc-rank-badge">${koc.rank}</div>
+                <img src="${avatarUrl}" class="koc-avatar" alt="${koc.name}">
+                <div class="koc-meta">
+                    <span class="koc-name">${koc.name}</span>
+                    <span class="koc-tier-badge ${koc.rankLevel || 'silver'}">${tierText}</span>
+                </div>
+                <div class="koc-revenue">
+                    <span class="revenue-val">${koc.sales}</span>
+                    <span class="revenue-label">Doanh số</span>
+                </div>
+            </div>
+        `;
+    });
+    
+    listContainer.innerHTML = html;
+}
+
+/**
+ * Cập nhật bảng đối soát và rút tiền chờ xử lý
+ */
+function updateReconciliationsTable(reconciliations) {
+    const tableBody = document.getElementById('reconciliationsTableBody');
+    if (!tableBody) return;
+    
+    if (!reconciliations || reconciliations.length === 0) {
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="7" style="text-align: center; padding: 40px 20px; color: #64748b; font-weight: 500; font-family: 'Plus Jakarta Sans'; font-size: 13px;">
+                    Không có yêu cầu đối soát nào trong chu kỳ này
+                </td>
+            </tr>`;
+        return;
+    }
+    
+    let html = '';
+    reconciliations.forEach(item => {
+        let statusText = 'Chờ duyệt';
+        if (item.status === 'approved') statusText = 'Đã duyệt';
+        else if (item.status === 'processing') statusText = 'Đang xử lý';
+        
+        let approveButton = '';
+        if (item.status === 'pending') {
+            approveButton = `
+                <button type="button" class="btn-approve" 
+                        data-id="${item.id}" data-amount="${item.amount}" data-koc="${item.kocName}">
+                    Duyệt nhanh
+                </button>
+            `;
+        }
+        
+        html += `
+            <tr>
+                <td class="col-id">${item.id}</td>
+                <td class="col-name">${item.kocName}</td>
+                <td class="col-campaign">${item.campaign}</td>
+                <td class="col-amount">${item.amount}</td>
+                <td class="col-date">${item.date}</td>
+                <td class="col-status">
+                    <div class="status-badge ${item.status}">
+                        <span class="status-dot"></span>
+                        <span>${statusText}</span>
+                    </div>
+                </td>
+                <td class="col-actions">
+                    ${approveButton}
+                    <button type="button" class="btn-view" data-id="${item.id}">
+                        Xem chi tiết
+                    </button>
+                </td>
+            </tr>
+        `;
+    });
+    
+    tableBody.innerHTML = html;
+    
+    // Gắn lại sự kiện phê duyệt nhanh cho các dòng mới được nạp vào
+    initReconciliationApprover();
+}
+
+/**
+ * Khởi tạo sự kiện click xuất báo cáo (PDF & Excel)
+ */
+function initExporters() {
+    const btnPDF = document.getElementById('btnExportPDF');
+    const btnXLSX = document.getElementById('btnExportXLSX');
+    const periodSelect = document.getElementById('adminPeriodFilter');
+    
+    if (btnPDF) {
+        btnPDF.addEventListener('click', function () {
+            const period = periodSelect ? periodSelect.value : 'all';
+            window.open(`/admin/report/print?period=${period}`, '_blank');
+        });
+    }
+    
+    if (btnXLSX) {
+        btnXLSX.addEventListener('click', function () {
+            const period = periodSelect ? periodSelect.value : 'all';
+            window.location.href = `/api/admin/report/export/xlsx?period=${period}`;
+        });
+    }
 }
