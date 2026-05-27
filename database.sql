@@ -305,22 +305,13 @@ INSERT INTO dispute_attachments (ticket_id, file_path) VALUES
 
 -- --- K. NẠP NHẬT KÝ HỆ THỐNG ---
 INSERT INTO audit_logs (id, admin_id, timestamp, action, action_class, target_object, target_object_id, change_detail, ip_address, json_detail) VALUES
-('LOG-20260524-143022-7XK9L', 1001, '24/05/2026 - 14:30:22', 'Cập nhật', 'update', 'Chiến dịch BST LSOUL', 'CAM-2026-007', 'Thay đổi Tỷ lệ hoa hồng từ [10%] thành [12%] Hạng: Hạng Vàng', '113.190.***.***', '{
-  "log_id": "LOG-20260524-143022-7XK9L",
-  "timestamp": "2026-05-24T14:30:22+07:00",
-  "admin_id": "ADM-1001",
-  "admin_name": "Nguyễn Văn A",
-  "action": "UPDATE_COMMISSION_RATE",
-  "module": "CAMPAIGN",
-  "object_id": "CAM-2026-007",
-  "changes": {
-    "old_value": "10%",
-    "new_value": "12%",
-    "field": "commission_rate",
-    "tier": "gold"
-  },
-  "ip_address": "113.190.***.***",
-  "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/124.0.0.0 Safari/537.36"
-}');
+('LOG-20260524-143022-7XK9L', 1001, '24/05/2026 - 14:30:22', 'Cập nhật', 'update', 'Chiến dịch BST LSOUL', 'CAM-2026-007', 'Thay đổi Tỷ lệ hoa hồng từ [10%] thành [12%] Hạng: Hạng Vàng', '113.190.***.***', '{\n  "log_id": "LOG-20260524-143022-7XK9L",\n  "timestamp": "2026-05-24T14:30:22+07:00",\n  "admin_id": "ADM-1001",\n  "admin_name": "Nguyễn Văn A",\n  "action": "UPDATE_COMMISSION_RATE",\n  "module": "CAMPAIGN",\n  "object_id": "CAM-2026-007",\n  "changes": {\n    "old_value": "10%",\n    "new_value": "12%",\n    "field": "commission_rate",\n    "tier": "gold"\n  },\n  "ip_address": "113.190.***.***"\n}'),
+('LOG-20260524-142815-9PL2A', 1002, '24/05/2026 - 14:28:15', 'Phê duyệt', 'approve', 'Lệnh rút tiền #WD-123', 'WD-123', 'Phê duyệt lệnh rút tiền số tiền [15,000,000 VNĐ] về tài khoản Vietcombank ****1234', '203.113.***.***', '{\n  "action": "APPROVE_PAYOUT",\n  "payout_id": "WD-123",\n  "amount": "15,000,000 VNĐ",\n  "bank": "Vietcombank"\n}'),
+('LOG-20260524-142508-3HG8P', 1003, '24/05/2026 - 14:25:08', 'Cập nhật', 'update', 'Người dùng: @ducanh.review', '2', 'Thay đổi Hạng từ [Hạng Bạc] thành [Hạng Vàng]', '42.118.***.***', '{\n  "action": "UPDATE_KOC_TIER",\n  "user_id": "2",\n  "username": "@ducanh.review",\n  "old_tier": "silver",\n  "new_tier": "gold"\n}'),
+('LOG-20260524-142051-5KJ3D', 1004, '24/05/2026 - 14:20:51', 'Xóa', 'delete', 'Chiến dịch Summer Sale', 'CAM-2025-015', 'Xóa chiến dịch [Summer Sale] khỏi hệ thống', '123.25.***.***', '{\n  "action": "DELETE_CAMPAIGN",\n  "campaign_name": "Summer Sale",\n  "campaign_id": "CAM-2025-015"\n}'),
+('LOG-20260524-141833-2WE8F', 1001, '24/05/2026 - 14:18:33', 'Cập nhật', 'update', 'Cấu hình hệ thống', 'COMMISSION_SETTINGS', 'Cập nhật mức hoa hồng cơ bản cho Hạng Kim Cương từ [15%] thành [16%]', '113.190.***.***', '{\n  "action": "UPDATE_GLOBAL_COMMISSION",\n  "old_rate": "15%",\n  "new_rate": "16%",\n  "tier": "diamond"\n}'),
+('LOG-20260524-141512-8UY9K', 1002, '24/05/2026 - 14:15:12', 'Phê duyệt', 'approve', 'KOC đăng ký mới: @linhchi.daily', '5', 'Phê duyệt tài khoản KOC mới đăng ký và gán Hạng Bạc', '203.113.***.***', '{\n  "action": "APPROVE_KOC_REGISTRATION",\n  "username": "@linhchi.daily",\n  "assigned_tier": "silver"\n}'),
+('LOG-20260524-141045-1DF3G', 1003, '24/05/2026 - 14:10:45', 'Xóa', 'delete', 'Bài đăng vi phạm #POST-7781', 'POST-7781', 'Xóa bài đăng vi phạm chính sách (Spam/Quảng cáo sai lệch)', '42.118.***.***', '{\n  "action": "DELETE_VIOLATING_POST",\n  "post_id": "POST-7781",\n  "reason": "SPAM_ADVERTISING"\n}'),
+('LOG-20260524-140530-9IU8Y', 1004, '24/05/2026 - 14:05:30', 'Cập nhật', 'delete', 'Người dùng: @huy.fitlife', '4', 'Vô hiệu hóa tài khoản do vi phạm chính sách', '123.25.***.***', '{\n  "action": "SUSPEND_KOC_ACCOUNT",\n  "user_id": "4",\n  "username": "@huy.fitlife",\n  "reason": "POLICY_VIOLATION"\n}');
 
 COMMIT;

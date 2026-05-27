@@ -41,30 +41,6 @@ public class AdminController {
 
     @jakarta.annotation.PostConstruct
     public void initAdminCampaignsDatabase() {
-        try {
-            // Đồng bộ bảng audit_logs khớp 100% với cấu trúc mã nguồn Java đang sử dụng
-            jdbcTemplate.execute("SET FOREIGN_KEY_CHECKS = 0;");
-            jdbcTemplate.execute("DROP TABLE IF EXISTS audit_logs;");
-            jdbcTemplate.execute("CREATE TABLE audit_logs (" +
-                "    log_id VARCHAR(50) PRIMARY KEY," +
-                "    created_at VARCHAR(50) NOT NULL," +
-                "    admin_name VARCHAR(150) NOT NULL," +
-                "    email VARCHAR(100) NOT NULL," +
-                "    avatar VARCHAR(255) DEFAULT 'default_avatar.png'," +
-                "    action_type VARCHAR(50) NOT NULL," +
-                "    badge_class VARCHAR(50) NOT NULL," +
-                "    target_object VARCHAR(255) NOT NULL," +
-                "    object_id VARCHAR(50) NOT NULL," +
-                "    action_description TEXT NOT NULL," +
-                "    ip_address VARCHAR(50) NOT NULL," +
-                "    changes_json TEXT NOT NULL" +
-                ") ENGINE=InnoDB CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;"
-            );
-            jdbcTemplate.execute("SET FOREIGN_KEY_CHECKS = 1;");
-            System.out.println("Table audit_logs drop-and-recreated to match Java model successfully.");
-        } catch (Exception e) {
-            System.err.println("Warning: Could not recreate audit_logs table: " + e.getMessage());
-        }
 
         try {
             // Thử chạy ALTER TABLE để thêm cột product_link. Sẽ tự bỏ qua nếu cột đã tồn tại.
@@ -830,6 +806,7 @@ public class AdminController {
         Optional<User> userOpt = userRepository.findById(id);
         if (userOpt.isPresent()) {
             User user = userOpt.get();
+            String oldTier = user.getTier();
             user.setTier(tier);
             userRepository.save(user);
             String tierText = switch (tier) {
@@ -838,6 +815,15 @@ public class AdminController {
                 case "silver" -> "Hạng Bạc";
                 default -> "Cơ bản";
             };
+            String oldTierText = switch (oldTier != null ? oldTier : "basic") {
+                case "diamond" -> "Hạng Kim Cương";
+                case "gold" -> "Hạng Vàng";
+                case "silver" -> "Hạng Bạc";
+                default -> "Cơ bản";
+            };
+            insertAuditLog("Cập nhật", "update", "Người dùng: @" + user.getUsername(), String.valueOf(id),
+                "Thay đổi Hạng từ [" + oldTierText + "] thành [" + tierText + "]",
+                "{\n  \"action\": \"UPDATE_KOC_TIER\",\n  \"user_id\": \"" + id + "\",\n  \"username\": \"@" + user.getUsername() + "\",\n  \"old_tier\": \"" + oldTier + "\",\n  \"new_tier\": \"" + tier + "\"\n}");
             return Map.of("success", true, "message", "Đã cập nhật cấp bậc của KOC [" + user.getFullName() + "] thành [" + tierText + "]!");
         }
         return Map.of("success", false, "message", "Không tìm thấy người dùng!");
@@ -852,9 +838,15 @@ public class AdminController {
         Optional<User> userOpt = userRepository.findById(id);
         if (userOpt.isPresent()) {
             User user = userOpt.get();
+            String oldStatus = user.getStatus();
             user.setStatus(status);
             userRepository.save(user);
             String statusText = "active".equals(status) ? "Hoạt động" : "Tạm khóa";
+            String oldStatusText = "active".equals(oldStatus) ? "Hoạt động" : "Tạm khóa";
+            String actionClass = "active".equals(status) ? "approve" : "delete";
+            insertAuditLog("Cập nhật", actionClass, "Người dùng: @" + user.getUsername(), String.valueOf(id),
+                "Thay đổi trạng thái từ [" + oldStatusText + "] thành [" + statusText + "]",
+                "{\n  \"action\": \"UPDATE_KOC_STATUS\",\n  \"user_id\": \"" + id + "\",\n  \"username\": \"@" + user.getUsername() + "\",\n  \"old_status\": \"" + oldStatus + "\",\n  \"new_status\": \"" + status + "\"\n}");
             return Map.of(
                 "success", true, 
                 "message", "Đã cập nhật trạng thái hoạt động của KOC [" + user.getFullName() + "] thành [" + statusText + "]!",
@@ -1328,28 +1320,149 @@ public class AdminController {
         if (!hasPermission("nav_tracking")) {
             return "redirect:/403";
         }
-        // Cảnh báo gian lận
-        List<AdminTrackingData.FraudAlert> alerts = new ArrayList<>();
-        alerts.add(new AdminTrackingData.FraudAlert("10:24:31", "Cảnh báo Bot Click từ dải IP 192.168.x.x - Đã chặn", "Cao"));
-        alerts.add(new AdminTrackingData.FraudAlert("10:24:12", "Tỷ lệ Spam Click 100% từ KOC @user_123 - Tạm ngưng", "Cao"));
-        alerts.add(new AdminTrackingData.FraudAlert("10:23:48", "Phát hiện hành vi Click ảo (Auto-click) từ KOC @abc_review", "Cao"));
-        alerts.add(new AdminTrackingData.FraudAlert("10:23:15", "Nguồn traffic bất thường từ Country: Unknown", "Trung bình"));
-        alerts.add(new AdminTrackingData.FraudAlert("10:22:56", "Tỷ lệ Bounce Rate bất thường > 95% từ KOC @fake_user", "Trung bình"));
-        alerts.add(new AdminTrackingData.FraudAlert("10:22:31", "Cảnh báo nhiều Click liên tiếp từ IP 10.0.0.5 - Đã chặn", "Cao"));
-        alerts.add(new AdminTrackingData.FraudAlert("10:21:58", "Thiết bị ảo/Proxy được sử dụng bởi KOC @spam_clicker", "Trung bình"));
+        java.text.DecimalFormat dfTrack = new java.text.DecimalFormat("#,###");
 
-        // Đối tượng tình nghi
+        // ===== THỐNG KÊ TỔNG HỢP TỪ CSDL =====
+        int totalClicks = 0;
+        int validClicks = 0;
+        try {
+            Integer tc = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM click_tracking", Integer.class);
+            totalClicks = tc != null ? tc : 0;
+        } catch (Exception e) { /* table empty or not exist */ }
+
+        try {
+            // Click hợp lệ = click có đơn hàng tương ứng (approved)
+            Integer vc = jdbcTemplate.queryForObject(
+                "SELECT COUNT(DISTINCT ct.click_id) FROM click_tracking ct " +
+                "INNER JOIN transactions t ON ct.click_id = t.click_tracking_id WHERE t.status = 'approved'", Integer.class);
+            validClicks = vc != null ? vc : 0;
+        } catch (Exception e) { /* fallback */ }
+
+        int blockedClicks = totalClicks - validClicks;
+        if (blockedClicks < 0) blockedClicks = 0;
+        int trustScore = totalClicks > 0 ? Math.min(100, (int)((validClicks * 100.0) / totalClicks)) : 100;
+
+        // ===== CẢNH BÁO GIAN LẬN TỪ PHÂN TÍCH DỮ LIỆU CLICK =====
+        List<AdminTrackingData.FraudAlert> alerts = new ArrayList<>();
+        try {
+            // Phát hiện IP trùng lặp (click nhiều lần từ cùng IP)
+            List<Map<String, Object>> dupeIps = jdbcTemplate.queryForList(
+                "SELECT ip_address, COUNT(*) as cnt FROM click_tracking GROUP BY ip_address HAVING cnt > 1 ORDER BY cnt DESC LIMIT 5"
+            );
+            LocalDateTime alertTime = LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh"));
+            for (Map<String, Object> ipRow : dupeIps) {
+                String ip = (String) ipRow.get("ip_address");
+                Long cnt = ((Number) ipRow.get("cnt")).longValue();
+                String masked = ip.length() > 6 ? ip.substring(0, ip.lastIndexOf('.')) + ".*" : ip;
+                String severity = cnt > 3 ? "Cao" : "Trung bình";
+                alerts.add(new AdminTrackingData.FraudAlert(
+                    alertTime.format(DateTimeFormatter.ofPattern("HH:mm:ss")),
+                    "Phát hiện " + cnt + " lượt Click từ cùng IP " + masked + " - Nghi ngờ Bot/Auto-click",
+                    severity
+                ));
+                alertTime = alertTime.minusMinutes(1);
+            }
+
+            // Phát hiện KOC có click nhưng KHÔNG có đơn hàng (tỷ lệ chuyển đổi = 0)
+            List<Map<String, Object>> zeroConversion = jdbcTemplate.queryForList(
+                "SELECT ct.koc_id, u.username, COUNT(ct.click_id) as click_count FROM click_tracking ct " +
+                "LEFT JOIN transactions t ON ct.click_id = t.click_tracking_id " +
+                "JOIN users u ON ct.koc_id = u.id " +
+                "WHERE t.id IS NULL " +
+                "GROUP BY ct.koc_id, u.username HAVING click_count > 0 ORDER BY click_count DESC LIMIT 3"
+            );
+            for (Map<String, Object> zcRow : zeroConversion) {
+                String username = (String) zcRow.get("username");
+                Long clickCount = ((Number) zcRow.get("click_count")).longValue();
+                alerts.add(new AdminTrackingData.FraudAlert(
+                    alertTime.format(DateTimeFormatter.ofPattern("HH:mm:ss")),
+                    "KOC @" + username + " có " + clickCount + " click nhưng 0 đơn hàng - Tỷ lệ chuyển đổi 0%",
+                    "Trung bình"
+                ));
+                alertTime = alertTime.minusMinutes(1);
+            }
+        } catch (Exception e) {
+            System.err.println("Warning: Could not analyze fraud alerts: " + e.getMessage());
+        }
+        // Nếu không có dữ liệu bất thường, hiển thị trạng thái an toàn
+        if (alerts.isEmpty()) {
+            alerts.add(new AdminTrackingData.FraudAlert(
+                LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")).format(DateTimeFormatter.ofPattern("HH:mm:ss")),
+                "Hệ thống hoạt động bình thường - Không phát hiện gian lận",
+                "Thấp"
+            ));
+        }
+
+        // ===== ĐỐI TƯỢNG TÌNH NGHI TỪ CSDL =====
         List<AdminTrackingData.SuspectTarget> suspects = new ArrayList<>();
-        suspects.add(new AdminTrackingData.SuspectTarget("susp_1", "User 123", "@user_123", "profile_avatar.png", "tiktok", "TikTok", "Dùng tool auto-click", "100%", "2,450", "10:24:31"));
-        suspects.add(new AdminTrackingData.SuspectTarget("susp_2", "Fake Review", "@fake_review", "profile_avatar.png", "tiktok", "TikTok", "Click ảo từ IP Proxy", "98%", "1,980", "10:23:48"));
-        suspects.add(new AdminTrackingData.SuspectTarget("susp_3", "Spam Clicker", "@spam_clicker", "profile_avatar.png", "shopee", "Shopee", "Spam Click hàng loạt", "97%", "1,560", "10:21:58"));
-        suspects.add(new AdminTrackingData.SuspectTarget("susp_4", "Bot Traffic", "@bot_traffic", "profile_avatar.png", "facebook", "Facebook", "Bot Traffic / Thiết bị ảo", "96%", "1,320", "10:20:45"));
+        try {
+            // Tìm KOC có nhiều click nhất nhưng tỷ lệ chuyển đổi thấp
+            List<Map<String, Object>> suspectRows = jdbcTemplate.queryForList(
+                "SELECT ct.koc_id, u.full_name, u.username, u.avatar, " +
+                "COUNT(ct.click_id) as total_clicks, " +
+                "COUNT(t.id) as total_orders, " +
+                "MAX(ct.clicked_at) as last_click " +
+                "FROM click_tracking ct " +
+                "JOIN users u ON ct.koc_id = u.id " +
+                "LEFT JOIN transactions t ON ct.click_id = t.click_tracking_id AND t.status = 'approved' " +
+                "GROUP BY ct.koc_id, u.full_name, u.username, u.avatar " +
+                "ORDER BY total_clicks DESC LIMIT 10"
+            );
+
+            int suspIdx = 1;
+            for (Map<String, Object> sr : suspectRows) {
+                int kocTotalClicks = ((Number) sr.get("total_clicks")).intValue();
+                int kocTotalOrders = ((Number) sr.get("total_orders")).intValue();
+                // Tỷ lệ click không chuyển đổi
+                int unconvertedRate = kocTotalClicks > 0 ? (int)(((kocTotalClicks - kocTotalOrders) * 100.0) / kocTotalClicks) : 0;
+                int blockedCount = kocTotalClicks - kocTotalOrders;
+                if (blockedCount < 0) blockedCount = 0;
+
+                String kocName = (String) sr.get("full_name");
+                String username = "@" + sr.get("username");
+                String avatar = sr.get("avatar") != null ? (String) sr.get("avatar") : "default_avatar.png";
+
+                // Xác định platform phổ biến nhất của KOC này
+                String platform = "tiktok";
+                String trafficSource = "TikTok";
+                try {
+                    List<Map<String, Object>> platformRows = jdbcTemplate.queryForList(
+                        "SELECT t.platform, COUNT(*) as cnt FROM transactions t WHERE t.koc_id = ? GROUP BY t.platform ORDER BY cnt DESC LIMIT 1",
+                        sr.get("koc_id")
+                    );
+                    if (!platformRows.isEmpty()) {
+                        platform = (String) platformRows.get(0).get("platform");
+                        trafficSource = switch (platform) {
+                            case "shopee" -> "Shopee";
+                            case "lazada" -> "Lazada";
+                            case "tiki" -> "Tiki";
+                            case "facebook" -> "Facebook";
+                            default -> "TikTok";
+                        };
+                    }
+                } catch (Exception ignore) {}
+
+                String behavior = unconvertedRate > 80 ? "Click bất thường / Nghi ngờ Auto-click" :
+                                  unconvertedRate > 50 ? "Tỷ lệ chuyển đổi thấp" : "Hoạt động bình thường";
+
+                Object lastClickObj = sr.get("last_click");
+                String lastDetection = lastClickObj != null ? lastClickObj.toString().substring(11, 19) : "--:--:--";
+                if (lastDetection.length() > 8) lastDetection = lastDetection.substring(0, 8);
+
+                suspects.add(new AdminTrackingData.SuspectTarget(
+                    "susp_" + suspIdx++, kocName, username, avatar, platform, trafficSource,
+                    behavior, unconvertedRate + "%", dfTrack.format(blockedCount), lastDetection
+                ));
+            }
+        } catch (Exception e) {
+            System.err.println("Warning: Could not load suspect targets: " + e.getMessage());
+        }
 
         AdminTrackingData tracking = new AdminTrackingData(
-            "154,200",
-            "148,000",
-            "6,200",
-            "95/100",
+            dfTrack.format(totalClicks),
+            dfTrack.format(validClicks),
+            dfTrack.format(blockedClicks),
+            trustScore + "/100",
             alerts,
             suspects
         );
@@ -1483,25 +1596,9 @@ public class AdminController {
         jdbcTemplate.update("UPDATE payout_requests SET status = 'approved' WHERE id = ?", requestId);
 
         // Ghi nhật ký hoạt động
-        try {
-            LocalDateTime now = LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh"));
-            String logId = "LOG-" + now.format(DateTimeFormatter.ofPattern("yyyyMMdd")) + "-" + (int)(10000 + Math.random()*90000);
-            String changesJson = String.format("{\n  \"payout_id\": \"%s\",\n  \"status\": \"approved\"\n}", requestId);
-            
-            String adminUsername = SecurityContextHolder.getContext().getAuthentication().getName();
-            User adminUser = userRepository.findByUsername(adminUsername).orElse(null);
-            String adminName = adminUser != null ? adminUser.getFullName() : "Admin System";
-            String adminEmail = adminUser != null ? adminUser.getEmail() : "admin@koc.vn";
-            String adminAvatar = adminUser != null ? adminUser.getAvatar() : "profile_avatar.png";
-
-            jdbcTemplate.update(
-                "INSERT INTO audit_logs (log_id, created_at, admin_name, email, avatar, action_type, badge_class, target_object, object_id, action_description, ip_address, changes_json) VALUES " +
-                "(?, ?, ?, ?, ?, 'payout_approve', 'approve', ?, ?, ?, '127.0.0.1', ?)",
-                logId, now.format(DateTimeFormatter.ofPattern("dd/MM/yyyy - HH:mm:ss")), adminName, adminEmail, adminAvatar, "Phê duyệt #" + requestId, requestId, "Phê duyệt lệnh rút tiền #" + requestId + " số tiền " + row.get("amount_str"), changesJson
-            );
-        } catch (Exception e) {
-            System.err.println("Warning: Could not write payout log: " + e.getMessage());
-        }
+        insertAuditLog("Phê duyệt", "approve", "Lệnh rút tiền " + requestId, requestId,
+            "Phê duyệt lệnh rút tiền " + requestId + " số tiền " + row.get("amount_str"),
+            "{\n  \"payout_id\": \"" + requestId + "\",\n  \"status\": \"approved\",\n  \"amount\": \"" + row.get("amount_str") + "\"\n}");
 
         return ResponseEntity.ok(Map.of("status", "success", "message", "Phê duyệt rút tiền thành công!"));
     }
@@ -1545,25 +1642,9 @@ public class AdminController {
         );
 
         // Ghi nhật ký hoạt động
-        try {
-            LocalDateTime now = LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh"));
-            String logId = "LOG-" + now.format(DateTimeFormatter.ofPattern("yyyyMMdd")) + "-" + (int)(10000 + Math.random()*90000);
-            String changesJson = String.format("{\n  \"payout_id\": \"%s\",\n  \"status\": \"rejected\"\n}", requestId);
-            
-            String adminUsername = SecurityContextHolder.getContext().getAuthentication().getName();
-            User adminUser = userRepository.findByUsername(adminUsername).orElse(null);
-            String adminName = adminUser != null ? adminUser.getFullName() : "Admin System";
-            String adminEmail = adminUser != null ? adminUser.getEmail() : "admin@koc.vn";
-            String adminAvatar = adminUser != null ? adminUser.getAvatar() : "profile_avatar.png";
-
-            jdbcTemplate.update(
-                "INSERT INTO audit_logs (log_id, created_at, admin_name, email, avatar, action_type, badge_class, target_object, object_id, action_description, ip_address, changes_json) VALUES " +
-                "(?, ?, ?, ?, ?, 'payout_reject', 'delete', ?, ?, ?, '127.0.0.1', ?)",
-                logId, now.format(DateTimeFormatter.ofPattern("dd/MM/yyyy - HH:mm:ss")), adminName, adminEmail, adminAvatar, "Từ chối #" + requestId, requestId, "Từ chối lệnh rút tiền #" + requestId + " số tiền " + row.get("amount_str") + " và hoàn trả lại số dư cho KOC", changesJson
-            );
-        } catch (Exception e) {
-            System.err.println("Warning: Could not write payout log: " + e.getMessage());
-        }
+        insertAuditLog("Từ chối", "delete", "Lệnh rút tiền " + requestId, requestId,
+            "Từ chối lệnh rút tiền " + requestId + " số tiền " + row.get("amount_str") + " và hoàn trả lại số dư cho KOC",
+            "{\n  \"payout_id\": \"" + requestId + "\",\n  \"status\": \"rejected\",\n  \"amount\": \"" + row.get("amount_str") + "\"\n}");
 
         return ResponseEntity.ok(Map.of("status", "success", "message", "Từ chối và hoàn tiền thành công!"));
     }
@@ -1597,24 +1678,9 @@ public class AdminController {
         }
 
         // Ghi nhật ký phê duyệt hàng loạt
-        try {
-            LocalDateTime now = LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh"));
-            String logId = "LOG-" + now.format(DateTimeFormatter.ofPattern("yyyyMMdd")) + "-" + (int)(10000 + Math.random()*90000);
-            
-            String adminUsername = SecurityContextHolder.getContext().getAuthentication().getName();
-            User adminUser = userRepository.findByUsername(adminUsername).orElse(null);
-            String adminName = adminUser != null ? adminUser.getFullName() : "Admin System";
-            String adminEmail = adminUser != null ? adminUser.getEmail() : "admin@koc.vn";
-            String adminAvatar = adminUser != null ? adminUser.getAvatar() : "profile_avatar.png";
-
-            jdbcTemplate.update(
-                "INSERT INTO audit_logs (log_id, created_at, admin_name, email, avatar, action_type, badge_class, target_object, object_id, action_description, ip_address, changes_json) VALUES " +
-                "(?, ?, ?, ?, ?, 'payout_approve', 'approve', ?, 'BULK_APPROVE', ?, '127.0.0.1', '{}')",
-                logId, now.format(DateTimeFormatter.ofPattern("dd/MM/yyyy - HH:mm:ss")), adminName, adminEmail, adminAvatar, "Duyệt hàng loạt", "Phê duyệt hàng loạt thành công " + successCount + " lệnh rút tiền chờ thanh toán"
-            );
-        } catch (Exception e) {
-            System.err.println("Warning: Could not write payout bulk log: " + e.getMessage());
-        }
+        insertAuditLog("Phê duyệt", "approve", "Duyệt hàng loạt rút tiền", "BULK_APPROVE",
+            "Phê duyệt hàng loạt thành công " + successCount + " lệnh rút tiền chờ thanh toán",
+            "{\n  \"action\": \"BULK_APPROVE_PAYOUT\",\n  \"count\": " + successCount + "\n}");
 
         return ResponseEntity.ok(Map.of("status", "success", "message", "Phê duyệt hàng loạt thành công " + successCount + " lệnh rút tiền!"));
     }
@@ -1917,30 +1983,37 @@ public class AdminController {
             return "redirect:/403";
         }
         List<AdminLogsData.AuditLog> logs = new ArrayList<>();
-        
-        String json1 = "{\n  \"log_id\": \"LOG-20260524-143022-7XK9L\",\n  \"timestamp\": \"2026-05-24T14:30:22+07:00\",\n  \"admin_id\": \"ADM-1001\",\n  \"admin_name\": \"Nguyễn Văn A\",\n  \"action\": \"UPDATE_COMMISSION_RATE\",\n  \"module\": \"CAMPAIGN\",\n  \"object_id\": \"CAM-2026-007\",\n  \"changes\": {\n    \"old_value\": \"10%\",\n    \"new_value\": \"12%\",\n    \"field\": \"commission_rate\",\n    \"tier\": \"gold\"\n  },\n  \"ip_address\": \"113.190.***.***\",\n  \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/124.0.0.0 Safari/537.36\"\n}";
-        logs.add(new AdminLogsData.AuditLog("LOG-20260524-143022-7XK9L", "24/05/2026 - 14:30:22", "Nguyễn Văn A", "nguyenvana@koc.vn", "profile_avatar.png", "Cập nhật", "update", "Chiến dịch BST LSOUL", "CAM-2026-007", "Thay đổi Tỷ lệ hoa hồng từ [10%] thành [12%] Hạng: Hạng Vàng", "113.190.***.***", json1));
-        
-        String json2 = "{\n  \"log_id\": \"LOG-20260524-142815-9PL2A\",\n  \"timestamp\": \"2026-05-24T14:28:15+07:00\",\n  \"admin_id\": \"ADM-1002\",\n  \"admin_name\": \"Trần Thị Bịch\",\n  \"action\": \"APPROVE_PAYOUT\",\n  \"module\": \"WITHDRAWAL\",\n  \"object_id\": \"WD-123\",\n  \"changes\": {\n    \"payout_amount\": \"15,000,000 VNĐ\",\n    \"bank\": \"Vietcombank\",\n    \"card_number\": \"****1234\"\n  },\n  \"ip_address\": \"203.113.***.***\",\n  \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/124.0.0.0 Safari/537.36\"\n}";
-        logs.add(new AdminLogsData.AuditLog("LOG-20260524-142815-9PL2A", "24/05/2026 - 14:28:15", "Trần Thị Bịch", "tranthibich@koc.vn", "profile_avatar.png", "Phê duyệt", "approve", "Lệnh rút tiền #WD-123", "WD-123", "Phê duyệt lệnh rút tiền số tiền [15,000,000 VNĐ] về tài khoản Vietcombank ****1234", "203.113.***.***", json2));
-        
-        String json3 = "{\n  \"log_id\": \"LOG-20260524-142508-3HG8P\",\n  \"timestamp\": \"2026-05-24T14:25:08+07:00\",\n  \"admin_id\": \"ADM-1003\",\n  \"admin_name\": \"Lê Hoàng Nam\",\n  \"action\": \"UPDATE_KOC_TIER\",\n  \"module\": \"KOC_PROFILE\",\n  \"object_id\": \"KOC-1023\",\n  \"changes\": {\n    \"old_tier\": \"silver\",\n    \"new_tier\": \"gold\",\n    \"username\": \"@ducanh.review\"\n  },\n  \"ip_address\": \"42.118.***.***\",\n  \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/124.0.0.0 Safari/537.36\"\n}";
-        logs.add(new AdminLogsData.AuditLog("LOG-20260524-142508-3HG8P", "24/05/2026 - 14:25:08", "Lê Hoàng Nam", "lehoangnam@koc.vn", "profile_avatar.png", "Cập nhật", "update", "Người dùng: @ducanh.review", "KOC-1023", "Thay đổi Hạng từ [Hạng Bạc] thành [Hạng Vàng]", "42.118.***.***", json3));
-        
-        String json4 = "{\n  \"log_id\": \"LOG-20260524-142051-5KJ3D\",\n  \"timestamp\": \"2026-05-24T14:20:51+07:00\",\n  \"admin_id\": \"ADM-1004\",\n  \"admin_name\": \"Phạm Quốc Tùng\",\n  \"action\": \"DELETE_CAMPAIGN\",\n  \"module\": \"CAMPAIGN\",\n  \"object_id\": \"CAM-2025-015\",\n  \"changes\": {\n    \"campaign_name\": \"Summer Sale\",\n    \"action\": \"HARD_DELETE\"\n  },\n  \"ip_address\": \"123.25.***.***\",\n  \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/124.0.0.0 Safari/537.36\"\n}";
-        logs.add(new AdminLogsData.AuditLog("LOG-20260524-142051-5KJ3D", "24/05/2026 - 14:20:51", "Phạm Quốc Tùng", "phamqtung@koc.vn", "profile_avatar.png", "Xóa", "delete", "Chiến dịch Summer Sale", "CAM-2025-015", "Xóa chiến dịch [Summer Sale] khỏi hệ thống", "123.25.***.***", json4));
-        
-        String json5 = "{\n  \"log_id\": \"LOG-20260524-141833-2WE8F\",\n  \"timestamp\": \"2026-05-24T14:18:33+07:00\",\n  \"admin_id\": \"ADM-1001\",\n  \"admin_name\": \"Nguyễn Văn A\",\n  \"action\": \"UPDATE_GLOBAL_COMMISSION\",\n  \"module\": \"SYSTEM_SETTINGS\",\n  \"changes\": {\n    \"old_rate\": \"15%\",\n    \"new_rate\": \"16%\",\n    \"tier\": \"diamond\"\n  },\n  \"ip_address\": \"113.190.***.***\",\n  \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/124.0.0.0 Safari/537.36\"\n}";
-        logs.add(new AdminLogsData.AuditLog("LOG-20260524-141833-2WE8F", "24/05/2026 - 14:18:33", "Nguyễn Văn A", "nguyenvana@koc.vn", "profile_avatar.png", "Cập nhật", "update", "Cấu hình hệ thống", "COMMISSION_SETTINGS", "Cập nhật mức hoa hồng cơ bản cho Hạng Kim Cương từ [15%] thành [16%]", "113.190.***.***", json5));
-        
-        String json6 = "{\n  \"log_id\": \"LOG-20260524-141512-8UY9K\",\n  \"timestamp\": \"2026-05-24T14:15:12+07:00\",\n  \"admin_id\": \"ADM-1002\",\n  \"admin_name\": \"Trần Thị Bịch\",\n  \"action\": \"APPROVE_KOC_REGISTRATION\",\n  \"module\": \"KOC_MANAGEMENT\",\n  \"object_id\": \"KOC-1056\",\n  \"changes\": {\n    \"username\": \"@linhchi.daily\",\n    \"assigned_tier\": \"silver\"\n  },\n  \"ip_address\": \"203.113.***.***\",\n  \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/124.0.0.0 Safari/537.36\"\n}";
-        logs.add(new AdminLogsData.AuditLog("LOG-20260524-141512-8UY9K", "24/05/2026 - 14:15:12", "Trần Thị Bịch", "tranthibich@koc.vn", "profile_avatar.png", "Phê duyệt", "approve", "KOC đăng ký mới: @linhchi.daily", "KOC-1056", "Phê duyệt tài khoản KOC mới đăng ký và gán Hạng Bạc", "203.113.***.***", json6));
-        
-        String json7 = "{\n  \"log_id\": \"LOG-20260524-141045-1DF3G\",\n  \"timestamp\": \"2026-05-24T14:10:45+07:00\",\n  \"admin_id\": \"ADM-1003\",\n  \"admin_name\": \"Lê Hoàng Nam\",\n  \"action\": \"DELETE_VIOLATING_POST\",\n  \"module\": \"CONTENT_MODERATION\",\n  \"object_id\": \"POST-7781\",\n  \"changes\": {\n    \"post_id\": \"POST-7781\",\n    \"reason\": \"SPAM_ADVERTISING\"\n  },\n  \"ip_address\": \"42.118.***.***\",\n  \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/124.0.0.0 Safari/537.36\"\n}";
-        logs.add(new AdminLogsData.AuditLog("LOG-20260524-141045-1DF3G", "24/05/2026 - 14:10:45", "Lê Hoàng Nam", "lehoangnam@koc.vn", "profile_avatar.png", "Xóa", "delete", "Bài đăng vi phạm #POST-7781", "POST-7781", "Xóa bài đăng vi phạm chính sách (Spam/Quảng cáo sai lệch)", "42.118.***.***", json7));
-        
-        String json8 = "{\n  \"log_id\": \"LOG-20260524-140530-9IU8Y\",\n  \"timestamp\": \"2026-05-24T14:05:30+07:00\",\n  \"admin_id\": \"ADM-1004\",\n  \"admin_name\": \"Phạm Quốc Tùng\",\n  \"action\": \"SUSPEND_KOC_ACCOUNT\",\n  \"module\": \"KOC_MANAGEMENT\",\n  \"object_id\": \"KOC-1999\",\n  \"changes\": {\n    \"username\": \"@user_test_01\",\n    \"reason\": \"POLICY_VIOLATION\"\n  },\n  \"ip_address\": \"123.25.***.***\",\n  \"user_agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/124.0.0.0 Safari/537.36\"\n}";
-        logs.add(new AdminLogsData.AuditLog("LOG-20260524-140530-9IU8Y", "24/05/2026 - 14:05:30", "Phạm Quốc Tùng", "phamqtung@koc.vn", "profile_avatar.png", "Cập nhật", "update", "Người dùng: @user_test_01", "KOC-1999", "Vô hiệu hóa tài khoản do vi phạm chính sách", "123.25.***.***", json8));
+
+        try {
+            List<Map<String, Object>> rows = jdbcTemplate.queryForList(
+                "SELECT al.*, u.full_name, u.email, u.avatar FROM audit_logs al " +
+                "LEFT JOIN users u ON al.admin_id = u.id " +
+                "ORDER BY al.timestamp DESC"
+            );
+
+            for (Map<String, Object> row : rows) {
+                String logId = (String) row.get("id");
+                String timestamp = (String) row.get("timestamp");
+                String adminName = row.get("full_name") != null ? (String) row.get("full_name") : "Admin System";
+                String adminEmail = row.get("email") != null ? (String) row.get("email") : "admin@koc.vn";
+                String adminAvatar = row.get("avatar") != null ? (String) row.get("avatar") : "default_avatar.png";
+                String action = (String) row.get("action");
+                String actionClass = (String) row.get("action_class");
+                String targetObject = (String) row.get("target_object");
+                String targetObjectId = (String) row.get("target_object_id");
+                String changeDetail = (String) row.get("change_detail");
+                String ipAddress = (String) row.get("ip_address");
+                String jsonDetail = (String) row.get("json_detail");
+
+                logs.add(new AdminLogsData.AuditLog(
+                    logId, timestamp, adminName, adminEmail, adminAvatar,
+                    action, actionClass, targetObject, targetObjectId, changeDetail,
+                    ipAddress, jsonDetail
+                ));
+            }
+        } catch (Exception e) {
+            System.err.println("Warning: Could not load audit logs from DB: " + e.getMessage());
+        }
 
         AdminLogsData logsData = new AdminLogsData(logs);
 
@@ -1948,5 +2021,34 @@ public class AdminController {
         model.addAttribute("activePage", "logs");
         model.addAttribute("logsData", logsData);
         return "admin/logs";
+    }
+
+    /**
+     * Phương thức tiện ích ghi nhật ký hoạt động admin vào bảng audit_logs.
+     * Sử dụng đúng cấu trúc cột theo database.sql: id, admin_id, timestamp, action, action_class,
+     * target_object, target_object_id, change_detail, ip_address, json_detail
+     */
+    private void insertAuditLog(String action, String actionClass, String targetObject, String targetObjectId, String changeDetail, String jsonDetail) {
+        try {
+            LocalDateTime now = LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh"));
+            String logId = "LOG-" + now.format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss")) + "-" + (int)(10000 + Math.random()*90000);
+            String timestamp = now.format(DateTimeFormatter.ofPattern("dd/MM/yyyy - HH:mm:ss"));
+
+            Integer adminId = null;
+            try {
+                String adminUsername = SecurityContextHolder.getContext().getAuthentication().getName();
+                User adminUser = userRepository.findByUsername(adminUsername).orElse(null);
+                if (adminUser != null) {
+                    adminId = adminUser.getId();
+                }
+            } catch (Exception ignore) {}
+
+            jdbcTemplate.update(
+                "INSERT INTO audit_logs (id, admin_id, timestamp, action, action_class, target_object, target_object_id, change_detail, ip_address, json_detail) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                logId, adminId, timestamp, action, actionClass, targetObject, targetObjectId, changeDetail, "127.0.0.1", jsonDetail
+            );
+        } catch (Exception e) {
+            System.err.println("Warning: Could not write audit log: " + e.getMessage());
+        }
     }
 }
