@@ -149,4 +149,4 @@ src/main/resources/
 ```
 
 ---
-*Chúc bạn có những trải nghiệm tiếp thị và lập trình tuyệt vời cùng hệ thống **KOC/KOL Affiliate Network**!*
+*Hệ thống còn nhiều thiếu soát có thể cải thiện. Chúc bạn có những trải nghiệm tốt về dự án của tôi
