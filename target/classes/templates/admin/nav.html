@@ -11,23 +11,34 @@
     <aside th:fragment="sidebar(activePage)" class="sidebar">
         <!-- Logo Thương hiệu Admin -->
         <div class="sidebar-logo">
-            <svg class="logo-icon" width="36" height="36" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                <defs>
-                    <linearGradient id="logoGradAdmin" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stop-color="#ec4899" />
-                        <stop offset="60%" stop-color="#a855f7" />
-                        <stop offset="100%" stop-color="#6366f1" />
-                    </linearGradient>
-                </defs>
-                <circle cx="50" cy="20" r="10" fill="url(#logoGradAdmin)" />
-                <path d="M50 35C41 35 30 40 22 46C29 48 37 47 43 47V78C43 83 57 83 57 78V47C63 47 71 48 78 46C70 40 59 35 50 35Z" fill="url(#logoGradAdmin)" />
-                <path d="M28 42L18 78C16 83 24 85 26 80L36 45C32 44 30 43 28 42Z" fill="url(#logoGradAdmin)" opacity="0.8" />
-                <path d="M72 42L82 78C84 83 76 85 74 80L64 45C68 44 70 43 72 42Z" fill="url(#logoGradAdmin)" opacity="0.8" />
-            </svg>
-            <div class="logo-text-group">
-                <span class="logo-text-top">ADMIN PORTAL</span>
-                <span class="logo-text-bottom">Affiliate Management</span>
+            <div class="logo-brand-group" style="display: flex; align-items: center; gap: 0.75rem;">
+                <svg class="logo-icon" width="36" height="36" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <defs>
+                        <linearGradient id="logoGradAdmin" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#ec4899" />
+                            <stop offset="60%" stop-color="#a855f7" />
+                            <stop offset="100%" stop-color="#6366f1" />
+                        </linearGradient>
+                    </defs>
+                    <circle cx="50" cy="20" r="10" fill="url(#logoGradAdmin)" />
+                    <path d="M50 35C41 35 30 40 22 46C29 48 37 47 43 47V78C43 83 57 83 57 78V47C63 47 71 48 78 46C70 40 59 35 50 35Z" fill="url(#logoGradAdmin)" />
+                    <path d="M28 42L18 78C16 83 24 85 26 80L36 45C32 44 30 43 28 42Z" fill="url(#logoGradAdmin)" opacity="0.8" />
+                    <path d="M72 42L82 78C84 83 76 85 74 80L64 45C68 44 70 43 72 42Z" fill="url(#logoGradAdmin)" opacity="0.8" />
+                </svg>
+                <div class="logo-text-group">
+                    <span class="logo-text-top">ADMIN PORTAL</span>
+                    <span class="logo-text-bottom">Affiliate Management</span>
+                </div>
             </div>
+            
+            <!-- Nút Toggle Menu trên Di động -->
+            <button type="button" class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Toggle Menu">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="3" y1="12" x2="21" y2="12" class="line-1"></line>
+                    <line x1="3" y1="6" x2="21" y2="6" class="line-2"></line>
+                    <line x1="3" y1="18" x2="21" y2="18" class="line-3"></line>
+                </svg>
+            </button>
         </div>
         
         <!-- Danh sách các Menu chức năng Admin -->
@@ -103,6 +114,25 @@
                 <p class="status-subtitle">Server Uptime: 99.98%</p>
             </div>
         </div>
+        
+        <!-- Inline script to toggle mobile menu -->
+        <script>
+            (function() {
+                const toggleBtn = document.getElementById("mobileMenuToggle");
+                const sidebar = document.querySelector(".sidebar");
+                if (toggleBtn && sidebar) {
+                    const toggleMenu = function(e) {
+                        if (e) e.preventDefault();
+                        sidebar.classList.toggle("menu-active");
+                    };
+                    toggleBtn.addEventListener("click", toggleMenu);
+                    toggleBtn.addEventListener("touchstart", function(e) {
+                        e.preventDefault();
+                        toggleMenu(e);
+                    }, { passive: false });
+                }
+            })();
+        </script>
     </aside>
 
 </body>

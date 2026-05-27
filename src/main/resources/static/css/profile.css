@@ -63,6 +63,25 @@ body {
     padding-left: 0.5rem;
 }
 
+/* Nút toggle menu di động */
+.mobile-menu-toggle {
+    display: none;
+    background: none;
+    border: none;
+    color: #ffffff;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem;
+    border-radius: 8px;
+    transition: background-color 0.2s;
+}
+
+.mobile-menu-toggle:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+}
+
+
 .logo-icon {
     width: 36px;
     height: 36px;
@@ -852,46 +871,94 @@ body {
     }
     
     .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
         width: 100%;
-        height: auto;
-        padding: 1.25rem;
+        height: 70px;
+        padding: 1rem 1.5rem;
+        z-index: 1000;
+        overflow: hidden;
+        transition: height 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .sidebar.menu-active {
+        height: 100vh;
+        background-color: #080c24;
     }
     
     .sidebar-logo {
-        margin-bottom: 1.5rem;
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0;
+    }
+    
+    .sidebar.menu-active .sidebar-logo {
+        margin-bottom: 2.5rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        padding-bottom: 1rem;
+    }
+    
+    .mobile-menu-toggle {
+        display: flex;
+    }
+    
+    .sidebar.menu-active .mobile-menu-toggle svg {
+        transform: rotate(90deg);
+    }
+    .sidebar.menu-active .mobile-menu-toggle .line-1 {
+        transform: rotate(45deg) translate(5px, 5px);
+        transform-origin: center;
+    }
+    .sidebar.menu-active .mobile-menu-toggle .line-2 {
+        opacity: 0;
+    }
+    .sidebar.menu-active .mobile-menu-toggle .line-3 {
+        transform: rotate(-45deg) translate(5px, -5px);
+        transform-origin: center;
+    }
+
+    .sidebar nav {
+        display: none;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .sidebar.menu-active nav {
+        display: block;
+        opacity: 1;
     }
     
     .menu-list {
-        flex-direction: row;
-        overflow-x: auto;
-        padding-bottom: 0.5rem;
-    }
-    
-    .menu-item {
-        white-space: nowrap;
+        flex-direction: column;
+        overflow-y: auto;
     }
     
     .gold-card {
-        display: none; /* Hide bottom card on small vertical space */
+        display: none;
+    }
+    
+    .sidebar.menu-active .gold-card {
+        display: flex;
+        margin-top: auto;
+    }
+    
+    /* Admin specific adjustments */
+    .system-status-card {
+        display: none;
     }
     
     .main-content {
         padding: 1.25rem;
-    }
-    
-    .cards-grid {
-        flex-direction: column;
-    }
-    
-    .payment-body {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 1.5rem;
-    }
-    
-    .btn-outlined {
-        width: 100%;
-        justify-content: center;
+        padding-top: calc(70px + 1.25rem);
+        height: 100vh;
+        overflow-y: auto;
     }
 }
 
